@@ -23,7 +23,10 @@ WORKDIR /app
 RUN npx nx build gateway --prod
 
 # Stage 2: Production
-FROM node:20-alpine AS production
+FROM node:20-slim AS production
+
+RUN apt-get update -y && apt-get install -y openssl
+
 
 WORKDIR /app
 
@@ -35,10 +38,10 @@ COPY --from=builder /app/apps/gateway/prisma ./prisma
 
 # Install production dependencies
 COPY --from=builder /app/apps/gateway/package*.json ./
-RUN npm install 
+RUN npm install --production
 
 # Expose port
 EXPOSE 3000
 
 # Run migrations and start
-CMD ["sh", "-c", "npx prisma migrate dev --name init && node main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node main.js"]
