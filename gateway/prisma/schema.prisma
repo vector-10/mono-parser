@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String   // Hashed with bcrypt
+  name        String
+  companyName String
+  
+  // API access
+  apiKey      String   @unique @default(uuid())  // For programmatic access
+  monoApiKey  String?                            // Their Mono API key
+
+  isVerified  Boolean  @default(false)
+  otp         String?
+  otpExpiry   DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  applications Application[]
+}
+
+
+
+model Application {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  // End user info (from lending company)
+  endUserId     String   // Their customer's ID
+  monoAccountId String   // Mono account to analyze
+  amount        Int      // Loan amount requested
+  
+  // Analysis results
+  status        String   // PENDING, PROCESSING, APPROVED, REJECTED
+  score         Int?     // 0-100 risk score
+  decision      Json?    // Detailed breakdown from Brain
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+
+
+
+model Transaction {
+  id          String   @id @default(uuid())
+  accountId   String
+  amount      Int
+  type        String   // DEBIT, CREDIT
+  description String
+  date        DateTime
+  category    String?  // BETTING, FOOD, TRANSPORT, etc
+  createdAt   DateTime @default(now())
+  
+  @@index([accountId])
+}
