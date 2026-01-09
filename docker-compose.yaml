@@ -26,6 +26,10 @@ services:
     environment:
       DATABASE_URL: "postgresql://postgres:password@db:5432/mono_parser?schema=public"
       PORT: 3000
+      JWT_SECRET: "245ae9ad235fb5711aa3c2cdb36bde502c302f6d6efe7ec5fdbfe389f5b90040"
+      BREVO_API_KEY: "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"
+      BREVO_SENDER_EMAIL: "firstsoftware.systems@gmail.com"
+      BREVO_SENDER_NAME: "Firstsoftware-systems"
     ports:
       - "3000:3000"
     depends_on:
