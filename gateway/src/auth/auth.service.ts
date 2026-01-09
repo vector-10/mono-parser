@@ -3,10 +3,9 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { EmailService } from 'src/email/email.service';
+import { UsersService } from 'src/users/users.service';
 import { TokenService } from 'src/auth/token.service';
-import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -15,30 +14,30 @@ import { ResendOtpDto } from './dto/resend-otp.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
     private tokenService: TokenService,
     private emailService: EmailService,
+    private usersService: UsersService, 
   ) {}
 
   async signup(signupDto: SignupDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: signupDto.email },
-    });
+    const existingUser = await this.usersService.findByEmail(signupDto.email);
 
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
-    const hashedPassword = await bcrypt.hash(signupDto.password, 10);
 
-    const user = await this.prisma.user.create({
-      email: signupDto.email,
-      password: hashedPassword,
-      name: signupDto.name,
-      companyName: signupDto.companyName,
-    });
+    const user = await this.usersService.create(
+      signupDto.email,
+      signupDto.password,
+      signupDto.name,
+      signupDto.companyName,
+    );
 
     const otp = this.generateOTP();
-    await this.saveOTP(user.id, otp);
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
+    await this.usersService.updateOTP(user.id, otp, expiresAt);
     await this.emailService.sendOTP(signupDto.email, otp, signupDto.name);
 
     return {
@@ -48,9 +47,7 @@ export class AuthService {
   }
 
   async verifyOTP(verifyotpDto: VerifyOtpDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: verifyotpDto.email },
-    });
+    const user = await this.usersService.findByEmail(verifyotpDto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or OTP');
@@ -64,14 +61,7 @@ export class AuthService {
       throw new UnauthorizedException('OTP expired');
     }
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        isVerified: true,
-        otp: null,
-        otpExpiry: null,
-      },
-    });
+    await this.usersService.verifyEmail(user.id);
 
     const access_token = this.tokenService.generateAccessToken(
       user.id,
@@ -92,9 +82,7 @@ export class AuthService {
   }
 
   async resendOTP(resendOtpDto: ResendOtpDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: resendOtpDto.email },
-    });
+    const user = await this.usersService.findByEmail(resendOtpDto.email);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -105,7 +93,10 @@ export class AuthService {
     }
 
     const otp = this.generateOTP();
-    await this.saveOTP(user.id, otp);
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
+    await this.usersService.updateOTP(user.id, otp, expiresAt);
     await this.emailService.sendOTP(user.email, otp, user.name);
 
     return {
@@ -114,9 +105,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: loginDto.email },
-    });
+    const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -126,10 +115,11 @@ export class AuthService {
       throw new UnauthorizedException('Please verify your email first');
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await this.usersService.validatePassword(
       loginDto.password,
       user.password,
     );
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -152,32 +142,10 @@ export class AuthService {
   }
 
   async validateUser(userId: string) {
-    return this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        companyName: true,
-        apiKey: true,
-      },
-    });
+    return this.usersService.findById(userId);
   }
 
   private generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  private async saveOTP(userId: string, otp: string) {
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        otp,
-        otpExpiry: expiresAt,
-      },
-    });
   }
 }
