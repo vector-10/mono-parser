@@ -3,7 +3,6 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EmailService } from 'src/email/email.service';
 import { TokenService } from 'src/auth/token.service';
@@ -12,7 +11,6 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
-import { sign } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -62,8 +60,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid OTP');
     }
 
-    if (user.otpExpiry < new Date()) {
-      throw new UnauthorizedException('OTP has expired');
+    if (!user.otpExpiry || user.otpExpiry < new Date()) {
+      throw new UnauthorizedException('OTP expired');
     }
 
     await this.prisma.user.update({
@@ -91,7 +89,6 @@ export class AuthService {
         apiKey: user.apiKey,
       },
     };
-
   }
 
   async resendOTP(resendOtpDto: ResendOtpDto) {
@@ -112,8 +109,8 @@ export class AuthService {
     await this.emailService.sendOTP(user.email, otp, user.name);
 
     return {
-      message: "OTP resent successfully"
-    }
+      message: 'OTP resent successfully',
+    };
   }
 
   async login(loginDto: LoginDto) {
@@ -125,7 +122,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if(!user.isVerified) {
+    if (!user.isVerified) {
       throw new UnauthorizedException('Please verify your email first');
     }
 
@@ -140,7 +137,7 @@ export class AuthService {
     const access_token = this.tokenService.generateAccessToken(
       user.id,
       user.email,
-    )
+    );
 
     return {
       access_token,
@@ -172,7 +169,7 @@ export class AuthService {
   }
 
   private async saveOTP(userId: string, otp: string) {
-    const expiresAt = new Date();   
+    const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.prisma.user.update({

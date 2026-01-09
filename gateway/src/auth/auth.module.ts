@@ -8,6 +8,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { EmailModule } from '../email/email.module';
 import { TokenService } from './token.service';
 import { ConfigModule } from '@nestjs/config';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
       signOptions: { expiresIn: '24h' },
     }),
     EmailModule,
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService, TokenService, JwtStrategy],
