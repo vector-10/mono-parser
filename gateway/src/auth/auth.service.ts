@@ -16,14 +16,28 @@ export class AuthService {
   constructor(
     private tokenService: TokenService,
     private emailService: EmailService,
-    private usersService: UsersService, 
+    private usersService: UsersService,
   ) {}
 
   async signup(signupDto: SignupDto) {
     const existingUser = await this.usersService.findByEmail(signupDto.email);
 
-    if (existingUser) {
-      throw new ConflictException('Email already registered');
+    if (existingUser?.isVerified) {
+      throw new ConflictException('Email already registered. Please Login');
+    }
+
+    if (existingUser && !existingUser.isVerified) {
+      const otp = this.generateOTP();
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
+      await this.usersService.updateOTP(existingUser.id, otp, expiresAt);
+      await this.emailService.sendOTP(signupDto.email, otp, signupDto.name);
+
+      return {
+        message: 'Verification email resent. Please check your email.',
+        email: signupDto.email,
+      };
     }
 
     const user = await this.usersService.create(
