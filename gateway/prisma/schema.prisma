@@ -20,6 +20,9 @@ model User {
   apiKey      String   @unique @default(uuid())  // For programmatic access
   monoApiKey  String?                            // Their Mono API key
 
+  monoAccountId String? @unique
+  monoCustomerId String? 
+
   isVerified  Boolean  @default(false)
   otp         String?
   otpExpiry   DateTime?
