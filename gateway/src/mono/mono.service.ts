@@ -7,10 +7,18 @@ export class MonoService {
   private readonly monoBaseUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.monoBaseUrl = this.configService.get<string>('MONO_BASE_URL') || 'https://api.withmono.com/v2';
+    this.monoBaseUrl =
+      this.configService.get<string>('MONO_BASE_URL') ||
+      'https://api.withmono.com/v2';
   }
 
-  async initiateAccountLinking(userId: string, userName: string, userEmail: string, monoApiKey: string, redirectUrl: string) {
+  async initiateAccountLinking(
+    userId: string,
+    userName: string,
+    userEmail: string,
+    monoApiKey: string,
+    redirectUrl?: string,
+  ) {
     try {
       const response = await axios.post(
         `${this.monoBaseUrl}/accounts/initiate`,
@@ -18,7 +26,8 @@ export class MonoService {
           customer: { name: userName, email: userEmail },
           meta: { ref: `user_${userId}_${Date.now()}` },
           scope: 'auth',
-          redirect_url: redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
+          redirect_url:
+            redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
         },
         {
           headers: {
@@ -28,8 +37,10 @@ export class MonoService {
         },
       );
       return {
-        widgetUrl: response.data.data.widget_url,
-        reference: response.data.data.reference,
+        widgetUrl: response.data.data.mono_url,
+        customerId: response.data.data.customer,
+        scope: response.data.data.scope,
+        createdAt: response.data.data.created_at,
       };
     } catch (error) {
       console.error('Mono initiate failed:', error.response?.data || error);
@@ -53,14 +64,13 @@ export class MonoService {
       );
 
       return {
-        accountId: response.data.id,
-      }
+        accountId: response.data.data.id,
+      };
     } catch (error) {
       console.error('Mono auth failed:', error.response?.data || error);
       throw error;
     }
   }
-
 
   async reauthorizeAccount(
     accountId: string,
@@ -76,7 +86,8 @@ export class MonoService {
           },
           scope: 'reauth',
           account: accountId,
-          redirect_url: redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
+          redirect_url:
+            redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
         },
         {
           headers: {
@@ -87,8 +98,10 @@ export class MonoService {
       );
 
       return {
-        widgetUrl: response.data.data.widget_url,
-        reference: response.data.data.reference,
+        widgetUrl: response.data.data.mono_url, 
+        customerId: response.data.data.customer,
+        scope: response.data.data.scope,
+        createdAt: response.data.data.created_at,
       };
     } catch (error) {
       console.error('Mono reauthorize failed:', error.response?.data || error);
