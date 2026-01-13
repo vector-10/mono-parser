@@ -24,7 +24,7 @@ export class MonoService {
         `${this.monoBaseUrl}/accounts/initiate`,
         {
           customer: { name: userName, email: userEmail },
-          meta: { ref: `user_${userId}_${Date.now()}` },
+          meta: { ref: `user_${userId}_${Date.now()}`, user_id: userId },
           scope: 'auth',
           redirect_url:
             redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
