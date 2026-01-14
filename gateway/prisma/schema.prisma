@@ -46,9 +46,10 @@ model BankAccount {
   user     User    @relation(fields: [userId], references: [id])
 
   createdAt  DateTime  @default(now())
-  updatedAt  DateTIme  @updatedAt
+  updatedAt  DateTime  @updatedAt
 
   @@index([userId])
+  transactions   Transaction[]
 }
 
 
@@ -79,6 +80,7 @@ model Application {
 model Transaction {
   id          String   @id @default(uuid())
   accountId   String
+  bankAccount    BankAccount @relation(fields: [accountId], references: [monoAccountId])
   amount      Int
   type        String   // DEBIT, CREDIT
   description String
