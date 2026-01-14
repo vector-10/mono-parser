@@ -27,6 +27,7 @@ export class UsersService {
         name: true,
         companyName: true,
         apiKey: true,
+        monoApiKey: true,
         isVerified: true,
         otp: true,
         otpExpiry: true,
@@ -49,6 +50,7 @@ export class UsersService {
         name: true,
         companyName: true,
         apiKey: true,
+        monoApiKey: true,
       },
     });
   }
