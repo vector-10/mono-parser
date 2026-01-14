@@ -19,7 +19,8 @@ export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);
 
   private readonly eventHandlers ={
-    'mono.events.account_linked': this.handleAccountLinked.bind(this),
+    'mono.events.webhook_test': this.handleWebhookTest.bind(this),
+    'mono.events.account_connected': this.handleAccountLinked.bind(this),
     'mono.events.account_reauthorised': this.handleAccountReauthorised.bind(this),
     'mono.events.account_updated': this.handleAccountUpdated.bind(this),
   }
@@ -68,6 +69,14 @@ export class WebhooksController {
     }
 
     return receivedSecret === expectedSecret;
+  }
+
+  private async handleWebhookTest(data: any) {
+    this.logger.log('Webhook test event received');
+    return {
+      status: 'success',
+      message: 'Webhook test received successfully',
+    };
   }
 
   private async handleAccountLinked(data: MonoWebhookPayload['data']) {
