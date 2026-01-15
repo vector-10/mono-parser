@@ -47,7 +47,15 @@ export class MonoController {
 
   @Get('account/:accountId/insights')
   async getInsights(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getStatementInsights(accountId, req.user.monoApiKey);
+    return this.monoService.getStatementInsights(
+      accountId,
+      req.user.monoApiKey,
+    );
+  }
+
+  @Get('account/:accountId/transactions')
+  async getTransactions(@Request() req, @Param('accountId') accountId: string) {
+    return this.monoService.getTransactions(accountId, req.user.monoApiKey);
   }
 
   @Post('account/:accountId/creditworthiness')
