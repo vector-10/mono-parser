@@ -80,52 +80,51 @@ export class WebhooksController {
   }
 
   private async handleAccountLinked(data: MonoWebhookPayload['data']) {
-    const { account, customer, meta } = data;
+    const { account: monoAccountId, customer: customerId, meta } = data;
     const userId = meta?.user_id;
 
-    if (!userId) {
+    if (!userId || !monoAccountId) {
       throw new BadRequestException('Missing user_id in webhook meta');
     }
 
-    if (!account) {
-      throw new BadRequestException('Missing account ID in webhook data');
-    }
+    const bankAccount = await this.prisma.bankAccount.upsert({
+      where: { monoAccountId: monoAccountId },
+      update: { updatedAt: new Date() },
+      create: {
+        monoAccountId: monoAccountId,
+        userId: userId,
+        // TODO Remember to try fetch bank name through api payload
+      }
+    })
 
-    const user = await this.prisma.user.update({
+     await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        monoAccountId: account,
-        monoCustomerId: customer,
+      data: {        
+        monoCustomerId: customerId,
       },
     });
+    this.logger.log(`✅ Successfully linked ${bankAccount.monoAccountId} to User ${userId}`);
 
-    this.logger.log(`User ${userId} linked account ${account}`);
-
-    return {
-      status: 'success',
-      message: 'Account linked successfully',
-      userId: user.id,
-    };
+    return { status: 'success', accountId: bankAccount.id };
   }
 
+
   private async handleAccountReauthorised(data: any) {
-    const { account } = data;
+    const { account: monoAccountId } = data;
 
-    if(!account) {
-        throw new BadRequestException('Missing Account ID')
-    }
 
-    await this.prisma.user.update({
-        where: { monoAccountId: account },
+    await this.prisma.bankAccount.update({
+        where: { monoAccountId: monoAccountId },
         data: { updatedAt: new Date() },
     });
 
-    this.logger.log(`Account ${account} reauthorised`);
+    this.logger.log(`🔄 Bank Account ${monoAccountId} reauthorised`);
     return {
       status: 'success',
       message: 'Account reauthorised',
     };
   }
+
 
   private async handleAccountUpdated(data: MonoWebhookPayload['data']) {
     this.logger.log(`Account ${data.account} updated - no action needed`);
