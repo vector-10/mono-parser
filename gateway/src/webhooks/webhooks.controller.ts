@@ -48,15 +48,14 @@ export class WebhooksController {
     const handler = this.eventHandlers[payload.event];
     if (!handler) {
       this.logger.warn(`No handler for event type: ${payload.event}`);
-      return { status: 'ignored', event: payload.event };
+      return { status: 'ignored' };
     }
 
-    try {
-      return await handler(payload.data);
-    } catch (error) {
-      this.logger.error(`Handler failed: ${payload.event}`, error);
-      throw error;
-    }
+    handler(payload.data).catch((error) => {
+      this.logger.error(`Background handler failed for ${payload.event}`, error);
+    });
+
+    return { status: 'received' };
   }
 
   private verifyWebhookSignature(
