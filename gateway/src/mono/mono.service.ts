@@ -17,14 +17,14 @@ export class MonoService {
     return {
       'mono-sec-key': apiKey,
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
     };
   }
 
   async initiateAccountLinking(
-    userId: string,
-    userName: string,
-    userEmail: string,
+    applicantId: string,
+    applicantName: string,
+    applicantEmail: string,
     monoApiKey: string,
     redirectUrl?: string,
   ) {
@@ -32,8 +32,11 @@ export class MonoService {
       const response = await axios.post(
         `${this.monoBaseUrl}/accounts/initiate`,
         {
-          customer: { name: userName, email: userEmail },
-          meta: { ref: `user_${userId}_${Date.now()}`, user_id: userId },
+         customer: { name: applicantName, email: applicantEmail },
+         meta: { 
+          user_id: applicantId, // CRITICAL: This allows our Webhook to find the right person
+          ref: `applicant_${applicantId}_${Date.now()}` 
+        },
           scope: 'auth',
           redirect_url:
             redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
@@ -42,7 +45,6 @@ export class MonoService {
       );
       return {
         widgetUrl: response.data.data.mono_url,
-        customerId: response.data.data.customer,
       };
     } catch (error: any) {
       this.logger.error('Mono initiate failed', error.response?.data || error);
@@ -66,65 +68,99 @@ export class MonoService {
 
   async getAccountDetails(accountId: string, monoApiKey: string) {
     try {
-      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}`, {
-        headers: { 'mono-sec-key': monoApiKey },
-      });
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}`,
+        {
+          headers: { 'mono-sec-key': monoApiKey },
+        },
+      );
       return response.data.data;
     } catch (error: any) {
-      this.logger.error('Failed to fetch account details', error.response?.data || error);
+      this.logger.error(
+        'Failed to fetch account details',
+        error.response?.data || error,
+      );
       throw error;
     }
   }
 
   async getAccountBalance(accountId: string, monoApiKey: string) {
     try {
-      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/balance`, {
-        headers: { 'mono-sec-key': monoApiKey },
-      });
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/balance`,
+        {
+          headers: { 'mono-sec-key': monoApiKey },
+        },
+      );
       return response.data.data.balance;
     } catch (error: any) {
-      this.logger.error('Failed to fetch balance', error.response?.data || error);
+      this.logger.error(
+        'Failed to fetch balance',
+        error.response?.data || error,
+      );
       throw error;
     }
   }
 
   async getTransactions(accountId: string, monoApiKey: string) {
     try {
-      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/transactions`, {
-        headers: { 'mono-sec-key': monoApiKey },
-      });
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/transactions`,
+        {
+          headers: { 'mono-sec-key': monoApiKey },
+        },
+      );
       return response.data.data;
     } catch (error: any) {
-      this.logger.error('Failed to fetch transactions', error.response?.data || error);
+      this.logger.error(
+        'Failed to fetch transactions',
+        error.response?.data || error,
+      );
       throw error;
     }
   }
 
   async getIncome(accountId: string, monoApiKey: string) {
     try {
-      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/income`, {
-        headers: this.getHeaders(monoApiKey),
-      });
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/income`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Income initiation failed', error.response?.data || error);
+      this.logger.error(
+        'Income initiation failed',
+        error.response?.data || error,
+      );
       throw error;
     }
   }
 
   async getStatementInsights(accountId: string, monoApiKey: string) {
     try {
-      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/statement/insights`, {
-        headers: this.getHeaders(monoApiKey),
-      });
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/statement/insights`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Insights initiation failed', error.response?.data || error);
+      this.logger.error(
+        'Insights initiation failed',
+        error.response?.data || error,
+      );
       throw error;
     }
   }
 
-  async getCreditWorthiness(accountId: string, monoApiKey: string, loanData: any) {
+  async getCreditWorthiness(
+    accountId: string,
+    monoApiKey: string,
+    loanData: any,
+  ) {
     try {
       const response = await axios.post(
         `${this.monoBaseUrl}/accounts/${accountId}/creditworthiness`,
@@ -133,16 +169,22 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Creditworthiness failed', error.response?.data || error);
+      this.logger.error(
+        'Creditworthiness failed',
+        error.response?.data || error,
+      );
       throw error;
     }
   }
 
   async getIdentity(accountId: string, monoApiKey: string) {
     try {
-      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/identity`, {
-        headers: { 'mono-sec-key': monoApiKey },
-      });
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/identity`,
+        {
+          headers: { 'mono-sec-key': monoApiKey },
+        },
+      );
       return response.data.data;
     } catch (error: any) {
       this.logger.error('Identity fetch failed', error.response?.data || error);
@@ -150,7 +192,11 @@ export class MonoService {
     }
   }
 
-  async getCreditHistory(bvn: string, monoApiKey: string, provider: string = 'all') {
+  async getCreditHistory(
+    bvn: string,
+    monoApiKey: string,
+    provider: string = 'all',
+  ) {
     try {
       const response = await axios.post(
         `https://api.withmono.com/v3/lookup/credit-history/${provider}`,
@@ -159,7 +205,10 @@ export class MonoService {
       );
       return response.data.data;
     } catch (error: any) {
-      this.logger.error('Credit history lookup failed', error.response?.data || error);
+      this.logger.error(
+        'Credit history lookup failed',
+        error.response?.data || error,
+      );
       throw error;
     }
   }

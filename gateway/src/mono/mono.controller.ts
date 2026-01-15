@@ -10,23 +10,38 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { MonoService } from './mono.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('mono')
 @UseGuards(JwtAuthGuard)
 export class MonoController {
-  constructor(private readonly monoService: MonoService) {}
+  constructor(
+    private readonly monoService: MonoService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  @Post('initiate')
-  async initiate(@Request() req) {
+  @Post('initiate/:applicantId')
+  async initiate(@Request() req, @Param('applicantId') applicantId: string) {
     if (!req.user.monoApiKey) {
       throw new BadRequestException('Mono API key not configured.');
     }
 
+    const applicant = await this.prisma.applicant.findFirst({
+      where: {
+        id: applicantId,
+        fintechId: req.user.id,
+      },
+    });
+
+    if (!applicant) {
+      throw new BadRequestException('Applicant not found or unauthorized.');
+    }
+
     return this.monoService.initiateAccountLinking(
-      req.user.id,
-      req.user.name,
-      req.user.email,
+      applicant.id,
+      `${applicant.firstName} ${applicant.lastName}`,
+      applicant.email,
       req.user.monoApiKey,
     );
   }
