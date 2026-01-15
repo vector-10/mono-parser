@@ -1,15 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 @Injectable()
 export class MonoService {
+  private readonly logger = new Logger(MonoService.name);
   private readonly monoBaseUrl: string;
 
   constructor(private configService: ConfigService) {
     this.monoBaseUrl =
       this.configService.get<string>('MONO_BASE_URL') ||
       'https://api.withmono.com/v2';
+  }
+
+  private getHeaders(apiKey: string) {
+    return {
+      'mono-sec-key': apiKey,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
   }
 
   async initiateAccountLinking(
@@ -29,21 +38,14 @@ export class MonoService {
           redirect_url:
             redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
         },
-        {
-          headers: {
-            'mono-sec-key': monoApiKey,
-            'Content-Type': 'application/json',
-          },
-        },
+        { headers: this.getHeaders(monoApiKey) },
       );
       return {
         widgetUrl: response.data.data.mono_url,
         customerId: response.data.data.customer,
-        scope: response.data.data.scope,
-        createdAt: response.data.data.created_at,
       };
-    } catch (error) {
-      console.error('Mono initiate failed:', error.response?.data || error);
+    } catch (error: any) {
+      this.logger.error('Mono initiate failed', error.response?.data || error);
       throw error;
     }
   }
@@ -52,59 +54,125 @@ export class MonoService {
     try {
       const response = await axios.post(
         `${this.monoBaseUrl}/accounts/auth`,
-        {
-          code,
-        },
-        {
-          headers: {
-            'mono-sec-key': monoApiKey,
-            'Content-Type': 'application/json',
-          },
-        },
+        { code },
+        { headers: this.getHeaders(monoApiKey) },
       );
-
-      return {
-        accountId: response.data.data.id,
-      };
-    } catch (error) {
-      console.error('Mono auth failed:', error.response?.data || error);
+      return { accountId: response.data.data.id };
+    } catch (error: any) {
+      this.logger.error('Mono auth failed', error.response?.data || error);
       throw error;
     }
   }
 
-  async reauthorizeAccount(
-    accountId: string,
-    monoApiKey: string,
-    redirectUrl?: string,
-  ) {
+  async getAccountDetails(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}`, {
+        headers: { 'mono-sec-key': monoApiKey },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      this.logger.error('Failed to fetch account details', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getAccountBalance(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/balance`, {
+        headers: { 'mono-sec-key': monoApiKey },
+      });
+      return response.data.data.balance;
+    } catch (error: any) {
+      this.logger.error('Failed to fetch balance', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getTransactions(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/transactions`, {
+        headers: { 'mono-sec-key': monoApiKey },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      this.logger.error('Failed to fetch transactions', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getIncome(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/income`, {
+        headers: this.getHeaders(monoApiKey),
+      });
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Income initiation failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getStatementInsights(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/statement/insights`, {
+        headers: this.getHeaders(monoApiKey),
+      });
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Insights initiation failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getCreditWorthiness(accountId: string, monoApiKey: string, loanData: any) {
     try {
       const response = await axios.post(
-        `${this.monoBaseUrl}/accounts/initiate`,
-        {
-          meta: {
-            ref: `reauth_${accountId}_${Date.now()}`,
-          },
-          scope: 'reauth',
-          account: accountId,
-          redirect_url:
-            redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
-        },
-        {
-          headers: {
-            'mono-sec-key': monoApiKey,
-            'Content-Type': 'application/json',
-          },
-        },
+        `${this.monoBaseUrl}/accounts/${accountId}/creditworthiness`,
+        { ...loanData, run_credit_check: true },
+        { headers: this.getHeaders(monoApiKey) },
       );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Creditworthiness failed', error.response?.data || error);
+      throw error;
+    }
+  }
 
-      return {
-        widgetUrl: response.data.data.mono_url, 
-        customerId: response.data.data.customer,
-        scope: response.data.data.scope,
-        createdAt: response.data.data.created_at,
-      };
-    } catch (error) {
-      console.error('Mono reauthorize failed:', error.response?.data || error);
+  async getIdentity(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts/${accountId}/identity`, {
+        headers: { 'mono-sec-key': monoApiKey },
+      });
+      return response.data.data;
+    } catch (error: any) {
+      this.logger.error('Identity fetch failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getCreditHistory(bvn: string, monoApiKey: string, provider: string = 'all') {
+    try {
+      const response = await axios.post(
+        `https://api.withmono.com/v3/lookup/credit-history/${provider}`,
+        { bvn },
+        { headers: this.getHeaders(monoApiKey) },
+      );
+      return response.data.data;
+    } catch (error: any) {
+      this.logger.error('Credit history lookup failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async unlinkAccount(accountId: string, monoApiKey: string) {
+    try {
+      await axios.post(
+        `${this.monoBaseUrl}/accounts/${accountId}/unlink`,
+        {},
+        { headers: this.getHeaders(monoApiKey) },
+      );
+    } catch (error: any) {
+      this.logger.error('Unlink failed', error.response?.data || error);
       throw error;
     }
   }

@@ -84,7 +84,8 @@ export class WebhooksController {
     const userId = meta?.user_id;
 
     if (!userId || !monoAccountId) {
-      throw new BadRequestException('Missing user_id in webhook meta');
+      this.logger.error(`Critical Webhook Error: Missing data (User: ${userId}, Account: ${monoAccountId})`);
+      return { status: 'ignored', reason: 'missing_identifiers' };  
     }
 
     const bankAccount = await this.prisma.bankAccount.upsert({
@@ -111,7 +112,6 @@ export class WebhooksController {
 
   private async handleAccountReauthorised(data: any) {
     const { account: monoAccountId } = data;
-
 
     await this.prisma.bankAccount.update({
         where: { monoAccountId: monoAccountId },
