@@ -3,6 +3,7 @@ import {
   Request,
   Post,
   Get,
+  Query,
   Body,
   Param,
   UseGuards,
@@ -28,6 +29,25 @@ export class MonoController {
       req.user.email,
       req.user.monoApiKey,
     );
+  }
+
+  @Get('auth/callback')
+  async handleMonoCallback(
+    @Query('status') status: string,
+    @Query('code') code: string,
+  ) {
+    if (status === 'linked') {
+      // This is a simple HTML response to show the user it worked
+      return `
+      <div style="font-family: sans-serif; text-align: center; padding: 50px;">
+        <h1 style="color: #0052cc;">✅ Success!</h1>
+        <p>Your bank account has been successfully linked.</p>
+        <p>You can close this window and return to the app.</p>
+      </div>
+    `;
+    }
+
+    return { message: 'Link process incomplete', status };
   }
 
   @Get('account/:accountId')

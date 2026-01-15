@@ -16,9 +16,8 @@ model User {
   name        String
   companyName String
   
-  // API access
-  apiKey      String   @unique @default(uuid())  // For programmatic access
-  monoApiKey  String?                            // Their Mono API key
+  apiKey      String   @unique @default(uuid())  
+  monoApiKey  String?     
 
   monoCustomerId String? 
 
@@ -29,64 +28,83 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  bankAccounts BankAccount[]
-  applications Application[]
+  applicants   Applicant[]
+}
+
+
+
+model Applicant {
+  id             String    @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  bvn            String?
+
+  fintechId      String
+  fintech        User      @relation(fields: [fintechId], references: [id])
+
+  bankAccounts   BankAccount[]
+  applications   Application[]
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([fintechId])
+  @@index([email])
 }
 
 
 model BankAccount {
-  id    String      @id @default(uuid())
-  monoAccountId     String  @unique  // The 'data.id' from the webhook
-  institution       String?  // e.g., "Access Bank"
-  accountName       String?
-  accountNumber     String?
-  balance  Int?      //Stored in kobo/cents
+  id             String   @id @default(uuid())
+  monoAccountId  String   @unique 
+  institution    String?
+  accountName    String?
+  accountNumber  String?
+  balance        Int?     
 
-  userId   String
-  user     User    @relation(fields: [userId], references: [id])
+  applicantId    String
+  applicant      Applicant @relation(fields: [applicantId], references: [id])
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  @@index([userId])
   transactions   Transaction[]
+  @@index([applicantId])
 }
 
 
 model Application {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  id             String    @id @default(uuid())
+  amount         Int       
+  status         String    @default("PENDING") 
+  score          Int?      
+  decision       Json?     
+
+  applicantId    String
+  applicant      Applicant @relation(fields: [applicantId], references: [id])
   
-  // End user info (from lending company)
-  endUserId     String   // Their customer's ID
-  monoAccountId String   // Mono account to analyze
-  amount        Int      // Loan amount requested
+  bankAccountId  String?
   
-  // Analysis results
-  status        String   // PENDING, PROCESSING, APPROVED, REJECTED
-  score         Int?     // 0-100 risk score
-  decision      Json?    // Detailed breakdown from Brain
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([userId])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([applicantId])
   @@index([status])
 }
 
 
 
 model Transaction {
-  id          String   @id @default(uuid())
-  accountId   String
+  id             String      @id @default(uuid())
+  accountId      String
   bankAccount    BankAccount @relation(fields: [accountId], references: [monoAccountId])
-  amount      Int
-  type        String   // DEBIT, CREDIT
-  description String
-  date        DateTime
-  category    String?  // BETTING, FOOD, TRANSPORT, etc
-  createdAt   DateTime @default(now())
+  amount         Int
+  type           String      
+  description    String
+  date           DateTime
+  category       String?     
+  createdAt      DateTime    @default(now())
   
   @@index([accountId])
 }
