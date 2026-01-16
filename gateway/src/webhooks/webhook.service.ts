@@ -51,21 +51,23 @@ export class MonoWebhookService {
 
   async handleAccountIncome(data: any) {
     const { account: monoAccountId } = data;
-    // In the future, you'll save this data to an 'Income' table linked to the Applicant
+
     this.logger.log(` Income data received for account ${monoAccountId}`);
     return { status: 'success' };
   }
 
   async handleStatementInsights(data: any) {
     const { account: monoAccountId } = data;
-    // In the future, you'll save this to an 'Insights' table linked to the Applicant
+
     this.logger.log(` Insights received for account ${monoAccountId}`);
     return { status: 'success' };
   }
 
   async handleCreditWorthiness(data: any) {
     const { account: monoAccountId, can_afford } = data;
-    this.logger.log(` Creditworthiness check: ${can_afford} for ${monoAccountId}`);
+    this.logger.log(
+      ` Creditworthiness check: ${can_afford} for ${monoAccountId}`,
+    );
     return { status: 'success' };
   }
 }

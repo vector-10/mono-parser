@@ -52,7 +52,6 @@ export class MonoController {
     @Query('code') code: string,
   ) {
     if (status === 'linked') {
-      // This is a simple HTML response to show the user it worked
       return `
       <div style="font-family: sans-serif; text-align: center; padding: 50px;">
         <h1 style="color: #0052cc;">✅ Success!</h1>

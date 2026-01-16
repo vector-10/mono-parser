@@ -34,7 +34,7 @@ export class MonoService {
         {
          customer: { name: applicantName, email: applicantEmail },
          meta: { 
-          user_id: applicantId, // CRITICAL: This allows our Webhook to find the right person
+          user_id: applicantId, 
           ref: `applicant_${applicantId}_${Date.now()}` 
         },
           scope: 'auth',
