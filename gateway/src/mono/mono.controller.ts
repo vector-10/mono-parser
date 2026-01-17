@@ -107,6 +107,11 @@ export class MonoController {
     );
   }
 
+  @Get('account/:accountId/identity')
+  async getIdentity(@Request() req, @Param('accountId') accountId: string) {
+    return this.monoService.getIdentity(accountId, req.user.monoApiKey);
+  }
+
   @Post('lookup/credit-history')
   async getHistory(@Request() req, @Body('bvn') bvn: string) {
     return this.monoService.getCreditHistory(bvn, req.user.monoApiKey);
