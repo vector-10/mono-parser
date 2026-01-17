@@ -8,24 +8,47 @@ export class MonoWebhookService {
   constructor(private prisma: PrismaService) {}
 
   async handleAccountLinked(data: any) {
-    const { account: monoAccountId, meta } = data;
+    this.logger.log(`Full payload received: ${JSON.stringify(data, null, 2)}`);
+    const accountData = data.account;
+    const monoAccountId = accountData?._id || data.id;
+    const applicantId = data.meta?.user_id;
 
-    const applicantId = meta?.user_id;
+    this.logger.log(
+      `Parsed - Account ID: ${monoAccountId}, Applicant ID: ${applicantId}`,
+    );
 
-    if (!applicantId || !monoAccountId) {
-      this.logger.error(
-        `Critical Webhook Error: Missing identifiers (Applicant: ${applicantId}, Account: ${monoAccountId})`,
+    if (!applicantId) {
+      this.logger.log(
+        `Account ${monoAccountId} connected, waiting for full data...`,
       );
-      return { status: 'ignored', reason: 'missing_identifiers' };
+      return {
+        status: 'acknowledged',
+        message: 'Waiting for account_updated event',
+      };
+    }
+
+    if (!monoAccountId) {
+      this.logger.error(`Missing account ID in webhook`);
+      return { status: 'error', reason: 'missing_account_id' };
     }
 
     try {
       const bankAccount = await this.prisma.bankAccount.upsert({
         where: { monoAccountId },
-        update: { updatedAt: new Date() },
+        update: {
+          updatedAt: new Date(),
+          accountName: accountData?.name,
+          accountNumber: accountData?.accountNumber,
+          balance: accountData?.balance,
+          institution: accountData?.institution?.name,
+        },
         create: {
           monoAccountId,
           applicantId,
+          accountName: accountData?.name,
+          accountNumber: accountData?.accountNumber,
+          balance: accountData?.balance,
+          institution: accountData?.institution?.name,
         },
       });
 

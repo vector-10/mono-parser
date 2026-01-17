@@ -15,7 +15,7 @@ export const otpEmailTemplate = (name: string, otp: string): string => {
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #5B4EF4 0%, #4A3DE0 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                  <td style="background: linear-gradient(135deg, #0055ba 0%, #0055ba 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
                     <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Mono Parser</h1>
                   </td>
                 </tr>
@@ -34,8 +34,8 @@ export const otpEmailTemplate = (name: string, otp: string): string => {
                     <!-- OTP Box -->
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td align="center" style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 2px dashed #5B4EF4;">
-                          <span style="font-size: 36px; font-weight: bold; color: #5B4EF4; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                        <td align="center" style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 2px dashed #0055ba;">
+                          <span style="font-size: 36px; font-weight: bold; color: #0055ba; letter-spacing: 8px; font-family: 'Courier New', monospace;">
                             ${otp}
                           </span>
                         </td>
@@ -56,9 +56,9 @@ export const otpEmailTemplate = (name: string, otp: string): string => {
                   <td style="background-color: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
                     <p style="color: #999999; font-size: 14px; margin: 0 0 10px;">
                       Best regards,<br>
-                      <strong style="color: #5B4EF4;">The Mono Parser Team</strong>
+                      <strong style="color: #0055ba;">The Mono Parser Team</strong>
                     </p>
-                    <p style="color: #cccccc; font-size: 12px; margin: 0;">
+                    <p style="color: #999999; font-size: 12px; margin: 0;">
                       © ${new Date().getFullYear()} Mono Parser. Powered by Mono Open Banking.
                     </p>
                   </td>

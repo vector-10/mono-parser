@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { MonoService } from './mono.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('mono')
@@ -46,6 +47,7 @@ export class MonoController {
     );
   }
 
+  @Public()
   @Get('auth/callback')
   async handleMonoCallback(
     @Query('status') status: string,
@@ -54,8 +56,8 @@ export class MonoController {
     if (status === 'linked') {
       return `
       <div style="font-family: sans-serif; text-align: center; padding: 50px;">
-        <h1 style="color: #0052cc;">✅ Success!</h1>
-        <p>Your bank account has been successfully linked.</p>
+        <h1 style="color: #0052cc;"> Success!</h1>
+        <p>Your bank account has been successfully linked for Mono Parser.</p>
         <p>You can close this window and return to the app.</p>
       </div>
     `;

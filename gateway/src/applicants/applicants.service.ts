@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { CreateApplicantDto } from './dto/create-applicant.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()

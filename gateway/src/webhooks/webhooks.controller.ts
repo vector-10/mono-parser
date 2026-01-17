@@ -22,6 +22,8 @@ export class WebhooksController {
       }),
       'mono.events.account_connected':
         this.webhookService.handleAccountLinked.bind(this.webhookService),
+      'mono.events.account_updated':
+        this.webhookService.handleAccountLinked.bind(this.webhookService),
       'mono.events.account_reauthorised':
         this.webhookService.handleAccountReauthorised.bind(this.webhookService),
       'mono.events.account_income':

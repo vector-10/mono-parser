@@ -39,7 +39,7 @@ export class MonoService {
         },
           scope: 'auth',
           redirect_url:
-            redirectUrl || `${this.configService.get('APP_URL')}/auth/callback`,
+            redirectUrl || `${this.configService.get('APP_URL')}/api/mono/auth/callback`,
         },
         { headers: this.getHeaders(monoApiKey) },
       );
