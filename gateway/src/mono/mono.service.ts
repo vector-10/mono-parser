@@ -32,14 +32,15 @@ export class MonoService {
       const response = await axios.post(
         `${this.monoBaseUrl}/accounts/initiate`,
         {
-         customer: { name: applicantName, email: applicantEmail },
-         meta: { 
-          user_id: applicantId, 
-          ref: `applicant_${applicantId}_${Date.now()}` 
-        },
+          customer: { name: applicantName, email: applicantEmail },
+          meta: {
+            user_id: applicantId,
+            ref: `applicant_${applicantId}_${Date.now()}`,
+          },
           scope: 'auth',
           redirect_url:
-            redirectUrl || `${this.configService.get('APP_URL')}/api/mono/auth/callback`,
+            redirectUrl ||
+            `${this.configService.get('APP_URL')}/api/mono/auth/callback`,
         },
         { headers: this.getHeaders(monoApiKey) },
       );
@@ -209,6 +210,100 @@ export class MonoService {
         'Credit history lookup failed',
         error.response?.data || error,
       );
+      throw error;
+    }
+  }
+
+  async getIncomeRecords(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/income-records`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        'Income records fetch failed',
+        error.response?.data || error,
+      );
+      throw error;
+    }
+  }
+
+  async getAllAccounts(monoApiKey: string, page: number = 1) {
+    try {
+      const response = await axios.get(`${this.monoBaseUrl}/accounts`, {
+        headers: this.getHeaders(monoApiKey),
+        params: { page },
+      });
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        'Accounts list fetch failed',
+        error.response?.data || error,
+      );
+      throw error;
+    }
+  }
+
+  async getAssets(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/assets`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Assets fetch failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getEarnings(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/earnings`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Earnings fetch failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getCredits(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/credits`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Credits fetch failed', error.response?.data || error);
+      throw error;
+    }
+  }
+
+  async getDebits(accountId: string, monoApiKey: string) {
+    try {
+      const response = await axios.get(
+        `${this.monoBaseUrl}/accounts/${accountId}/debits`,
+        {
+          headers: this.getHeaders(monoApiKey),
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error('Debits fetch failed', error.response?.data || error);
       throw error;
     }
   }

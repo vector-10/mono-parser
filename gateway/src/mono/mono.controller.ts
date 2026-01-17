@@ -117,6 +117,42 @@ export class MonoController {
     return this.monoService.getCreditHistory(bvn, req.user.monoApiKey);
   }
 
+  @Get('account/:accountId/income-records')
+  async getIncomeRecords(
+    @Request() req,
+    @Param('accountId') accountId: string,
+  ) {
+    return this.monoService.getIncomeRecords(accountId, req.user.monoApiKey);
+  }
+
+  @Get('accounts')
+  async getAllAccounts(@Request() req, @Query('page') page?: string) {
+    return this.monoService.getAllAccounts(
+      req.user.monoApiKey,
+      page ? parseInt(page) : 1,
+    );
+  }
+
+  @Get('account/:accountId/assets')
+  async getAssets(@Request() req, @Param('accountId') accountId: string) {
+    return this.monoService.getAssets(accountId, req.user.monoApiKey);
+  }
+
+  @Get('account/:accountId/earnings')
+  async getEarnings(@Request() req, @Param('accountId') accountId: string) {
+    return this.monoService.getEarnings(accountId, req.user.monoApiKey);
+  }
+
+  @Get('account/:accountId/credits')
+  async getCredits(@Request() req, @Param('accountId') accountId: string) {
+    return this.monoService.getCredits(accountId, req.user.monoApiKey);
+  }
+
+  @Get('account/:accountId/debits')
+  async getDebits(@Request() req, @Param('accountId') accountId: string) {
+    return this.monoService.getDebits(accountId, req.user.monoApiKey);
+  }
+
   @Post('account/:accountId/unlink')
   async unlink(@Request() req, @Param('accountId') accountId: string) {
     return this.monoService.unlinkAccount(accountId, req.user.monoApiKey);
