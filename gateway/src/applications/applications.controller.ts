@@ -68,7 +68,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
-import { ApplicationProcessorService } from './application-processor.service';
+import { ApplicationProcessorService } from './applications-processor.service';
 import { DataAggregationService } from './data-aggregation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
