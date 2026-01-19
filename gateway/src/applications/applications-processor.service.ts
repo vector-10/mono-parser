@@ -61,7 +61,7 @@ export class ApplicationProcessorService {
         await this.dataAggregationService.gatherApplicantData(
           bankAccount.monoAccountId,
           monoApiKey,
-          application.applicant.bvn,
+          application.applicant.bvn || undefined,
         );
 
       if (clientId) {
@@ -116,7 +116,7 @@ export class ApplicationProcessorService {
       await this.applicationsService.updateStatus(
         applicationId,
         'FAILED',
-        null,
+        undefined,
         { error: error.message },
       );
 
