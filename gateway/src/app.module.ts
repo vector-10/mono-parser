@@ -8,10 +8,11 @@ import { MonoModule } from './mono/mono.module';
 import { PrismaModule } from "./prisma/prisma.module"
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { ApplicantsModule } from './applicants/applicants.module';
+import { EventsGateway } from './events/events.gateway';
 
 @Module({
   imports: [AuthModule, UsersModule, MonoModule, WebhooksModule, ApplicationsModule, ApplicantsModule, PrismaModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EventsGateway],
 })
 export class AppModule {}
