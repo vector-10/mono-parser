@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
+import { EventsGateway } from 'src/events/events.gateway'; 
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -10,14 +11,21 @@ export class ApplicationProcessorService {
   constructor(
     private applicationsService: ApplicationsService,
     private dataAggregationService: DataAggregationService,
+    private eventsGateway: EventsGateway, 
     private prisma: PrismaService,
   ) {}
 
-  async processApplication(applicationId: string) {
+  async processApplication(applicationId: string, clientId?: string) {
     this.logger.log(`Starting processing for application ${applicationId}`);
 
     try {
-      // 1. Get application details
+      if (clientId) {
+        this.eventsGateway.emitApplicationProgress(
+          clientId,
+          '📊 Fetching applicant data...',
+        );
+      }
+
       const application = await this.prisma.application.findUnique({
         where: { id: applicationId },
         include: {
@@ -41,18 +49,35 @@ export class ApplicationProcessorService {
         throw new Error('Missing bank account or API key');
       }
 
-      // 2. Gather all financial data from Mono
-      this.logger.log(`Fetching data for account ${bankAccount.monoAccountId}`);
-      const financialData = await this.dataAggregationService.gatherApplicantData(
-        bankAccount.monoAccountId,
-        monoApiKey,
-        application.applicant.bvn,
-      );
+      if (clientId) {
+        this.eventsGateway.emitApplicationProgress(
+          clientId,
+          '✓ Applicant verified. Fetching bank data...',
+        );
+      }
 
-      // 3. TODO: Send to Brain for analysis
-      // const decision = await this.brainService.analyze(financialData, application.amount);
-      
-      // For now, mock decision
+      this.logger.log(`Fetching data for account ${bankAccount.monoAccountId}`);
+      const financialData =
+        await this.dataAggregationService.gatherApplicantData(
+          bankAccount.monoAccountId,
+          monoApiKey,
+          application.applicant.bvn,
+        );
+
+      if (clientId) {
+        this.eventsGateway.emitApplicationProgress(
+          clientId,
+          '💳 Analyzing transactions and income...',
+        );
+      }
+
+      if (clientId) {
+        this.eventsGateway.emitApplicationProgress(
+          clientId,
+          '🧠 Running creditworthiness analysis...',
+        );
+      }
+
       const mockDecision = {
         recommendation: 'approved',
         score: 750,
@@ -60,30 +85,47 @@ export class ApplicationProcessorService {
         narrative: 'Mock analysis - Brain service not yet implemented',
       };
 
-      // 4. Update application with results
-      await this.applicationsService.updateStatus(
+      const updatedApp = await this.applicationsService.updateStatus(
         applicationId,
         'COMPLETED',
         mockDecision.score,
         mockDecision,
       );
 
-      this.logger.log(`✅ Application ${applicationId} processed successfully`);
+      this.logger.log(
+        `✅ Application ${applicationId} processed successfully`,
+      );
 
-      // 5. TODO: Send webhook to fintech
-      // await this.webhookService.notifyFintech(application.applicant.fintechId, result);
+      if (clientId) {
+        this.eventsGateway.emitApplicationComplete(clientId, {
+          applicationId: updatedApp.id,
+          status: updatedApp.status,
+          score: updatedApp.score,
+          decision: updatedApp.decision,
+          message: '✅ Analysis complete!',
+        });
+      }
 
       return { success: true, applicationId };
     } catch (error) {
-      this.logger.error(`Failed to process application ${applicationId}:`, error);
+      this.logger.error(
+        `Failed to process application ${applicationId}:`,
+        error,
+      );
 
-      // Update application to FAILED status
       await this.applicationsService.updateStatus(
         applicationId,
         'FAILED',
         null,
         { error: error.message },
       );
+
+      if (clientId) {
+        this.eventsGateway.emitApplicationError(
+          clientId,
+          `Processing failed: ${error.message}`,
+        );
+      }
 
       return { success: false, error: error.message };
     }
