@@ -31,11 +31,14 @@ services:
       BREVO_SENDER_EMAIL: "firstsoftware.systems@gmail.com"
       APP_URL: "http://localhost:3000"
       BREVO_SENDER_NAME: "Firstsoftware-systems"
+      BRAIN_API_URL: "http://brain:8000"
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
+      brain:
+        condition: service_started
     volumes:
       - ./gateway/src:/app/src
       - ./gateway/prisma:/app/prisma
@@ -46,6 +49,8 @@ services:
       context: ./brain
       dockerfile: Dockerfile
     container_name: mono-parser-brain
+    environment:
+      PYTHONUNBUFFERED: 1
     ports:
       - "8000:8000"
     volumes:
