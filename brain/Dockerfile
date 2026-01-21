@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 8000
 
 # Use uvicorn directly instead of fastapi CLI
-CMD ["/app/.venv/bin/uvicorn", "brain.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uv", "run", "uvicorn", "brain.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
