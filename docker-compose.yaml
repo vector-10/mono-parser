@@ -54,7 +54,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./brain:/app
+      - ./brain/app:/app/app
 
 volumes:
   postgres_data:

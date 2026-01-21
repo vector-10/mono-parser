@@ -6,18 +6,16 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml uv.lock README.md ./
-COPY src ./src
 
-# Install dependencies into .venv
+# Install dependencies
 RUN uv sync --frozen --no-dev
 
-# Copy rest
-COPY . .
+# Copy app code
+COPY app ./app
 
-# Add .venv to PATH and src to PYTHONPATH
-ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="/app/src:$PYTHONPATH"
+# Add .venv to PATH
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "brain.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["fastapi", "run", "app/main.py", "--port", "8000", "--host", "0.0.0.0"]
