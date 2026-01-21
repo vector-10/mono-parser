@@ -3,15 +3,19 @@ FROM python:3.12-slim
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy project files
-COPY . /app
-
-# Install dependencies
 WORKDIR /app
-RUN uv sync --frozen --no-cache
 
-# Expose port
+# Copy dependency files first
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+
+# Install dependencies WITHOUT installing the project itself
+RUN uv sync --frozen --no-cache --python-preference=only-system
+
+# Copy rest of the code
+COPY . .
+
 EXPOSE 8000
 
-# Run with hot reload
-CMD ["/app/.venv/bin/fastapi", "run", "app/main.py", "--port", "8000", "--host", "0.0.0.0", "--reload"]
+# Use uvicorn directly instead of fastapi CLI
+CMD ["/app/.venv/bin/uvicorn", "brain.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
