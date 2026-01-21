@@ -1,21 +1,23 @@
 FROM python:3.12-slim
 
-# Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Copy dependency files first
+# Copy project files
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 
-# Install dependencies WITHOUT installing the project itself
-RUN uv sync --frozen --no-cache --python-preference=only-system
+# Install dependencies into .venv
+RUN uv sync --frozen --no-dev
 
-# Copy rest of the code
+# Copy rest
 COPY . .
+
+# Add .venv to PATH and src to PYTHONPATH
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="/app/src:$PYTHONPATH"
 
 EXPOSE 8000
 
-# Use uvicorn directly instead of fastapi CLI
-CMD ["uv", "run", "uvicorn", "brain.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "brain.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
