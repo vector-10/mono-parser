@@ -10,13 +10,13 @@ export class ApplicationsService {
   constructor(private prisma: PrismaService) {}
 
   async createApplication(
-    fintechId: string,
-    applicantId: string,
-    amount: number,
-    interestRate: number,
-    purpose: string,
-    tenor: number,
-  ) {
+  fintechId: string,
+  applicantId: string,
+  amount: number,
+  interestRate: number,
+  purpose: string | undefined,  
+  tenor: number,                 
+) {
 
     const applicant = await this.prisma.applicant.findFirst({
       where: { id: applicantId, fintechId },
@@ -31,7 +31,6 @@ export class ApplicationsService {
       throw new BadRequestException('Applicant has not linked a bank account');
     }
 
-    // Create application with PROCESSING status
     const application = await this.prisma.application.create({
       data: {
         applicantId,

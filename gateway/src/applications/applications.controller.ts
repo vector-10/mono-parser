@@ -28,8 +28,9 @@ export class ApplicationsController {
     @Body('applicantId') applicantId: string,
     @Body('amount') amount: number,
     @Body('tenor') tenor: number,
+    @Body('interestRate') interestRate: number,
+    @Body('purpose') purpose?: string,
   ) {
-    // Create application (returns immediately)
     const application = await this.applicationsService.createApplication(
       req.user.id,
       applicantId,
@@ -39,13 +40,12 @@ export class ApplicationsController {
       tenor,
     );
 
-    // Trigger background processing (fire and forget)
-    this.applicationProcessor.processApplication(application.id)
-      .catch(error => {
+    this.applicationProcessor
+      .processApplication(application.id)
+      .catch((error) => {
         console.error('Background job failed:', error);
       });
 
-    // Return immediately to user
     return {
       applicationId: application.id,
       status: 'PROCESSING',
@@ -59,10 +59,7 @@ export class ApplicationsController {
   }
 
   @Get('test-aggregation/:accountId')
-  async testAggregation(
-    @Request() req,
-    @Param('accountId') accountId: string,
-  ) {
+  async testAggregation(@Request() req, @Param('accountId') accountId: string) {
     return this.dataAggregationService.gatherApplicantData(
       accountId,
       req.user.monoApiKey,
