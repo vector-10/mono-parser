@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
 import { EventsGateway } from 'src/events/events.gateway'; 
+import { MonoService } from 'src/mono/mono.service'
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class ApplicationProcessorService {
     private dataAggregationService: DataAggregationService,
     private eventsGateway: EventsGateway, 
     private prisma: PrismaService,
+    private monoService: MonoService
   ) {}
 
   async processApplication(applicationId: string, clientId?: string) {
@@ -70,6 +72,42 @@ export class ApplicationProcessorService {
           '💳 Analyzing transactions and income...',
         );
       }
+
+       // ========== ADD THIS BLOCK (COMMENTED OUT) ==========
+      /*
+      // Optional: Get Mono's built-in creditworthiness score
+      let monoCreditScore = null;
+      if (application.applicant.bvn) {
+        try {
+          if (clientId) {
+            this.eventsGateway.emitApplicationProgress(
+              clientId,
+              '🔍 Checking Mono creditworthiness...',
+            );
+          }
+
+          monoCreditScore = await this.monoService.getCreditWorthiness(
+            bankAccount.monoAccountId,
+            monoApiKey,
+            {
+              bvn: application.applicant.bvn,
+              principal: application.amount,
+              interest_rate: 5, // TODO: Make configurable
+              term: 12, // TODO: Get from application or make configurable
+            }
+          );
+
+          this.logger.log(`Mono credit score retrieved for application ${applicationId}`);
+        } catch (error) {
+          this.logger.warn(
+            `Mono creditworthiness check failed for application ${applicationId}, continuing without it`,
+            error,
+          );
+          // Continue without it - not critical to the flow
+        }
+      }
+      */
+      // ========== END BLOCK ==========
 
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
