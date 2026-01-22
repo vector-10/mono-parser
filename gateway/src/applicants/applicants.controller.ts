@@ -17,4 +17,9 @@ export class ApplicantsController {
   async getOne(@Request() req, @Param('id') id: string) {
     return this.applicantsService.findOne(id, req.user.id);
   }
+
+  @Get('all')
+  async getAll(@Request() req, @Param('id') fintechId: string ) {
+    return this.applicantsService.findAll(identity, req.user.id)
+  }
 }

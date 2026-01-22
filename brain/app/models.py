@@ -33,6 +33,8 @@ class AnalyzeRequest(BaseModel):
     applicant_id: str
     loan_amount: float
     tenor_months: int
+    interest_rate: float  
+    purpose: Optional[str] = None
     account_details: Dict
     balance: float
     transactions: List[Dict]

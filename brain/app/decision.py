@@ -2,11 +2,20 @@ from typing import Dict, List
 
 
 class DecisionEngine:
-    def __init__(self, score: int, features: Dict, loan_amount: float, tenor_months: int):
+    def __init__(self, score: int, features: Dict, loan_amount: float, tenor_months: int, interest_rate: float):
         self.score = score
         self.features = features
         self.loan_amount = loan_amount
         self.tenor_months = tenor_months
+        self.interest_rate = interest_rate
+    
+    def _calculate_monthly_payment(self, principal: float, annual_rate: float, months: int) -> float:
+        if annual_rate == 0:
+            return principal / months
+        
+        monthly_rate = (annual_rate / 100) / 12
+        payment = principal * (monthly_rate * (1 + monthly_rate) ** months) / ((1 + monthly_rate) ** months - 1)
+        return payment
     
     def make_decision(self) -> Dict:
         reasons = []
@@ -41,7 +50,7 @@ class DecisionEngine:
             }
         
         max_monthly_repayment = 0.35 * safe_monthly_income
-        monthly_payment = self.loan_amount / self.tenor_months
+        monthly_payment = self._calculate_monthly_payment(self.loan_amount, self.interest_rate, self.tenor_months)
         
         account_age_months = self.features.get('account_age_months', 0)
         max_allowed_tenor = min(account_age_months, 24)
@@ -73,7 +82,7 @@ class DecisionEngine:
                 'reasons': ['Insufficient balance to cover first payment']
             }
         
-        max_loan_for_tenor = max_monthly_repayment * self.tenor_months
+        max_loan_for_tenor = self._calculate_max_loan_for_tenor(max_monthly_repayment, self.tenor_months)
         
         if monthly_payment > max_monthly_repayment:
             reasons.append(f'Requested amount (₦{self.loan_amount:,.0f}) exceeds affordability')
@@ -105,6 +114,14 @@ class DecisionEngine:
             'reasons': reasons
         }
     
+    def _calculate_max_loan_for_tenor(self, max_monthly_payment: float, tenor: int) -> float:
+        if self.interest_rate == 0:
+            return max_monthly_payment * tenor
+        
+        monthly_rate = (self.interest_rate / 100) / 12
+        max_loan = max_monthly_payment * ((1 + monthly_rate) ** tenor - 1) / (monthly_rate * (1 + monthly_rate) ** tenor)
+        return round(max_loan, 2)
+    
     def _calculate_eligible_tenors(self, max_monthly_repayment: float, max_allowed_tenor: int) -> List[Dict]:
         eligible_tenors = []
         
@@ -112,10 +129,10 @@ class DecisionEngine:
             if tenor > max_allowed_tenor:
                 break
             
-            max_amount = max_monthly_repayment * tenor
+            max_amount = self._calculate_max_loan_for_tenor(max_monthly_repayment, tenor)
             eligible_tenors.append({
                 'tenor': tenor,
-                'max_amount': round(max_amount, 2)
+                'max_amount': max_amount
             })
         
         return eligible_tenors

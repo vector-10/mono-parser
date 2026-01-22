@@ -10,12 +10,13 @@ from app.models import AnalyzeRequest, AnalyzeResponse, ScoreBreakdown, Decision
 
 logger = logging.getLogger(__name__)
 
+
 class AnalysisEngine:
     
     @staticmethod
     def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         logger.info(f"Starting analysis for applicant: {request.applicant_id}")
-        logger.info(f"Loan amount: {request.loan_amount}, Tenor: {request.tenor_months} months")
+        logger.info(f"Loan amount: {request.loan_amount}, Tenor: {request.tenor_months} months, Interest rate: {request.interest_rate}%")
         
         mono_data = {
             'account_details': request.account_details,
@@ -52,7 +53,8 @@ class AnalysisEngine:
             score_breakdown['total'],
             features,
             request.loan_amount,
-            request.tenor_months
+            request.tenor_months,
+            request.interest_rate
         )
         decision_result = decision_engine.make_decision()
         

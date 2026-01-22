@@ -8,13 +8,7 @@ export class ApplicantsService {
 
   constructor(private prisma: PrismaService) {}
 
-  async createApplicant(fintechId: string, data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone?: string;
-    bvn?: string;
-  }) {
+  async createApplicant(fintechId: string, data: CreateApplicantDto) {
     try {
       return await this.prisma.applicant.create({
         data: {
@@ -26,6 +20,17 @@ export class ApplicantsService {
       this.logger.error('Failed to create applicant', error);
       throw error;
     }
+  }
+
+  async findAll(fintechId: string) {
+    return this.prisma.applicant.findMany({
+      where: {
+        applicant: {fintechId}
+      }, 
+      include: {
+        applicant: true
+      }
+    })
   }
 
   async findOne(applicantId: string, fintechId: string) {
