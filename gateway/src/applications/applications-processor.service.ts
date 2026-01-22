@@ -178,10 +178,24 @@ export class ApplicationProcessorService {
 
     this.logger.log(`Calling Brain service at ${brainUrl}/analyze`);
 
+    const brainPayload = {
+      applicant_id: payload.applicant_id,
+      loan_amount: payload.loan_amount,
+      tenor_months: payload.tenor_months,
+      interest_rate: payload.interest_rate,
+      account_details: payload.accountDetails,
+      income_records: payload.incomeRecords,
+      balance: payload.balance,
+      transactions: payload.transactions,
+      credits: payload.credits,
+      debits: payload.debits,
+      identity: payload.identity,
+    };
+
     const response = await fetch(`${brainUrl}/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(brainPayload),
     });
 
     if (!response.ok) {

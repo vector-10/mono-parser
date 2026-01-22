@@ -25,10 +25,10 @@ export class ApplicantsService {
   async findAll(fintechId: string) {
     return this.prisma.applicant.findMany({
       where: {
-        applicant: {fintechId}
+        fintechId
       }, 
       include: {
-        applicant: true
+        bankAccounts: true
       }
     })
   }
