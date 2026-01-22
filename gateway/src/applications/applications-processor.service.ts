@@ -121,6 +121,7 @@ export class ApplicationProcessorService {
         applicant_id: application.applicantId,
         loan_amount: application.amount,
         tenor_months: application.tenor,
+        interest_rate: application.interestRate,
         ...financialData,
       });
 

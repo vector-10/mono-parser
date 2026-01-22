@@ -34,6 +34,8 @@ export class ApplicationsController {
       req.user.id,
       applicantId,
       amount,
+      interestRate,
+      purpose,
       tenor,
     );
 

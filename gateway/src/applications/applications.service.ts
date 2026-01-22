@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -9,9 +13,11 @@ export class ApplicationsService {
     fintechId: string,
     applicantId: string,
     amount: number,
+    interestRate: number,
+    purpose: string,
     tenor: number,
   ) {
-    // Verify applicant belongs to fintech
+
     const applicant = await this.prisma.applicant.findFirst({
       where: { id: applicantId, fintechId },
       include: { bankAccounts: true },
@@ -30,6 +36,9 @@ export class ApplicationsService {
       data: {
         applicantId,
         amount,
+        tenor,
+        interestRate,
+        purpose,
         status: 'PROCESSING',
       },
       include: {
@@ -41,7 +50,6 @@ export class ApplicationsService {
       },
     });
 
-    // Return immediately - processing happens in background
     return application;
   }
 
