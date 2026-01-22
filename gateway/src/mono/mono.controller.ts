@@ -100,7 +100,7 @@ export class MonoController {
     @Param('accountId') accountId: string,
     @Body() loanData: any,
   ) {
-    return this.monoService.getCreditWorthiness(
+    return this.monoService.getCreditWorthiness(  
       accountId,
       req.user.monoApiKey,
       loanData,

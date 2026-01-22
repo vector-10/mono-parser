@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 
 class MonoTransaction(BaseModel):
@@ -20,7 +20,7 @@ class MonoIncomeStream(BaseModel):
 
 class MonoCreditDebits(BaseModel):
     total:float
-    history: List[Dict[str, any]]
+    history: List[Dict[str, Any]]
 
 class MonoAccountDetails(BaseModel):
     balance: float
