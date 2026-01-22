@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
-import { EventsGateway } from 'src/events/events.gateway'; 
-import { MonoService } from 'src/mono/mono.service'
+import { EventsGateway } from 'src/events/events.gateway';
+import { MonoService } from 'src/mono/mono.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -12,9 +12,9 @@ export class ApplicationProcessorService {
   constructor(
     private applicationsService: ApplicationsService,
     private dataAggregationService: DataAggregationService,
-    private eventsGateway: EventsGateway, 
+    private eventsGateway: EventsGateway,
     private prisma: PrismaService,
-    private monoService: MonoService
+    private monoService: MonoService,
   ) {}
 
   async processApplication(applicationId: string, clientId?: string) {
@@ -73,7 +73,7 @@ export class ApplicationProcessorService {
         );
       }
 
-       // ========== ADD THIS BLOCK (COMMENTED OUT) ==========
+      // ========== ADD THIS BLOCK (COMMENTED OUT) ==========
       /*
       // Optional: Get Mono's built-in creditworthiness score
       let monoCreditScore = null;
@@ -116,23 +116,26 @@ export class ApplicationProcessorService {
         );
       }
 
-      const mockDecision = {
-        recommendation: 'approved',
-        score: 750,
-        suggestedAmount: application.amount * 0.8,
-        narrative: 'Mock analysis - Brain service not yet implemented',
-      };
+      // Call Brain service
+      const brainResponse = await this.callBrainService({
+        applicant_id: application.applicantId,
+        loan_amount: application.amount,
+        tenor_months: application.tenor,
+        ...financialData,
+      });
+
+      this.logger.log(
+        `Brain analysis complete: ${brainResponse.decision.decision}`,
+      );
 
       const updatedApp = await this.applicationsService.updateStatus(
         applicationId,
         'COMPLETED',
-        mockDecision.score,
-        mockDecision,
+        brainResponse.score,
+        brainResponse,
       );
 
-      this.logger.log(
-        `✅ Application ${applicationId} processed successfully`,
-      );
+      this.logger.log(`✅ Application ${applicationId} processed successfully`);
 
       if (clientId) {
         this.eventsGateway.emitApplicationComplete(clientId, {
@@ -167,5 +170,32 @@ export class ApplicationProcessorService {
 
       return { success: false, error: error.message };
     }
+  }
+
+  private async callBrainService(payload: any) {
+    const brainUrl = process.env.BRAIN_API_URL || 'http://brain:8000';
+
+    this.logger.log(`Calling Brain service at ${brainUrl}/analyze`);
+
+    const response = await fetch(`${brainUrl}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(
+        `Brain service error: ${response.status} - ${errorText}`,
+      );
+      throw new Error(`Brain service failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    this.logger.log(
+      `Brain service response received for applicant ${payload.applicant_id}`,
+    );
+
+    return result;
   }
 }
