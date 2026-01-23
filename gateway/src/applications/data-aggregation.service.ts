@@ -1,14 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import { MonoService } from 'src/mono/mono.service';
 
 @Injectable()
 export class DataAggregationService {
-  private readonly logger = new Logger(DataAggregationService.name);
+  constructor(
+    private monoService: MonoService,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(DataAggregationService.name);
+  }
 
-  constructor(private monoService: MonoService) {}
-
-  async gatherApplicantData(accountId: string, monoApiKey: string, bvn?: string) {
-    this.logger.log(`Starting data aggregation for account ${accountId}`);
+  async gatherApplicantData(
+    accountId: string,
+    monoApiKey: string,
+    bvn?: string,
+  ) {
+    this.logger.info({ accountId }, 'Starting data aggregation for account');
 
     const results: any = {
       accountId,
@@ -16,59 +24,57 @@ export class DataAggregationService {
       errors: [],
     };
 
-
     const dataPromises = {
       accountDetails: this.fetchSafely(
         () => this.monoService.getAccountDetails(accountId, monoApiKey),
-        'accountDetails'
+        'accountDetails',
       ),
       balance: this.fetchSafely(
         () => this.monoService.getAccountBalance(accountId, monoApiKey),
-        'balance'
+        'balance',
       ),
       transactions: this.fetchSafely(
         () => this.monoService.getTransactions(accountId, monoApiKey),
-        'transactions'
+        'transactions',
       ),
       income: this.fetchSafely(
         () => this.monoService.getIncome(accountId, monoApiKey),
-        'income'
+        'income',
       ),
       incomeRecords: this.fetchSafely(
         () => this.monoService.getIncomeRecords(accountId, monoApiKey),
-        'incomeRecords'
+        'incomeRecords',
       ),
       credits: this.fetchSafely(
         () => this.monoService.getCredits(accountId, monoApiKey),
-        'credits'
+        'credits',
       ),
       debits: this.fetchSafely(
         () => this.monoService.getDebits(accountId, monoApiKey),
-        'debits'
+        'debits',
       ),
       identity: this.fetchSafely(
         () => this.monoService.getIdentity(accountId, monoApiKey),
-        'identity'
+        'identity',
       ),
       insights: this.fetchSafely(
         () => this.monoService.getStatementInsights(accountId, monoApiKey),
-        'insights'
+        'insights',
       ),
       assets: this.fetchSafely(
         () => this.monoService.getAssets(accountId, monoApiKey),
-        'assets'
+        'assets',
       ),
       earnings: this.fetchSafely(
         () => this.monoService.getEarnings(accountId, monoApiKey),
-        'earnings'
+        'earnings',
       ),
     };
-
 
     if (bvn) {
       dataPromises['creditHistory'] = this.fetchSafely(
         () => this.monoService.getCreditHistory(bvn, monoApiKey),
-        'creditHistory'
+        'creditHistory',
       );
     }
 
@@ -84,17 +90,28 @@ export class DataAggregationService {
           endpoint: key,
           error: result.reason?.message || 'Unknown error',
         });
-        this.logger.error(`Failed to fetch ${key}:`, result.reason);
+        this.logger.error(
+          { err: result.reason, endpoint: key },
+          `Failed to fetch ${key}`,
+        );
       }
     });
 
     if (results.errors.length > 0) {
       results.success = false;
       this.logger.warn(
-        `Data aggregation completed with ${results.errors.length} errors`
+        {
+          errorCount: results.errors.length,
+          errors: results.errors,
+          accountId,
+        },
+        'Data aggregation completed with errors',
       );
     } else {
-      this.logger.log(`Data aggregation completed successfully`);
+      this.logger.info(
+        { accountId },
+        'Data aggregation completed successfully',
+      );
     }
 
     return results;
@@ -102,13 +119,13 @@ export class DataAggregationService {
 
   private async fetchSafely<T>(
     fetchFn: () => Promise<T>,
-    name: string
+    name: string,
   ): Promise<T> {
     try {
       return await fetchFn();
     } catch (error) {
-      this.logger.error(`Error fetching ${name}:`, error);
-      throw error; 
+      this.logger.error({err: error, name}, `Error fetching`);
+      throw error;
     }
   }
 }

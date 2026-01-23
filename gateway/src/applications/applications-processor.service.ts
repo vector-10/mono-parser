@@ -61,7 +61,8 @@ export class ApplicationProcessorService {
       }
 
       this.logger.info(
-        { accountId: bankAccount.monoAccountId }, 'Fetching data for account',
+        { accountId: bankAccount.monoAccountId },
+        'Fetching data for account',
       );
       const financialData =
         await this.dataAggregationService.gatherApplicantData(
@@ -130,7 +131,12 @@ export class ApplicationProcessorService {
       });
 
       this.logger.info(
-        `Brain analysis complete: ${brainResponse.decision.decision}`,
+        {
+          applicationId,
+          decision: brainResponse.decision.decision,
+          score: brainResponse.score,
+        },
+        'Brain analysis complete',
       );
 
       const updatedApp = await this.applicationsService.updateStatus(
@@ -141,7 +147,8 @@ export class ApplicationProcessorService {
       );
 
       this.logger.info(
-        `✅ Application ${applicationId} processed successfully`,
+        { applicationId },
+        'Loan application processed successfully',
       );
 
       if (clientId) {
@@ -157,8 +164,8 @@ export class ApplicationProcessorService {
       return { success: true, applicationId };
     } catch (error) {
       this.logger.error(
-        `Failed to process application ${applicationId}:`,
-        error,
+        { err: error, applicationId },
+        'Failed to process application',
       );
 
       await this.applicationsService.updateStatus(
@@ -207,14 +214,25 @@ export class ApplicationProcessorService {
     if (!response.ok) {
       const errorText = await response.text();
       this.logger.error(
-        `Brain service error: ${response.status} - ${errorText}`,
+        {
+          status: response.status,
+          errorText,
+          applicantId: payload.applicant_id,
+          brainUrl,
+        },
+        'Brain service error',
       );
       throw new Error(`Brain service failed: ${response.statusText}`);
     }
 
     const result = await response.json();
     this.logger.info(
-      `Brain service response received for applicant ${payload.applicant_id}`,
+      {
+        applicantId: payload.applicant_id,
+        score: result.score,
+        decision: result.decision?.decision,
+      },
+      'Brain service response received',
     );
 
     return result;

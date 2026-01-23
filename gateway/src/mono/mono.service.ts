@@ -1,13 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PinoLogger } from 'nestjs-pino';
 import axios from 'axios';
 
 @Injectable()
 export class MonoService {
-  private readonly logger = new Logger(MonoService.name);
   private readonly monoBaseUrl: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(MonoService.name);
     this.monoBaseUrl =
       this.configService.get<string>('MONO_BASE_URL') ||
       'https://api.withmono.com/v2';
@@ -48,7 +52,7 @@ export class MonoService {
         widgetUrl: response.data.data.mono_url,
       };
     } catch (error: any) {
-      this.logger.error('Mono initiate failed', error.response?.data || error);
+      this.logger.error({ err: error.response?.data }, 'Mono initiate failed');
       throw error;
     }
   }
@@ -62,7 +66,7 @@ export class MonoService {
       );
       return { accountId: response.data.data.id };
     } catch (error: any) {
-      this.logger.error('Mono auth failed', error.response?.data || error);
+      this.logger.error({ err: error.response?.data }, 'Mono auth failed');
       throw error;
     }
   }
@@ -78,8 +82,8 @@ export class MonoService {
       return response.data.data;
     } catch (error: any) {
       this.logger.error(
+        { err: error.response?.data },
         'Failed to fetch account details',
-        error.response?.data || error,
       );
       throw error;
     }
@@ -96,8 +100,8 @@ export class MonoService {
       return response.data.data.balance;
     } catch (error: any) {
       this.logger.error(
+        { err: error.response?.data },
         'Failed to fetch balance',
-        error.response?.data || error,
       );
       throw error;
     }
@@ -114,8 +118,8 @@ export class MonoService {
       return response.data.data;
     } catch (error: any) {
       this.logger.error(
+        { err: error.response?.data },
         'Failed to fetch transactions',
-        error.response?.data || error,
       );
       throw error;
     }
@@ -132,8 +136,8 @@ export class MonoService {
       return response.data;
     } catch (error: any) {
       this.logger.error(
+        { err: error.response?.data },
         'Income initiation failed',
-        error.response?.data || error,
       );
       throw error;
     }
@@ -149,9 +153,9 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error(
-        'Insights initiation failed',
-        error.response?.data || error,
+      this.logger.error({ err: error.response?.data },
+        'Insights initiation failed'
+      
       );
       throw error;
     }
@@ -170,9 +174,9 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error(
-        'Creditworthiness failed',
-        error.response?.data || error,
+      this.logger.error( { err: error.response?.data },
+        'Creditworthiness failed'
+        
       );
       throw error;
     }
@@ -188,7 +192,7 @@ export class MonoService {
       );
       return response.data.data;
     } catch (error: any) {
-      this.logger.error('Identity fetch failed', error.response?.data || error);
+      this.logger.error({ err: error.response?.data }, 'Identity fetch failed');
       throw error;
     }
   }
@@ -206,9 +210,9 @@ export class MonoService {
       );
       return response.data.data;
     } catch (error: any) {
-      this.logger.error(
-        'Credit history lookup failed',
-        error.response?.data || error,
+      this.logger.error( { err: error.response?.data }, 
+        'Credit history lookup failed'
+        
       );
       throw error;
     }
@@ -224,9 +228,9 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error(
-        'Income records fetch failed',
-        error.response?.data || error,
+      this.logger.error( { err: error.response?.data }, 
+        'Income records fetch failed'
+   
       );
       throw error;
     }
@@ -240,9 +244,9 @@ export class MonoService {
       });
       return response.data;
     } catch (error: any) {
-      this.logger.error(
-        'Accounts list fetch failed',
-        error.response?.data || error,
+      this.logger.error( { err: error.response?.data }, 
+        'Accounts list fetch failed'
+     
       );
       throw error;
     }
@@ -258,7 +262,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Assets fetch failed', error.response?.data || error);
+      this.logger.error( { err: error.response?.data }, 'Assets fetch failed');
       throw error;
     }
   }
@@ -273,7 +277,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Earnings fetch failed', error.response?.data || error);
+      this.logger.error( { err: error.response?.data }, 'Earnings fetch failed');
       throw error;
     }
   }
@@ -288,7 +292,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Credits fetch failed', error.response?.data || error);
+      this.logger.error( { err: error.response?.data }, 'Credits fetch failed');
       throw error;
     }
   }
@@ -303,7 +307,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error('Debits fetch failed', error.response?.data || error);
+      this.logger.error( { err: error.response?.data },  'Debits fetch failed');
       throw error;
     }
   }
@@ -316,7 +320,7 @@ export class MonoService {
         { headers: this.getHeaders(monoApiKey) },
       );
     } catch (error: any) {
-      this.logger.error('Unlink failed', error.response?.data || error);
+      this.logger.error( { err: error.response?.data }, 'Unlink failed');
       throw error;
     }
   }
