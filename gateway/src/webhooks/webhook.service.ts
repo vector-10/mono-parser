@@ -1,24 +1,24 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class MonoWebhookService {
-  private readonly logger = new Logger(MonoWebhookService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private readonly logger: PinoLogger) { this.logger.setContext(MonoWebhookService.name)}
 
   async handleAccountLinked(data: any) {
-    this.logger.log(`Full payload received: ${JSON.stringify(data, null, 2)}`);
+    this.logger.info(`Full payload received: ${JSON.stringify(data, null, 2)}`);
     const accountData = data.account;
     const monoAccountId = accountData?._id || data.id;
     const applicantId = data.meta?.user_id;
 
-    this.logger.log(
+    this.logger.info(
       `Parsed - Account ID: ${monoAccountId}, Applicant ID: ${applicantId}`,
     );
 
     if (!applicantId) {
-      this.logger.log(
+      this.logger.info(
         `Account ${monoAccountId} connected, waiting for full data...`,
       );
       return {
@@ -52,7 +52,7 @@ export class MonoWebhookService {
         },
       });
 
-      this.logger.log(
+      this.logger.info(
         ` Successfully linked Bank ${monoAccountId} to Applicant ${applicantId}`,
       );
       return { status: 'success', accountId: bankAccount.id };
@@ -68,27 +68,27 @@ export class MonoWebhookService {
       where: { monoAccountId },
       data: { updatedAt: new Date() },
     });
-    this.logger.log(` Bank Account ${monoAccountId} reauthorised`);
+    this.logger.info(` Bank Account ${monoAccountId} reauthorised`);
     return { status: 'success' };
   }
 
   async handleAccountIncome(data: any) {
     const { account: monoAccountId } = data;
 
-    this.logger.log(` Income data received for account ${monoAccountId}`);
+    this.logger.info(` Income data received for account ${monoAccountId}`);
     return { status: 'success' };
   }
 
   async handleStatementInsights(data: any) {
     const { account: monoAccountId } = data;
 
-    this.logger.log(` Insights received for account ${monoAccountId}`);
+    this.logger.info(` Insights received for account ${monoAccountId}`);
     return { status: 'success' };
   }
 
   async handleCreditWorthiness(data: any) {
     const { account: monoAccountId, can_afford } = data;
-    this.logger.log(
+    this.logger.info(
       ` Creditworthiness check: ${can_afford} for ${monoAccountId}`,
     );
     return { status: 'success' };
