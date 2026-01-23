@@ -3,16 +3,19 @@ import {
   Post,
   Body,
   Headers,
-  Logger,
   BadRequestException,
 } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import { MonoWebhookService } from './webhook.service';
 
 @Controller('webhooks/mono')
 export class WebhooksController {
-  private readonly logger = new Logger(WebhooksController.name);
-
-  constructor(private readonly webhookService: MonoWebhookService) {}
+  constructor(
+    private readonly webhookService: MonoWebhookService,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(WebhooksController.name);
+  }
 
   private get eventHandlers() {
     return {
@@ -40,21 +43,27 @@ export class WebhooksController {
     @Body() payload: any,
     @Headers('mono-webhook-secret') webhookSecret: string,
   ) {
-    this.logger.log(`Webhook received: ${payload.event}`);
+    this.logger.info({ event: payload.event }, `Webhook received:`);
 
     if (!this.verifyWebhookSignature(payload, webhookSecret)) {
-      this.logger.error('Invalid webhook signature');
+      this.logger.error(
+        { webhookSecret, event: payload.event },
+        'Invalid webhook signature',
+      );
       throw new BadRequestException('Invalid webhook signature');
     }
 
     const handler = this.eventHandlers[payload.event];
     if (!handler) {
-      this.logger.warn(`No handler for event type: ${payload.event}`);
+      this.logger.warn({ event: payload.event }, 'No handler for event type');
       return { status: 'ignored' };
     }
 
     handler(payload.data).catch((error) => {
-      this.logger.error(`Background handler failed for ${payload.event}`, error);
+      this.logger.error(
+        { err: error, event: payload.event },
+        'Background handler failed',
+      );
     });
 
     return { status: 'received' };
