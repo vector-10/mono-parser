@@ -1,4 +1,5 @@
 "use client";
+import  Header  from "../components/Header"
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
@@ -41,56 +42,7 @@ export default function MonoParserLanding() {
   return (
     <div className="relative min-h-screen bg-white">
       {/* Navigation */}
-      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link href="/" className="group inline-flex items-center">
-            <span className="text-xl font-bold text-[#0055ba]">
-              mono-parser
-            </span>
-          </Link>
-
-          <nav className="hidden items-center gap-8 text-sm md:flex">
-            <a
-              href="#features"
-              className="text-gray-600 hover:text-gray-900 transition"
-            >
-              Features
-            </a>
-            <a
-              href="#reasons"
-              className="text-gray-600 hover:text-gray-900 transition"
-            >
-              Why Us
-            </a>
-            <a
-              href="#api"
-              className="text-gray-600 hover:text-gray-900 transition"
-            >
-              API
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden md:inline-flex items-center gap-2 rounded-lg bg-[#0055ba] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#004494] transition"
-            >
-              Get Started <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
@@ -233,7 +185,7 @@ export default function MonoParserLanding() {
               {
                 icon: <Lock className="h-6 w-6" />,
                 title: "Mono Integration",
-                desc: "Seamlessly connect to any Nigerian bank account via Mono's Open Banking platform.",
+                desc: "Securely access data from customer accounts with their consent",
               },
             ].map((feature, i) => (
               <div
@@ -260,7 +212,7 @@ export default function MonoParserLanding() {
             {/* Left Side - Sticky Heading */}
             <div className="lg:col-span-2 lg:sticky lg:top-24 scroll-reveal">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                More reasons to say yes or no to a loan application
+                More reasons to say "Yes" or "No" to a loan application
               </h2>
               <p className="text-lg text-gray-600">
                 Traditional credit scores tell part of the story. We analyze the
@@ -368,7 +320,7 @@ export default function MonoParserLanding() {
             {/* Code Example */}
             <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 scroll-reveal">
               <pre className="text-sm text-gray-300 overflow-x-auto">
-                <code>{`// Submit loan application
+                <code>{`
                         const response = await fetch(
                           'https://api.mono-parser.com/applications',
                           {
@@ -421,7 +373,7 @@ export default function MonoParserLanding() {
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <a
-                href="mailto:contact@mono-parser.com"
+                href="mailto:support@firstsoftware-systems.com"
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition"
               >
                 Talk to Sales
