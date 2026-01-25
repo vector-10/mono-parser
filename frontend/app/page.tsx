@@ -41,54 +41,72 @@ export default function MonoParserLanding() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-32 sm:pt-36 lg:pt-40 pb-16 sm:pb-20 text-center">
-        <div className="space-y-6 sm:space-y-8 scroll-reveal">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#0055ba]/20 bg-[#0055ba]/5 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-[#0055ba]">
-            <Shield className="h-3 w-3 sm:h-4 sm:w-4" /> Powered by Mono Open
-            Banking
-          </span>
+      <section className="relative pt-32 sm:pt-36 lg:pt-40 pb-24 text-center overflow-hidden">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="space-y-6 sm:space-y-8 scroll-reveal animate-reveal">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#0055ba]/20 bg-[#0055ba]/5 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-[#0055ba]">
+              <Shield className="h-3 w-3 sm:h-4 sm:w-4" /> Powered by Mono Open
+              Banking
+            </span>
 
-          <h1 className="text-balance text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-gray-900 px-4">
-            Credit scoring for Nigerian fintechs in{" "}
-            <span className="text-[#0055ba]">minutes</span>
-          </h1>
+            <h1 className="text-balance text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-gray-900 px-4">
+              Credit scoring for Nigerian fintechs in{" "}
+              <span className="text-[#0055ba]">minutes</span>
+            </h1>
 
-          <p className="mx-auto max-w-3xl text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 px-4">
-            Make smarter lending decisions with real-time cashflow analysis.
-            Built specifically for the Nigerian lending market.
-          </p>
+            <p className="mx-auto max-w-3xl text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 px-4">
+              Make smarter lending decisions with real-time cashflow analysis.
+              Built specifically for the Nigerian lending market.
+            </p>
 
-          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 pt-4 px-4">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0055ba] px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white hover:bg-[#004494] transition shadow-lg shadow-[#0055ba]/20"
-            >
-              Request Demo <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Link>
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 pt-4 px-4">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0055ba] px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white hover:bg-[#004494] transition shadow-lg shadow-[#0055ba]/20"
+              >
+                Request Demo <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Link>
 
-            <a
-              href="#api"
-              className="inline-flex items-center justify-center rounded-lg border-2 border-gray-200 bg-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-gray-900 hover:border-gray-300 transition"
-            >
-              View API Docs
-            </a>
+              <a
+                href="#api"
+                className="inline-flex items-center justify-center rounded-lg border-2 border-gray-200 bg-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-gray-900 hover:border-gray-300 transition"
+              >
+                View API Docs
+              </a>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 pt-6 sm:pt-8 text-gray-600 text-sm sm:text-base px-4">
+              <div className="flex items-center justify-center gap-2 font-semibold">
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" /> 30s
+                average
+              </div>
+              <div className="flex items-center justify-center gap-2 font-semibold">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" /> 7
+                data points
+              </div>
+              <div className="flex items-center justify-center gap-2 font-semibold">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" />{" "}
+                100% uptime
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Stats */}
-          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 pt-6 sm:pt-8 text-gray-600 text-sm sm:text-base px-4">
-            <div className="flex items-center justify-center gap-2 font-semibold">
-              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" /> 30s
-              average
-            </div>
-            <div className="flex items-center justify-center gap-2 font-semibold">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" /> 7
-              data points
-            </div>
-            <div className="flex items-center justify-center gap-2 font-semibold">
-              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" />{" "}
-              100% uptime
-            </div>
-          </div>
+        {/* Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-screen overflow-hidden leading-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 320"
+            preserveAspectRatio="none"
+            className="block w-full h-36 sm:h-52 lg:h-64"
+          >
+            <path
+              fill="#0055ba"
+              fillOpacity="1"
+              d="M0,256L30,261.3C60,267,120,277,180,266.7C240,256,300,224,360,197.3C420,171,480,149,540,128C600,107,660,85,720,101.3C780,117,840,171,900,181.3C960,192,1020,160,1080,144C1140,128,1200,128,1260,122.7C1320,117,1380,107,1410,101.3L1440,96L1440,320L0,320Z"
+            />
+          </svg>
         </div>
       </section>
 
