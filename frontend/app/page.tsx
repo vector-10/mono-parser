@@ -77,7 +77,7 @@ export default function MonoParserLanding() {
           </div>
 
           {/* Stats - MOVED OUTSIDE the animated div */}
-          <div className="relative z-10 flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 pt-6 sm:pt-8 text-gray-600 text-sm sm:text-base px-4">
+          <div className="relative z-10 flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 pt-6 sm:pt-48 text-gray-600 text-sm sm:text-base px-4">
             <div className="flex items-center justify-center gap-2 font-semibold text-white ">
               <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-white" /> 30s
               average
