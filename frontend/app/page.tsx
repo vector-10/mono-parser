@@ -74,21 +74,21 @@ export default function MonoParserLanding() {
                 View API Docs
               </a>
             </div>
+          </div>
 
-            {/* Stats */}
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 pt-6 sm:pt-8 text-gray-600 text-sm sm:text-base px-4">
-              <div className="flex items-center justify-center gap-2 font-semibold">
-                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" /> 30s
-                average
-              </div>
-              <div className="flex items-center justify-center gap-2 font-semibold">
-                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" /> 7
-                data points
-              </div>
-              <div className="flex items-center justify-center gap-2 font-semibold">
-                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#59a927]" />{" "}
-                100% uptime
-              </div>
+          {/* Stats - MOVED OUTSIDE the animated div */}
+          <div className="relative z-10 flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 pt-6 sm:pt-8 text-gray-600 text-sm sm:text-base px-4">
+            <div className="flex items-center justify-center gap-2 font-semibold text-white ">
+              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-white" /> 30s
+              average
+            </div>
+            <div className="flex items-center justify-center gap-2 font-semibold text-white">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" /> 7
+              data points
+            </div>
+            <div className="flex items-center justify-center gap-2 font-semibold text-white">
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />{" "}
+              100% uptime
             </div>
           </div>
         </div>
@@ -99,12 +99,12 @@ export default function MonoParserLanding() {
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 1440 320"
             preserveAspectRatio="none"
-            className="block w-full h-36 sm:h-52 lg:h-64"
+            className="block w-full h-36 sm:h-52 lg:h-70"
           >
             <path
               fill="#0055ba"
               fillOpacity="1"
-              d="M0,256L30,261.3C60,267,120,277,180,266.7C240,256,300,224,360,197.3C420,171,480,149,540,128C600,107,660,85,720,101.3C780,117,840,171,900,181.3C960,192,1020,160,1080,144C1140,128,1200,128,1260,122.7C1320,117,1380,107,1410,101.3L1440,96L1440,320L0,320Z"
+              d="M0,64L40,90.7C80,117,160,171,240,197.3C320,224,400,224,480,202.7C560,181,640,139,720,144C800,149,880,203,960,213.3C1040,224,1120,192,1200,160C1280,128,1360,96,1400,80L1440,64L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"
             />
           </svg>
         </div>
