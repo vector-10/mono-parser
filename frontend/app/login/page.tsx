@@ -43,7 +43,7 @@ export default function LoginPage() {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-[600px]">
           {/* Left Side - Blue Background */}
-          <div className="md:w-[60%] hidden bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
+          <div className="md:w-[60%]  bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
             <div className="mb-8">
               <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
                 <Shield className="h-8 w-8" />
@@ -53,33 +53,10 @@ export default function LoginPage() {
             
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
               Welcome back to the future of credit scoring
-            </h1>
-            
-            <p className="text-lg md:text-xl text-white/90 mb-8">
-              Access your dashboard and continue making smarter lending decisions with real-time cashflow analysis.
-            </p>
+            </h1>        
+           
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  <Shield className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Enterprise Security</h3>
-                  <p className="text-sm text-white/80">Bank-grade encryption</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  <ArrowRight className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Real-time Analysis</h3>
-                  <p className="text-sm text-white/80">Instant credit decisions</p>
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           {/* Right Side - Login Form */}
