@@ -1,0 +1,149 @@
+
+"use client"
+import { useState } from 'react'
+import Link from 'next/link'
+import { Eye, EyeOff, Shield, ArrowRight } from 'lucide-react'
+
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Login:', formData)
+    // Add your login logic here
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="flex flex-col md:flex-row min-h-[600px]">
+          {/* Left Side - Blue Background with Text */}
+          <div className="md:w-[60%] bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
+            <div className="mb-8">
+              <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
+                <Shield className="h-8 w-8" />
+                Mono-Parser
+              </Link>
+            </div>
+            
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              Welcome back to the future of credit scoring
+            </h1>
+            
+            <p className="text-lg md:text-xl text-white/90 mb-8">
+              Access your dashboard and continue making smarter lending decisions with real-time cashflow analysis.
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Shield className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Enterprise Security</h3>
+                  <p className="text-sm text-white/80">Bank-grade encryption</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                  <ArrowRight className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Real-time Analysis</h3>
+                  <p className="text-sm text-white/80">Instant credit decisions</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - Login Form */}
+          <div className="md:w-[40%] p-8 md:p-12 flex flex-col justify-center">
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Sign in
+              </h2>
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <Link href="/signup" className="text-[#0055ba] font-semibold hover:underline">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
+                  placeholder="you@company.com"
+                  required
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember & Forgot */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input type="checkbox" className="w-4 h-4 text-[#0055ba] border-gray-300 rounded focus:ring-[#0055ba]" />
+                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                </label>
+                <Link href="/forgot-password" className="text-sm text-[#0055ba] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full bg-[#0055ba] text-white py-3 rounded-lg font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2"
+              >
+                Sign in
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
