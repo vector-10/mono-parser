@@ -35,27 +35,27 @@ export interface SignupResponse {
 
 export const authApi = {
   signup: async (data: SignupData): Promise<SignupResponse> => {
-    const response = await api.post('/auth/signup', data)
+    const response = await api.post('/api/auth/signup', data)
     return response.data
   },
 
   login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', data)
+    const response = await api.post('/api/auth/login', data)
     return response.data
   },
 
   verifyOtp: async (data: VerifyOtpData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/verify-otp', data)
+    const response = await api.post('/api/auth/verify-otp', data)
     return response.data
   },
 
   resendOtp: async (email: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/resend-otp', { email })
+    const response = await api.post('/api/auth/resend-otp', { email })
     return response.data
   },
 
   getProfile: async () => {
-    const response = await api.get('/auth/me')
+    const response = await api.get('/api/auth/me')
     return response.data
   },
 }

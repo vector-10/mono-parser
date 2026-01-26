@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Shield, ArrowRight } from 'lucide-react'
-
 import { authApi } from '@/lib/api/auth'
 import { useAuthStore } from '@/lib/store/auth'
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth'
@@ -44,7 +43,7 @@ export default function LoginPage() {
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-[600px]">
           {/* Left Side - Blue Background */}
-          <div className="md:w-[60%] bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
+          <div className="md:w-[60%] hidden bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
             <div className="mb-8">
               <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
                 <Shield className="h-8 w-8" />
