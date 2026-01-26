@@ -62,14 +62,14 @@ export default function MonoParserLanding() {
             <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 pt-4 px-4">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0055ba] px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white hover:bg-[#004494] transition shadow-lg shadow-[#0055ba]/20"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0055ba] px-6 sm:px-8 py-3 sm:py-3 text-sm sm:text-base font-semibold text-white hover:bg-[#004494] transition shadow-lg shadow-[#0055ba]/20"
               >
                 Request Demo <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Link>
 
               <a
                 href="#api"
-                className="inline-flex items-center justify-center rounded-lg border-2 border-gray-200 bg-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-gray-900 hover:border-gray-300 transition"
+                className="inline-flex items-center justify-center rounded-lg border-2 border-gray-200 bg-white px-6 sm:px-8 py-3 sm:py-3 text-sm sm:text-base font-semibold text-gray-900 hover:border-gray-300 transition"
               >
                 View API Docs
               </a>
@@ -304,7 +304,6 @@ export default function MonoParserLanding() {
 
 const data = await response.json();
 
-// Response
 {
   "score": 668,
   "decision": "APPROVED",
@@ -322,7 +321,7 @@ const data = await response.json();
         <div className="max-w-5xl mx-auto">
           <div className="bg-gradient-to-br from-[#0055ba] to-[#003d85] rounded-2xl p-8 sm:p-10 lg:p-12 text-center text-white shadow-2xl scroll-reveal">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-              Ready to make better lending decisions?
+              You have the Capital, Let us help you decide.
             </h2>
             <p className="text-lg sm:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
               Join Nigerian fintechs using Mono-Parser to reduce default rates
@@ -331,7 +330,7 @@ const data = await response.json();
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-white text-[#0055ba] rounded-lg hover:bg-gray-100 transition"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-2 text-base sm:text-lg font-semibold bg-white text-[#0055ba] rounded-lg hover:bg-gray-100 transition"
               >
                 Get API Access
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -339,7 +338,7 @@ const data = await response.json();
 
               <a
                 href="mailto:support@firstsoftware-systems.com"
-                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition"
+                className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-2 text-base sm:text-lg font-semibold bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition"
               >
                 Talk to Sales
               </a>
@@ -357,7 +356,7 @@ const data = await response.json();
                 Mono-Parser
               </span>
               <p className="mt-3 sm:mt-4 text-gray-400 text-xs sm:text-sm">
-                Credit scoring infrastructure for Nigerian fintechs.
+                Credit scoring and Loan underwriting for Nigerian Fintechs
               </p>
             </div>
             <div>

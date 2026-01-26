@@ -72,8 +72,8 @@ const Header = () => {
       <div className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
         mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-100">
-          <span className="text-base sm:text-lg font-bold text-[#0055ba]">Menu</span>
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-100">
+          <span className="text-base sm:text-lg font-bold text-[#0055ba]">Parser</span>
           <button
             onClick={() => setMobileMenuOpen(false)}
             className="p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
