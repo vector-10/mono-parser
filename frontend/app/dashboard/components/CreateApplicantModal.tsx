@@ -127,7 +127,7 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
               maxLength={11}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Bank Verification Number (11 digits)
+             (11 digits). For user verification purposes only.
             </p>
           </div>
 

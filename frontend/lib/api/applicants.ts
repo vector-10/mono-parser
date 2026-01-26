@@ -9,10 +9,11 @@ export interface CreateApplicantData {
 }
 export interface Applicant {
   id: string
-  name: string
+  firstName: string
+  lastName: string
   email: string
-  phone: string
-  accountId: string
+  phone?: string
+  bvn?: string
   createdAt: string
 }
 
