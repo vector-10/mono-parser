@@ -22,7 +22,7 @@ RUN npx prisma generate
 COPY . .
 
 # Expose port
-EXPOSE 3000
+EXPOSE 5000
 
 # Start in development mode
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:dev"]
