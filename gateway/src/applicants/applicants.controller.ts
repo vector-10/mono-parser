@@ -12,7 +12,6 @@ export class ApplicantsController {
   async create(@Request() req, @Body() body: CreateApplicantDto) {
     return this.applicantsService.createApplicant(req.user.id, body);
   }
-
   
   @Get('all')
   async getAll(@Request() req ) {
