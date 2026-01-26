@@ -1,27 +1,49 @@
-
 "use client"
 import { useState } from 'react'
 import Link from 'next/link'
+import {toast} from "sonner"
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Shield, ArrowRight } from 'lucide-react'
+
+import { authApi } from '@/lib/api/auth'
+import { useAuthStore } from '@/lib/store/auth'
+import { loginSchema, type LoginFormData } from '@/lib/validations/auth'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+  const router = useRouter()
+  const setAuth = useAuthStore((state) => state.actions.setAuth)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Login:', formData)
-    // Add your login logic here
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const response = await authApi.login(data)
+      
+      // Store in Zustand (auto-persists to localStorage)
+      setAuth(response.user, response.access_token)
+      
+      toast.success('Login successful!')
+      router.push('/dashboard')
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.'
+      toast.error(errorMessage)
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-[600px]">
-          {/* Left Side - Blue Background with Text */}
+          {/* Left Side - Blue Background */}
           <div className="md:w-[60%] bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
             <div className="mb-8">
               <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
@@ -75,7 +97,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -84,12 +106,15 @@ export default function LoginPage() {
                 <input
                   type="email"
                   id="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
+                  {...register('email')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
+                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="you@company.com"
-                  required
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Password */}
@@ -101,11 +126,11 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12"
+                    {...register('password')}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12 ${
+                      errors.password ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="••••••••"
-                    required
                   />
                   <button
                     type="button"
@@ -119,6 +144,9 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                )}
               </div>
 
               {/* Remember & Forgot */}
@@ -135,10 +163,20 @@ export default function LoginPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#0055ba] text-white py-3 rounded-lg font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full bg-[#0055ba] text-white py-3 rounded-lg font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign in
-                <ArrowRight className="h-5 w-5" />
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign in
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
               </button>
             </form>
           </div>
