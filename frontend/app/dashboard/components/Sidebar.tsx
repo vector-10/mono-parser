@@ -1,29 +1,21 @@
 "use client";
 import Link from "next/link";
-import {
-  Home,
-  Computer,
-  LogOut,
-  ChevronDown,
-  Plus,
-  MessageSquare,
-} from "lucide-react";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { Home, Computer, LogOut, ChevronDown, Plus, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { useApplications } from "@/lib/hooks/queries/use-applications";
+import { useApplicationsStore } from "@/lib/store/applications";
+import CreateApplicationModal from "./CreateApplicationModal";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [operationsOpen, setOperationsOpen] = useState(true);
   const [applicationsOpen, setApplicationsOpen] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  
+  const { data: applications, isLoading } = useApplications();
+  const { isCreateModalOpen, actions } = useApplicationsStore();
 
-  const applications = [
-    { id: "1", name: "Samuel Okon" },
-    { id: "2", name: "Jane Doe" },
-    { id: "3", name: "Chidi Eze" },
-  ];
-
- return (
+  return (
     <>
       <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 overflow-y-auto">
         <div className="p-6">
@@ -60,7 +52,7 @@ export default function Sidebar() {
               <div className="ml-4 mt-1 space-y-1">
                 {/* Create Application */}
                 <button
-                  onClick={() => setShowModal(true)}
+                  onClick={actions.openCreateModal}
                   className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50"
                 >
                   <Plus className="h-4 w-4" />
@@ -76,13 +68,19 @@ export default function Sidebar() {
                     <div className="flex items-center gap-3">
                       <MessageSquare className="h-4 w-4" />
                       Applications
+                      {isLoading && (
+                        <span className="text-xs text-gray-400">(loading...)</span>
+                      )}
                     </div>
                     <ChevronDown className={`h-3 w-3 transition-transform ${applicationsOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {applicationsOpen && (
                     <div className="ml-4 mt-1 space-y-1">
-                      {applications.map((app) => (
+                      {applications?.length === 0 && (
+                        <p className="px-4 py-2 text-xs text-gray-400">No applications yet</p>
+                      )}
+                      {applications?.map((app) => (
                         <Link
                           key={app.id}
                           href={`/dashboard/operations/${app.id}`}
@@ -92,8 +90,13 @@ export default function Sidebar() {
                               : "text-gray-600 hover:bg-gray-50"
                           }`}
                         >
-                          <div className="w-2 h-2 bg-[#59a927] rounded-full" />
-                          {app.name}
+                          <div className={`w-2 h-2 rounded-full ${
+                            app.status === 'APPROVED' ? 'bg-[#59a927]' :
+                            app.status === 'REJECTED' ? 'bg-red-500' :
+                            app.status === 'PROCESSING' ? 'bg-yellow-500' :
+                            'bg-gray-400'
+                          }`} />
+                          <span className="truncate">{app.applicant?.name || 'Unknown'}</span>
                         </Link>
                       ))}
                     </div>
@@ -112,18 +115,10 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {/* Modal - will move to separate component */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-bold mb-4">Create Application</h2>
-            <p className="text-gray-500">Modal form goes here...</p>
-            <button onClick={() => setShowModal(false)} className="mt-4 px-4 py-2 bg-[#0055ba] text-white rounded-lg">
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <CreateApplicationModal 
+        isOpen={isCreateModalOpen} 
+        onClose={actions.closeCreateModal} 
+      />
     </>
   );
 }
