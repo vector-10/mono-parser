@@ -1,11 +1,12 @@
 import { api } from './client'
 
 export interface CreateApplicantData {
-  name: string
+  firstName: string
+  lastName: string
   email: string
-  phone: string
+  phone?: string
+  bvn?: string
 }
-
 export interface Applicant {
   id: string
   name: string

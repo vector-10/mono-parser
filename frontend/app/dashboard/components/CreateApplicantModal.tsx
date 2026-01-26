@@ -1,6 +1,7 @@
 "use client";
 import { X, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCreateApplicant } from "@/lib/hooks/queries/use-create-applicant";
 
 interface CreateApplicantModalProps {
@@ -10,20 +11,35 @@ interface CreateApplicantModalProps {
 
 export default function CreateApplicantModal({ isOpen, onClose }: CreateApplicantModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
+    bvn: "",
   });
 
-  const { mutate: createApplicant, isPending, isError, error } = useCreateApplicant();
+  const { mutate: createApplicant, isPending } = useCreateApplicant();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    createApplicant(formData, {
+    // Remove empty optional fields
+    const payload = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      ...(formData.phone && { phone: formData.phone }),
+      ...(formData.bvn && { bvn: formData.bvn }),
+    };
+
+    createApplicant(payload, {
       onSuccess: () => {
-        setFormData({ name: "", email: "", phone: "" });
+        toast.success("Applicant created successfully!");
+        setFormData({ firstName: "", lastName: "", email: "", phone: "", bvn: "" });
         onClose();
+      },
+      onError: (error: any) => {
+        toast.error(error?.message || "Failed to create applicant");
       },
     });
   };
@@ -41,24 +57,34 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {isError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error?.message || "Failed to create applicant"}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
+                placeholder="Samuel"
+              />
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
-              placeholder="e.g. Samuel Okon"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
+                placeholder="Okon"
+              />
+            </div>
           </div>
 
           <div>
@@ -77,17 +103,33 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone <span className="text-red-500">*</span>
+              Phone (Optional)
             </label>
             <input
               type="tel"
-              required
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
               placeholder="08012345678"
             />
-          </div>          
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              BVN (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.bvn}
+              onChange={(e) => setFormData({ ...formData, bvn: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
+              placeholder="22123456789"
+              maxLength={11}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Bank Verification Number (11 digits)
+            </p>
+          </div>
 
           <div className="flex gap-3 pt-4">
             <button
