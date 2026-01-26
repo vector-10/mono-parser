@@ -4,9 +4,9 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-    async create(
+  async create(
     email: string,
     password: string,
     name: string,
@@ -80,4 +80,18 @@ export class UsersService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
+  async updateMonoApiKey(userId: string, monoApiKey: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { monoApiKey },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        companyName: true,
+        apiKey: true,
+        monoApiKey: true,
+      },
+    });
+  }
 }
