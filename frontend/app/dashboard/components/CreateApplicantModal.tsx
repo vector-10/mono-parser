@@ -13,7 +13,6 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
     name: "",
     email: "",
     phone: "",
-    accountId: "",
   });
 
   const { mutate: createApplicant, isPending, isError, error } = useCreateApplicant();
@@ -23,7 +22,7 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
 
     createApplicant(formData, {
       onSuccess: () => {
-        setFormData({ name: "", email: "", phone: "", accountId: "" });
+        setFormData({ name: "", email: "", phone: "" });
         onClose();
       },
     });
@@ -88,24 +87,7 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
               placeholder="08012345678"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mono Account ID <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.accountId}
-              onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent"
-              placeholder="acc_xxxxxxxxxxxxx"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              From Mono Connect after bank linking
-            </p>
-          </div>
+          </div>          
 
           <div className="flex gap-3 pt-4">
             <button

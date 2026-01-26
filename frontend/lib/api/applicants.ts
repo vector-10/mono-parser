@@ -4,7 +4,6 @@ export interface CreateApplicantData {
   name: string
   email: string
   phone: string
-  accountId: string
 }
 
 export interface Applicant {

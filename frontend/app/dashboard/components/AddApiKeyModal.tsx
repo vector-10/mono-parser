@@ -9,7 +9,10 @@ interface AddApiKeyModalProps {
   onClose: () => void;
 }
 
-export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps) {
+export default function AddApiKeyModal({
+  isOpen,
+  onClose,
+}: AddApiKeyModalProps) {
   const [apiKey, setApiKey] = useState("");
   const { mutate: updateApiKey, isPending } = useUpdateApiKey();
 
@@ -31,20 +34,29 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#0055ba]/10 rounded-lg flex items-center justify-center">
               <Key className="h-5 w-5 text-[#0055ba]" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Add Mono API Key</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {" "}
+              Mono API Secret Key
+            </h2>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -60,9 +72,9 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
             />
             <p className="text-xs text-gray-500 mt-2">
               Get your API key from{" "}
-              <a 
-                href="https://app.mono.co/apps" 
-                target="_blank" 
+              <a
+                href="https://app.mono.co/apps"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#0055ba] hover:underline"
               >
@@ -73,7 +85,8 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Your API key is encrypted and stored securely. It's used to fetch banking data for credit analysis.
+              <strong>Note:</strong> Your API key is encrypted and stored
+              securely. It's used to fetch banking data for credit analysis.
             </p>
           </div>
 
