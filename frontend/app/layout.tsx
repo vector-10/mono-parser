@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {  DM_Sans } from "next/font/google";
+import { QueryProvider } from "@/lib/providers/query-provider";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -8,8 +9,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Mono Parser",
-  description: "More Reasons to say No or Yes to a Loan",
+  title: "Mono-Parser - Credit Scoring for Nigerian Fintechs",
+  description: "Make smarter lending decisions with real-time cashflow analysis",
 };
 
 export default function RootLayout({
