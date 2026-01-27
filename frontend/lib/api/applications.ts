@@ -8,6 +8,10 @@ export interface CreateApplicationData {
   purpose?: string
 }
 
+export interface StartAnalysisData {
+  clientId?: string
+}
+
 export interface Application {
   id: string
   applicantId: string
@@ -15,14 +19,15 @@ export interface Application {
   tenor: number
   interestRate: number
   purpose?: string
-  status: 'PROCESSING' | 'APPROVED' | 'REJECTED' | 'PENDING'
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
   score?: number
   decision?: any
   createdAt: string
   updatedAt: string
   applicant?: {
     id: string
-    name: string
+    firstName: string
+    lastName: string
     email: string
   }
 }
@@ -33,12 +38,17 @@ export const applicationsApi = {
     return response.data
   },
 
+  startAnalysis: async (applicationId: string, clientId?: string): Promise<{ applicationId: string; status: string; message: string }> => {
+    const response = await api.post(`/applications/${applicationId}/start-analysis`, { clientId })
+    return response.data
+  },
+
   getAll: async (status?: string): Promise<Application[]> => {
     const response = await api.get('/applications', {
       params: status ? { status } : undefined,
     })
     return response.data
-  },
+  },  
 
   getOne: async (id: string): Promise<Application> => {
     const response = await api.get(`/applications/${id}`)

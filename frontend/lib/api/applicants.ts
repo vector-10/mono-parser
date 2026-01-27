@@ -7,6 +7,7 @@ export interface CreateApplicantData {
   phone?: string
   bvn?: string
 }
+
 export interface Applicant {
   id: string
   firstName: string
