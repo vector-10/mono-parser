@@ -22,6 +22,13 @@ export class MonoController {
     private readonly prisma: PrismaService,
   ) {}
 
+  @Get('public-key')
+  async getPublicKey(@Request() req) {
+    return {
+      publicKey: req.user.monoPublicKey,
+    };
+  }
+
   @Post('initiate/:applicantId')
   async initiate(@Request() req, @Param('applicantId') applicantId: string) {
     if (!req.user.monoApiKey) {

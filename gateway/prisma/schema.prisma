@@ -15,7 +15,8 @@ model User {
   companyName String
   
   apiKey      String   @unique @default(uuid())  
-  monoApiKey  String?     
+  monoApiKey  String?   
+  monoPublicKey  String?  // Public key for widget ← ADD THIS  
 
   monoCustomerId String? 
 

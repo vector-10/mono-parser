@@ -11,7 +11,8 @@ export class UsersController {
   async updateApiKey(
     @Request() req,
     @Body('monoApiKey') monoApiKey: string,
+    @Body('monoPublicKey') monoPublicKey: string,
   ) {
-    return this.usersService.updateMonoApiKey(req.user.id, monoApiKey);
+    return this.usersService.updateMonoApiKey(req.user.id, monoApiKey, monoPublicKey);
   }
 }

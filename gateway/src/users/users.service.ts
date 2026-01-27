@@ -80,10 +80,10 @@ export class UsersService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
-  async updateMonoApiKey(userId: string, monoApiKey: string) {
+  async updateMonoApiKey(userId: string, monoApiKey: string, monoPublicKey: string) {
     return this.prisma.user.update({
       where: { id: userId },
-      data: { monoApiKey },
+      data: { monoApiKey, monoPublicKey },
       select: {
         id: true,
         email: true,
@@ -91,6 +91,7 @@ export class UsersService {
         companyName: true,
         apiKey: true,
         monoApiKey: true,
+        monoPublicKey: true,
       },
     });
   }
