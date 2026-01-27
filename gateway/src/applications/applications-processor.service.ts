@@ -78,42 +78,6 @@ export class ApplicationProcessorService {
         );
       }
 
-      // ========== ADD THIS BLOCK (COMMENTED OUT) ==========
-      /*
-      // Optional: Get Mono's built-in creditworthiness score
-      let monoCreditScore = null;
-      if (application.applicant.bvn) {
-        try {
-          if (clientId) {
-            this.eventsGateway.emitApplicationProgress(
-              clientId,
-              '🔍 Checking Mono creditworthiness...',
-            );
-          }
-
-          monoCreditScore = await this.monoService.getCreditWorthiness(
-            bankAccount.monoAccountId,
-            monoApiKey,
-            {
-              bvn: application.applicant.bvn,
-              principal: application.amount,
-              interest_rate: 5, // TODO: Make configurable
-              term: 12, // TODO: Get from application or make configurable
-            }
-          );
-
-          this.logger.info({applicationId},'Mono credit score retrieved for application');
-        } catch (error) {
-          this.logger.error(
-           {err: error, applicationId} Mono creditworthiness check failed for application , continuing without it,
-            error,
-          );
-          // Continue without it - not critical to the flow
-        }
-      }
-      */
-      // ========== END BLOCK ==========
-
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,

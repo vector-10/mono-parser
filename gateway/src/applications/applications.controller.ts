@@ -40,17 +40,35 @@ export class ApplicationsController {
       tenor,
     );
 
-    this.applicationProcessor
-      .processApplication(application.id)
-      .catch((error) => {
-        console.error('Background job failed:', error);
-      });
-
     return {
       applicationId: application.id,
-      status: 'PROCESSING',
+      status: 'PENDING',
       message: 'Application submitted. Processing in background.',
     };
+  }
+
+  @Post(':id/start-analysis')
+  async startAnalysis(@Request() req, @Param('id') id: string, @Body('clientId') clientId?: string) {
+    const application = await this.applicationsService.findOne(id, req.user.id);
+
+    if(!application) {
+      throw new Error('Application not found');
+    }
+
+    if(application.status !== 'PENDING') {
+      throw new Error('Application already processed');
+    }
+
+    this.applicationProcessor.processApplication(id, clientId).catch((error) => {
+      console.error('Processing failed:', error)
+    })
+
+    return{
+      applicationId: id,
+      status: 'PROCESSING',
+      message: 'Analysis started. You will receive updates via WebSocket',
+    }
+
   }
 
   @Get()
