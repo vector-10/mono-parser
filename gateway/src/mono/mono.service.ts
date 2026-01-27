@@ -71,6 +71,26 @@ export class MonoService {
     }
   }
 
+  async exchangeToken(code: string, apiKey: string) {
+    const url = 'https://api.withmono.com/account/auth';
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'mono-sec-key': apiKey,
+      },
+      body: JSON.stringify({ code }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Mono exchange token failed: ${error}`);
+    }
+
+    return response.json();
+  }
+
   async getAccountDetails(accountId: string, monoApiKey: string) {
     try {
       const response = await axios.get(
@@ -153,9 +173,9 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error({ err: error.response?.data },
-        'Insights initiation failed'
-      
+      this.logger.error(
+        { err: error.response?.data },
+        'Insights initiation failed',
       );
       throw error;
     }
@@ -174,9 +194,9 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data },
-        'Creditworthiness failed'
-        
+      this.logger.error(
+        { err: error.response?.data },
+        'Creditworthiness failed',
       );
       throw error;
     }
@@ -210,9 +230,9 @@ export class MonoService {
       );
       return response.data.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 
-        'Credit history lookup failed'
-        
+      this.logger.error(
+        { err: error.response?.data },
+        'Credit history lookup failed',
       );
       throw error;
     }
@@ -228,9 +248,9 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 
-        'Income records fetch failed'
-   
+      this.logger.error(
+        { err: error.response?.data },
+        'Income records fetch failed',
       );
       throw error;
     }
@@ -244,9 +264,9 @@ export class MonoService {
       });
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 
-        'Accounts list fetch failed'
-     
+      this.logger.error(
+        { err: error.response?.data },
+        'Accounts list fetch failed',
       );
       throw error;
     }
@@ -262,7 +282,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 'Assets fetch failed');
+      this.logger.error({ err: error.response?.data }, 'Assets fetch failed');
       throw error;
     }
   }
@@ -277,7 +297,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 'Earnings fetch failed');
+      this.logger.error({ err: error.response?.data }, 'Earnings fetch failed');
       throw error;
     }
   }
@@ -292,7 +312,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 'Credits fetch failed');
+      this.logger.error({ err: error.response?.data }, 'Credits fetch failed');
       throw error;
     }
   }
@@ -307,7 +327,7 @@ export class MonoService {
       );
       return response.data;
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data },  'Debits fetch failed');
+      this.logger.error({ err: error.response?.data }, 'Debits fetch failed');
       throw error;
     }
   }
@@ -320,7 +340,7 @@ export class MonoService {
         { headers: this.getHeaders(monoApiKey) },
       );
     } catch (error: any) {
-      this.logger.error( { err: error.response?.data }, 'Unlink failed');
+      this.logger.error({ err: error.response?.data }, 'Unlink failed');
       throw error;
     }
   }
