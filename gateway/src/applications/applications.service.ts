@@ -38,7 +38,7 @@ export class ApplicationsService {
         tenor,
         interestRate,
         purpose,
-        status: 'PROCESSING',
+        status: 'PENDING',
       },
       include: {
         applicant: {
