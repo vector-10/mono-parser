@@ -4,17 +4,20 @@ import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
 type Step = "amount" | "tenor" | "rate" | "purpose" | "confirm" | "link" | "analyzing" | "complete";
+type Message = { role: "system" | "user" | "assistant"; content: string };
 
 interface ApplicationChatProps {
   applicantId: string;
   applicantName: string;
 }
 
+
+
 export default function ApplicationChat({ applicantId, applicantName }: ApplicationChatProps) {
   const [step, setStep] = useState<Step>("amount");
   const [messages, setMessages] = useState([
-    { role: "system" as const, content: `Let's create a loan application for ${applicantName}` },
-    { role: "assistant" as const, content: "What's the loan amount in Naira (₦)?" },
+    { role: "system", content: `Let's create a loan application for ${applicantName}` },
+    { role: "assistant" , content: "What's the loan amount in Naira (₦)?" },
   ]);
   
   const [formData, setFormData] = useState({
@@ -92,7 +95,7 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} content={msg.content} />
+          <ChatMessage key={i} role={msg.role as "system" | "user" | "assistant"}  content={msg.content} />
         ))}
       </div>
 
