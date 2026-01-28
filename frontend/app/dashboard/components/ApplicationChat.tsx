@@ -118,6 +118,15 @@ export default function ApplicationChat({
     };
   }, [on, off]);
 
+  useEffect(() => {
+  if (explanation?.explanation) {
+    setMessages((prev) => [...prev, { role: "assistant", content: explanation.explanation }]);
+    setStep("complete");
+    toast.success("Results ready!");
+  }
+}, [explanation]);
+
+
   const handleMonoSuccess = (code: string) => {
     setMessages((prev) => [
       ...prev,
