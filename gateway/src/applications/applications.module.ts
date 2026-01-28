@@ -6,9 +6,10 @@ import { ApplicationProcessorService } from './applications-processor.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { EventsModule } from 'src/events/events.module';
 import { MonoModule } from 'src/mono/mono.module';
+import { GeminiModule } from 'src/gemini/gemini.module';
 
 @Module({
-  imports: [PrismaModule, MonoModule, EventsModule],
+  imports: [PrismaModule, MonoModule, EventsModule, GeminiModule],
   controllers: [ApplicationsController],
   providers: [
     ApplicationsService,
