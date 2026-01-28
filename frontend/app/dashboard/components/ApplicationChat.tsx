@@ -8,13 +8,25 @@ import { useMonoConnect } from "@/lib/hooks/use-mono-connect";
 import { useMonoPublicKey } from "@/lib/hooks/queries/use-mono-public-key";
 import { useExchangeMonoToken } from "@/lib/hooks/queries/use-exchange-mono-token";
 import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
+import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
+import { useApplication } from "@/lib/hooks/queries/use-application";
 import { useWebSocket } from "@/lib/hooks/use-websocket";
 
-type Step = "amount" | "tenor" | "rate" | "purpose" | "creating" | "link" | "linking" | "ask-more" | "analyzing" | "complete";
+type Step =
+  | "amount"
+  | "tenor"
+  | "rate"
+  | "purpose"
+  | "creating"
+  | "link"
+  | "linking"
+  | "ask-more"
+  | "analyzing"
+  | "complete";
 
-type Message = { 
-  role: "system" | "user" | "assistant"; 
-  content: string; 
+type Message = {
+  role: "system" | "user" | "assistant";
+  content: string;
 };
 
 interface ApplicationChatProps {
@@ -22,20 +34,27 @@ interface ApplicationChatProps {
   applicantName: string;
 }
 
-export default function ApplicationChat({ applicantId, applicantName }: ApplicationChatProps) {
+export default function ApplicationChat({
+  applicantId,
+  applicantName,
+}: ApplicationChatProps) {
   const [step, setStep] = useState<Step>("amount");
+  const [shouldExplain, setShouldExplain] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "system", content: `Let's create a loan application for ${applicantName}` },
+    {
+      role: "system",
+      content: `Let's create a loan application for ${applicantName}`,
+    },
     { role: "assistant", content: "What's the loan amount in Naira (₦)?" },
   ]);
-  
+
   const [formData, setFormData] = useState({
     amount: "",
     tenor: "",
     rate: "",
     purpose: "",
   });
-  
+
   const [currentInput, setCurrentInput] = useState("");
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [linkedAccountsCount, setLinkedAccountsCount] = useState(0);
@@ -46,6 +65,11 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
   const { data: monoKeyData } = useMonoPublicKey();
   const { mutate: exchangeToken } = useExchangeMonoToken();
   const { isConnected, on, off, getClientId } = useWebSocket();
+  const { data: applicationData } = useApplication(applicationId);
+  const { data: explanation, isLoading: isExplaining } = useExplainResults(
+    applicationId,
+    shouldExplain,
+  );
 
   // Listen for WebSocket events
   useEffect(() => {
@@ -56,6 +80,17 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       ]);
     });
 
+    useEffect(() => {
+      if (explanation?.explanation) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: explanation.explanation },
+        ]);
+        setStep("complete");
+        toast.success("Results ready!");
+      }
+    }, [explanation]);
+
     on("application_complete", (data: any) => {
       setMessages((prev) => [
         ...prev,
@@ -63,6 +98,7 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
         { role: "assistant", content: `Processing results...` },
       ]);
       setStep("complete");
+      setShouldExplain(true);
       // TODO: Fetch application and display results with Gemini
     });
 
@@ -88,26 +124,38 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       { role: "system", content: "⏳ Verifying bank account..." },
     ]);
 
-    exchangeToken({ code, applicantId }, {
-      onSuccess: (data) => {
-        setLinkedAccountsCount((prev) => prev + 1);
-        setMessages((prev) => [
-          ...prev,
-          { role: "system", content: `✅ ${data.bankAccount.institution} account linked! (${linkedAccountsCount + 1} account${linkedAccountsCount + 1 > 1 ? 's' : ''} linked)` },
-          { role: "assistant", content: "Would you like to link another bank account? (Yes/No)" },
-        ]);
-        setStep("ask-more");
-        toast.success("Bank account linked!");
+    exchangeToken(
+      { code, applicantId },
+      {
+        onSuccess: (data) => {
+          setLinkedAccountsCount((prev) => prev + 1);
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "system",
+              content: `✅ ${data.bankAccount.institution} account linked! (${linkedAccountsCount + 1} account${linkedAccountsCount + 1 > 1 ? "s" : ""} linked)`,
+            },
+            {
+              role: "assistant",
+              content: "Would you like to link another bank account? (Yes/No)",
+            },
+          ]);
+          setStep("ask-more");
+          toast.success("Bank account linked!");
+        },
+        onError: (error: any) => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "system",
+              content: `❌ Failed to link account: ${error.message}`,
+            },
+          ]);
+          setStep("link");
+          toast.error("Failed to link bank account");
+        },
       },
-      onError: (error: any) => {
-        setMessages((prev) => [
-          ...prev,
-          { role: "system", content: `❌ Failed to link account: ${error.message}` },
-        ]);
-        setStep("link");
-        toast.error("Failed to link bank account");
-      },
-    });
+    );
   };
 
   const openMonoWidget = () => {
@@ -115,7 +163,11 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       toast.error("Mono public key not configured");
       setMessages((prev) => [
         ...prev,
-        { role: "system", content: "❌ Mono public key not found. Please add your API keys first." },
+        {
+          role: "system",
+          content:
+            "❌ Mono public key not found. Please add your API keys first.",
+        },
       ]);
       setStep("link");
       return;
@@ -134,7 +186,11 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
         if (step === "linking") {
           setMessages((prev) => [
             ...prev,
-            { role: "system", content: "Mono Connect closed. Type 'Yes' to try again or 'No' to skip." },
+            {
+              role: "system",
+              content:
+                "Mono Connect closed. Type 'Yes' to try again or 'No' to skip.",
+            },
           ]);
           setStep("link");
         }
@@ -144,7 +200,7 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
 
   const handleStartAnalysis = () => {
     const clientId = getClientId();
-    
+
     if (!clientId) {
       toast.error("WebSocket not connected");
       return;
@@ -161,16 +217,22 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
     ]);
     setStep("analyzing");
 
-    startAnalysis({ applicationId, clientId }, {
-      onError: (error: any) => {
-        setMessages((prev) => [
-          ...prev,
-          { role: "system", content: `❌ Failed to start analysis: ${error.message}` },
-        ]);
-        setStep("complete");
-        toast.error("Failed to start analysis");
+    startAnalysis(
+      { applicationId, clientId },
+      {
+        onError: (error: any) => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "system",
+              content: `❌ Failed to start analysis: ${error.message}`,
+            },
+          ]);
+          setStep("complete");
+          toast.error("Failed to start analysis");
+        },
       },
-    });
+    );
   };
 
   const handleSubmit = () => {
@@ -183,74 +245,94 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       setFormData({ ...formData, amount: currentInput });
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Great! ₦${Number(currentInput).toLocaleString()}. What's the loan tenor in months?` },
+        {
+          role: "assistant",
+          content: `Great! ₦${Number(currentInput).toLocaleString()}. What's the loan tenor in months?`,
+        },
       ]);
       setStep("tenor");
     } else if (step === "tenor") {
       setFormData({ ...formData, tenor: currentInput });
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Perfect! ${currentInput} months. What's the interest rate (%)?` },
+        {
+          role: "assistant",
+          content: `Perfect! ${currentInput} months. What's the interest rate (%)?`,
+        },
       ]);
       setStep("rate");
     } else if (step === "rate") {
       setFormData({ ...formData, rate: currentInput });
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "What's the purpose of this loan? (optional - press Enter to skip)" },
+        {
+          role: "assistant",
+          content:
+            "What's the purpose of this loan? (optional - press Enter to skip)",
+        },
       ]);
       setStep("purpose");
     } else if (step === "purpose") {
       const updatedFormData = { ...formData, purpose: currentInput };
       setFormData(updatedFormData);
-      
+
       setMessages((prev) => [
         ...prev,
         { role: "system", content: "⏳ Creating application..." },
       ]);
       setStep("creating");
 
-      createApplication({
-        applicantId,
-        amount: Number(updatedFormData.amount),
-        tenor: Number(updatedFormData.tenor),
-        interestRate: Number(updatedFormData.rate),
-        purpose: updatedFormData.purpose || undefined,
-      }, {
-        onSuccess: (data) => {
-          setApplicationId(data.applicationId);
-          setMessages((prev) => [
-            ...prev,
-            { role: "system", content: "✅ Application created!" },
-            { role: "assistant", content: "Would you like to link a bank account? (Yes/No)" },
-          ]);
-          setStep("link");
-          toast.success("Application created!");
+      createApplication(
+        {
+          applicantId,
+          amount: Number(updatedFormData.amount),
+          tenor: Number(updatedFormData.tenor),
+          interestRate: Number(updatedFormData.rate),
+          purpose: updatedFormData.purpose || undefined,
         },
-        onError: (error: any) => {
-          setMessages((prev) => [
-            ...prev,
-            { role: "system", content: `❌ Failed: ${error.message}` },
-          ]);
-          setStep("purpose");
-          toast.error("Failed to create application");
+        {
+          onSuccess: (data) => {
+            setApplicationId(data.applicationId);
+            setMessages((prev) => [
+              ...prev,
+              { role: "system", content: "✅ Application created!" },
+              {
+                role: "assistant",
+                content: "Would you like to link a bank account? (Yes/No)",
+              },
+            ]);
+            setStep("link");
+            toast.success("Application created!");
+          },
+          onError: (error: any) => {
+            setMessages((prev) => [
+              ...prev,
+              { role: "system", content: `❌ Failed: ${error.message}` },
+            ]);
+            setStep("purpose");
+            toast.error("Failed to create application");
+          },
         },
-      });
+      );
     } else if (step === "link") {
       const response = currentInput.toLowerCase();
-      
+
       if (response === "yes" || response === "y") {
         openMonoWidget();
       } else {
         setMessages((prev) => [
           ...prev,
-          { role: "system", content: "✅ Application ready! Link accounts later to start analysis." },
+          {
+            role: "system",
+            content:
+              "✅ Application ready! Link accounts later to start analysis.",
+          },
         ]);
         setStep("complete");
       }
     } else if (step === "ask-more") {
       const response = currentInput.toLowerCase();
-      
+
       if (response === "yes" || response === "y") {
         openMonoWidget();
       } else {
@@ -280,10 +362,16 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
   };
 
   const getInputType = () => {
-    return step === "amount" || step === "tenor" || step === "rate" ? "number" : "text";
+    return step === "amount" || step === "tenor" || step === "rate"
+      ? "number"
+      : "text";
   };
 
-  const isInputDisabled = step === "creating" || step === "linking" || step === "analyzing" || step === "complete";
+  const isInputDisabled =
+    step === "creating" ||
+    step === "linking" ||
+    step === "analyzing" ||
+    step === "complete";
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
@@ -292,7 +380,7 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
           ⚠️ Connecting to server...
         </div>
       )}
-      
+
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {messages.map((msg, i) => (
           <ChatMessage key={i} role={msg.role} content={msg.content} />
