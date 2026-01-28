@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -7,6 +7,8 @@ import { useCreateApplication } from "@/lib/hooks/queries/use-create-application
 import { useMonoConnect } from "@/lib/hooks/use-mono-connect";
 import { useMonoPublicKey } from "@/lib/hooks/queries/use-mono-public-key";
 import { useExchangeMonoToken } from "@/lib/hooks/queries/use-exchange-mono-token";
+import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
+import { useWebSocket } from "@/lib/hooks/use-websocket";
 
 type Step = "amount" | "tenor" | "rate" | "purpose" | "creating" | "link" | "linking" | "ask-more" | "analyzing" | "complete";
 
@@ -39,9 +41,46 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
   const [linkedAccountsCount, setLinkedAccountsCount] = useState(0);
 
   const { mutate: createApplication } = useCreateApplication();
-  const { openMonoConnect, isReady: isMonoReady } = useMonoConnect();
+  const { mutate: startAnalysis } = useStartAnalysis();
+  const { openMonoConnect } = useMonoConnect();
   const { data: monoKeyData } = useMonoPublicKey();
   const { mutate: exchangeToken } = useExchangeMonoToken();
+  const { isConnected, on, off, getClientId } = useWebSocket();
+
+  // Listen for WebSocket events
+  useEffect(() => {
+    on("application_progress", (data: { message: string }) => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "system", content: data.message },
+      ]);
+    });
+
+    on("application_complete", (data: any) => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "system", content: "✅ Analysis complete!" },
+        { role: "assistant", content: `Processing results...` },
+      ]);
+      setStep("complete");
+      // TODO: Fetch application and display results with Gemini
+    });
+
+    on("application_error", (data: { message: string }) => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "system", content: `❌ Error: ${data.message}` },
+      ]);
+      setStep("complete");
+      toast.error("Analysis failed");
+    });
+
+    return () => {
+      off("application_progress");
+      off("application_complete");
+      off("application_error");
+    };
+  }, [on, off]);
 
   const handleMonoSuccess = (code: string) => {
     setMessages((prev) => [
@@ -99,6 +138,37 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
           ]);
           setStep("link");
         }
+      },
+    });
+  };
+
+  const handleStartAnalysis = () => {
+    const clientId = getClientId();
+    
+    if (!clientId) {
+      toast.error("WebSocket not connected");
+      return;
+    }
+
+    if (!applicationId) {
+      toast.error("No application to analyze");
+      return;
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "system", content: "🧠 Starting analysis..." },
+    ]);
+    setStep("analyzing");
+
+    startAnalysis({ applicationId, clientId }, {
+      onError: (error: any) => {
+        setMessages((prev) => [
+          ...prev,
+          { role: "system", content: `❌ Failed to start analysis: ${error.message}` },
+        ]);
+        setStep("complete");
+        toast.error("Failed to start analysis");
       },
     });
   };
@@ -184,12 +254,7 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       if (response === "yes" || response === "y") {
         openMonoWidget();
       } else {
-        setMessages((prev) => [
-          ...prev,
-          { role: "system", content: "🧠 Starting analysis..." },
-        ]);
-        setStep("analyzing");
-        // TODO: Call start-analysis endpoint with WebSocket clientId
+        handleStartAnalysis();
       }
     }
 
@@ -222,6 +287,12 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
+      {!isConnected && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800">
+          ⚠️ Connecting to server...
+        </div>
+      )}
+      
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {messages.map((msg, i) => (
           <ChatMessage key={i} role={msg.role} content={msg.content} />
