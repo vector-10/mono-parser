@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { ApplicationProcessorService } from './applications-processor.service';
+import { GeminiService } from 'src/gemini/gemini.service';
 import { DataAggregationService } from './data-aggregation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -20,6 +21,7 @@ export class ApplicationsController {
     private readonly applicationsService: ApplicationsService,
     private readonly applicationProcessor: ApplicationProcessorService,
     private readonly dataAggregationService: DataAggregationService,
+    private readonly geminiService: GeminiService,
   ) {}
 
   @Post()
@@ -74,6 +76,22 @@ export class ApplicationsController {
       status: 'PROCESSING',
       message: 'Analysis started. You will receive updates via WebSocket',
     };
+  }
+
+  @Get(':id/explain')
+  async explainApplication(@Request() req, @Param('id') id: string) {
+    const application = await this.applicationsService.findOne(id, req.user.id);
+
+    if (application.status !== 'COMPLETED') {
+      throw new Error('Application analysis not complete yet');
+    }
+
+    const explanation = await this.geminiService.explainLoanDecision({
+      score: application.score,
+      decision: application.decision,
+    });
+
+    return { explanation };
   }
 
   @Get()

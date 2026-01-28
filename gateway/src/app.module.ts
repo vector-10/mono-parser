@@ -11,6 +11,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { ApplicantsModule } from './applicants/applicants.module';
 import { EventsGateway } from './events/events.gateway';
+import { GeminiModule } from './gemini/gemini.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { EventsGateway } from './events/events.gateway';
     EventsModule,
     WebhooksModule,
     ApplicationsModule,
+    GeminiModule,
     ApplicantsModule,
     PrismaModule,
   ],
