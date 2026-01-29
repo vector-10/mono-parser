@@ -43,9 +43,26 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(room).emit(event, data);
   }
 
+  emitToUser(userId: string, event: string, data: any) {
+    const userRoom = `user:${userId}`;
+    this.server.to(userRoom).emit(event, data);
+    this.logger.info({ userId, event }, 'Emitted event to user');
+  }
+
   subscribeToRoom(client: Socket, room: string) {
     client.join(room);
     this.logger.info(`Client ${client.id} joined room: ${room}`);
+  }
+  
+  @SubscribeMessage('join_user_room')
+  handleJoinUserRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { userId: string },
+  ) {
+    const userRoom = `user:${data.userId}`;
+    client.join(userRoom);
+    this.logger.info(`Client ${client.id} joined user room: ${userRoom}`);
+    return { joined: true, room: userRoom };
   }
 
   @SubscribeMessage('create_application')

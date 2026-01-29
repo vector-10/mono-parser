@@ -4,14 +4,12 @@ import { toast } from "sonner";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { useCreateApplication } from "@/lib/hooks/queries/use-create-application";
-import { useMonoConnect } from "@/lib/hooks/use-mono-connect";
-import { useMonoPublicKey } from "@/lib/hooks/queries/use-mono-public-key";
-import { useExchangeMonoToken } from "@/lib/hooks/queries/use-exchange-mono-token";
 import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
 import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
 import { useApplication } from "@/lib/hooks/queries/use-application";
 import { useWebSocket } from "@/lib/hooks/use-websocket";
 import { useAuthStore } from "@/lib/store/auth";
+import { useInitiateMonoLink } from "@/lib/hooks/queries/use-initiate-mono-link";
 
 type Step =
   | "welcome"
@@ -29,6 +27,7 @@ type Step =
 type Message = {
   role: "system" | "user" | "assistant";
   content: string;
+  link?: string; // For displaying Mono link
 };
 
 interface ApplicationChatProps {
@@ -46,11 +45,11 @@ export default function ApplicationChat({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Welcome ${user?.name}! 👋 To create a loan application for ${applicantName}, let's start by linking your bank accounts. This helps us analyze the applicants financial profile .`,
+      content: `Welcome ${user?.name}! 👋 To create a loan application for ${applicantName}, let's start by linking their bank accounts. This helps us analyze the applicant's financial profile.`,
     },
     {
       role: "assistant",
-      content: "Would you like to link a bank account? (Yes/No)",
+      content: "Would you like to generate a bank linking URL? (Yes/No)",
     },
   ]);
 
@@ -67,15 +66,20 @@ export default function ApplicationChat({
 
   const { mutate: createApplication } = useCreateApplication();
   const { mutate: startAnalysis } = useStartAnalysis();
-  const { openMonoConnect } = useMonoConnect();
-  const { data: monoKeyData } = useMonoPublicKey();
-  const { mutate: exchangeToken } = useExchangeMonoToken();
-  const { isConnected, on, off, getClientId } = useWebSocket();
+  const { mutate: initiateMonoLink, isPending: isGeneratingLink } = useInitiateMonoLink();
+  const { isConnected, on, off, getClientId, socket } = useWebSocket();
   const { data: applicationData } = useApplication(applicationId);
   const { data: explanation, isLoading: isExplaining } = useExplainResults(
     applicationId,
     shouldExplain,
   );
+
+  // Join user room on connection
+  useEffect(() => {
+    if (socket && user?.id) {
+      socket.emit('join_user_room', { userId: user.id });
+    }
+  }, [socket, user?.id]);
 
   // Listen for WebSocket events
   useEffect(() => {
@@ -105,12 +109,38 @@ export default function ApplicationChat({
       toast.error("Analysis failed");
     });
 
+    // ✅ Listen for account linked event from webhook
+    on("account_linked", (data: { 
+      applicantId: string;
+      accountId: string;
+      institution: string;
+      accountNumber: string;
+    }) => {
+      if (data.applicantId === applicantId) {
+        setLinkedAccountsCount((prev) => prev + 1);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "system",
+            content: `✅ ${data.institution} account (${data.accountNumber}) linked successfully! (${linkedAccountsCount + 1} account${linkedAccountsCount + 1 > 1 ? "s" : ""} total)`,
+          },
+          {
+            role: "assistant",
+            content: "Great! Would you like to generate another linking URL? (Yes/No)",
+          },
+        ]);
+        setStep("ask-more-accounts");
+        toast.success("Bank account linked!");
+      }
+    });
+
     return () => {
       off("application_progress");
       off("application_complete");
       off("application_error");
+      off("account_linked");
     };
-  }, [on, off]);
+  }, [on, off, applicantId, linkedAccountsCount]);
 
   useEffect(() => {
     if (explanation?.explanation) {
@@ -123,92 +153,48 @@ export default function ApplicationChat({
     }
   }, [explanation]);
 
-  const handleMonoSuccess = (code: string) => {
+  const handleGenerateLink = () => {
     setMessages((prev) => [
       ...prev,
-      { role: "system", content: "⏳ Verifying bank account..." },
-    ]);
-
-    exchangeToken(
-      { code, applicantId },
-      {
-        onSuccess: (data) => {
-          setLinkedAccountsCount((prev) => prev + 1);
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "system",
-              content: `✅ ${data.bankAccount.institution} account linked! (${linkedAccountsCount + 1} account${linkedAccountsCount + 1 > 1 ? "s" : ""} total)`,
-            },
-            {
-              role: "assistant",
-              content: "Great! Would you like to link another bank account? (Yes/No)",
-            },
-          ]);
-          setStep("ask-more-accounts");
-          toast.success("Bank account linked!");
-        },
-        onError: (error: any) => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "system",
-              content: `❌ Failed to link account: ${error.message}`,
-            },
-            {
-              role: "assistant",
-              content: "Would you like to try again or use manual linking? (Retry/Manual/Skip)",
-            },
-          ]);
-          setStep("link-account");
-          toast.error("Failed to link bank account");
-        },
-      },
-    );
-  };
-
-  const openMonoWidget = () => {
-    if (!monoKeyData?.publicKey) {
-      toast.error("Mono public key not configured");
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "system",
-          content: "❌ Mono public key not found. Please add your API keys first.",
-        },
-        {
-          role: "assistant",
-          content: "Would you like to try manual linking instead? (Yes/No)",
-        },
-      ]);
-      setStep("link-account");
-      return;
-    }
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "system", content: "🔗 Opening Mono Connect..." },
+      { role: "system", content: "🔗 Generating bank linking URL..." },
     ]);
     setStep("linking");
 
-    openMonoConnect({
-      key: monoKeyData.publicKey,
-      onSuccess: handleMonoSuccess,
-      onClose: () => {
-        if (step === "linking") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "system",
-              content: "Mono Connect closed.",
-            },
-            {
-              role: "assistant",
-              content: "Would you like to try again or use manual linking? (Retry/Manual/Skip)",
-            },
-          ]);
-          setStep("link-account");
-        }
+    initiateMonoLink(applicantId, {
+      onSuccess: (data) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "system",
+            content: "✅ Link generated successfully!",
+          },
+          {
+            role: "assistant",
+            content: `Here's the bank linking URL for ${applicantName}. Copy and send it to them:`,
+            link: data.widgetUrl,
+          },
+          {
+            role: "assistant",
+            content: "I'll notify you when they complete the linking process. Would you like to generate another link? (Yes/No)",
+          },
+        ]);
+        setStep("ask-more-accounts");
+        toast.success("Link generated!");
+      },
+      onError: (error: any) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "system",
+            content: `❌ Failed to generate link: ${error.message}`,
+          },
+          {
+            role: "assistant",
+            content: "Would you like to try again? (Yes/No)",
+          },
+        ]);
+        setStep("link-account");
+        toast.error("Failed to generate link");
       },
     });
   };
@@ -255,7 +241,7 @@ export default function ApplicationChat({
       ...prev,
       {
         role: "assistant",
-        content: `Perfect! You have ${linkedAccountsCount} bank account${linkedAccountsCount > 1 ? "s" : ""} linked. Now let's create your loan application.`,
+        content: `Perfect! ${applicantName} has ${linkedAccountsCount} bank account${linkedAccountsCount > 1 ? "s" : ""} linked. Now let's create the loan application.`,
       },
       {
         role: "assistant",
@@ -275,18 +261,7 @@ export default function ApplicationChat({
       const response = currentInput.toLowerCase();
 
       if (response === "yes" || response === "y") {
-        openMonoWidget();
-      } else if (response === "manual") {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: "Manual linking coming soon! For now, please use Mono Connect. Type 'Retry' to try again.",
-          },
-        ]);
-        setStep("link-account");
-      } else if (response === "retry") {
-        openMonoWidget();
+        handleGenerateLink();
       } else if (response === "skip" || response === "no" || response === "n") {
         if (linkedAccountsCount > 0) {
           proceedToLoanDetails();
@@ -295,7 +270,7 @@ export default function ApplicationChat({
             ...prev,
             {
               role: "assistant",
-              content: "⚠️ You need at least one bank account to proceed. Would you like to link one now? (Yes/No)",
+              content: "⚠️ At least one bank account must be linked to proceed. Would you like to generate a linking URL? (Yes/No)",
             },
           ]);
         }
@@ -304,7 +279,7 @@ export default function ApplicationChat({
       const response = currentInput.toLowerCase();
 
       if (response === "yes" || response === "y") {
-        openMonoWidget();
+        handleGenerateLink();
       } else {
         proceedToLoanDetails();
       }
@@ -416,7 +391,8 @@ export default function ApplicationChat({
     step === "creating" ||
     step === "linking" ||
     step === "analyzing" ||
-    step === "complete";
+    step === "complete" ||
+    isGeneratingLink;
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
@@ -428,7 +404,31 @@ export default function ApplicationChat({
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} content={msg.content} />
+          <div key={i}>
+            <ChatMessage role={msg.role} content={msg.content} />
+            {msg.link && (
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-gray-600 mb-2">Linking URL:</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={msg.link}
+                    readOnly
+                    className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(msg.link!);
+                      toast.success("Link copied!");
+                    }}
+                    className="px-4 py-2 bg-[#0055ba] text-white rounded hover:bg-[#004494] text-sm"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         ))}
       </div>
 

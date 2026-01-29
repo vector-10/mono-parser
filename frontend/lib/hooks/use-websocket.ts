@@ -55,5 +55,12 @@ export function useWebSocket() {
     return socketRef.current?.id || null;
   };
 
-  return { isConnected, on, off, emit, getClientId };
+  return { 
+    isConnected, 
+    on, 
+    off, 
+    emit, 
+    getClientId,
+    socket: socketRef.current 
+  };
 }

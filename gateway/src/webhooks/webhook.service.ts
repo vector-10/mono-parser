@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PinoLogger } from 'nestjs-pino';
+import { EventsGateway } from 'src/events/events.gateway';
 
 @Injectable()
 export class MonoWebhookService {
   constructor(
     private prisma: PrismaService,
     private readonly logger: PinoLogger,
+     private readonly eventsGateway: EventsGateway,
   ) {
     this.logger.setContext(MonoWebhookService.name);
   }
@@ -53,12 +55,19 @@ export class MonoWebhookService {
           balance: accountData?.balance,
           institution: accountData?.institution?.name,
         },
+        include: { applicant: true },
       });
 
       this.logger.info(
         { monoAccountId, applicantId },
         ` Successfully linked Bank to Applicant `,
       );
+      this.eventsGateway.emitToUser(bankAccount.applicant.fintechId, 'account_linked', {
+        applicantId,
+        accountId: bankAccount.id,
+        institution: bankAccount.institution,
+        accountNumber: bankAccount.accountNumber,
+      });
       return { status: 'success', accountId: bankAccount.id };
     } catch (error) {
       this.logger.error(
