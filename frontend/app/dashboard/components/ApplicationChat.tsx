@@ -11,6 +11,7 @@ import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
 import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
 import { useApplication } from "@/lib/hooks/queries/use-application";
 import { useWebSocket } from "@/lib/hooks/use-websocket";
+import { useAuthStore } from "@/lib/store/auth";
 
 type Step =
   | "welcome"
@@ -40,11 +41,12 @@ export default function ApplicationChat({
   applicantName,
 }: ApplicationChatProps) {
   const [step, setStep] = useState<Step>("welcome");
+  const user = useAuthStore((state) => state.user);
   const [shouldExplain, setShouldExplain] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Welcome ${applicantName}! 👋 To create a loan application, let's start by linking your bank accounts. This helps us analyze your financial profile.`,
+      content: `Welcome ${user?.name}! 👋 To create a loan application for ${applicantName}, let's start by linking your bank accounts. This helps us analyze the applicants financial profile .`,
     },
     {
       role: "assistant",

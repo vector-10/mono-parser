@@ -22,42 +22,6 @@ export class MonoController {
     private readonly prisma: PrismaService,
   ) {}
 
-  @Get('public-key')
-  async getPublicKey(@Request() req) {
-    return {
-      publicKey: req.user.monoPublicKey,
-    };
-  }
-
-  @Post('exchange-token')
-  async exchangeToken(
-    @Request() req,
-    @Body('code') code: string,
-    @Body('applicantId') applicantId: string,
-  ) {
-    // Exchange code for account_id
-    const accountData = await this.monoService.exchangeToken(
-      code,
-      req.user.monoApiKey,
-    );
-
-    // Save bank account to applicant
-    const bankAccount = await this.prisma.bankAccount.create({
-      data: {
-        applicantId: applicantId,
-        monoAccountId: accountData.id,
-        institution: accountData.institution?.name || 'Unknown',
-        accountNumber: accountData.account_number || null,
-        accountName: accountData.name || null,
-      },
-    });
-
-    return {
-      accountId: accountData.id,
-      bankAccount: bankAccount,
-      message: 'Bank account linked successfully',
-    };
-  }
 
   @Post('initiate/:applicantId')
   async initiate(@Request() req, @Param('applicantId') applicantId: string) {
