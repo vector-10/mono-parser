@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateApplicationDto } from './dto/create-application.dto';
 
 @Injectable()
 export class ApplicationsService {
@@ -11,12 +12,9 @@ export class ApplicationsService {
 
   async createApplication(
   fintechId: string,
-  applicantId: string,
-  amount: number,
-  interestRate: number,
-  purpose: string | undefined,  
-  tenor: number,                 
+  data: CreateApplicationDto             
 ) {
+  const { applicantId, amount, tenor, interestRate, purpose } = data;
 
     const applicant = await this.prisma.applicant.findFirst({
       where: { id: applicantId, fintechId },

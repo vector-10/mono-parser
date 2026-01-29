@@ -11,6 +11,7 @@ import {
 import { ApplicationsService } from './applications.service';
 import { ApplicationProcessorService } from './applications-processor.service';
 import { GeminiService } from 'src/gemini/gemini.service';
+import { CreateApplicationDto } from 'src/applications/dto/create-application.dto';
 import { DataAggregationService } from './data-aggregation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -25,21 +26,10 @@ export class ApplicationsController {
   ) {}
 
   @Post()
-  async create(
-    @Request() req,
-    @Body('applicantId') applicantId: string,
-    @Body('amount') amount: number,
-    @Body('tenor') tenor: number,
-    @Body('interestRate') interestRate: number,
-    @Body('purpose') purpose?: string,
-  ) {
+  async create(@Request() req, @Body() body: CreateApplicationDto) {
     const application = await this.applicationsService.createApplication(
       req.user.id,
-      applicantId,
-      amount,
-      interestRate,
-      purpose,
-      tenor,
+      body
     );
 
     return {

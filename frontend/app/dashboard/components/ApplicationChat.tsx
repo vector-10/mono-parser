@@ -80,17 +80,6 @@ export default function ApplicationChat({
       ]);
     });
 
-    useEffect(() => {
-      if (explanation?.explanation) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: explanation.explanation },
-        ]);
-        setStep("complete");
-        toast.success("Results ready!");
-      }
-    }, [explanation]);
-
     on("application_complete", (data: any) => {
       setMessages((prev) => [
         ...prev,
