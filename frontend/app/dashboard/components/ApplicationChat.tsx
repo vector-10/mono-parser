@@ -13,14 +13,15 @@ import { useApplication } from "@/lib/hooks/queries/use-application";
 import { useWebSocket } from "@/lib/hooks/use-websocket";
 
 type Step =
+  | "welcome"
+  | "link-account"
+  | "linking"
+  | "ask-more-accounts"
   | "amount"
   | "tenor"
   | "rate"
   | "purpose"
   | "creating"
-  | "link"
-  | "linking"
-  | "ask-more"
   | "analyzing"
   | "complete";
 
@@ -38,14 +39,17 @@ export default function ApplicationChat({
   applicantId,
   applicantName,
 }: ApplicationChatProps) {
-  const [step, setStep] = useState<Step>("amount");
+  const [step, setStep] = useState<Step>("welcome");
   const [shouldExplain, setShouldExplain] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
-      role: "system",
-      content: `Let's create a loan application for ${applicantName}`,
+      role: "assistant",
+      content: `Welcome ${applicantName}! 👋 To create a loan application, let's start by linking your bank accounts. This helps us analyze your financial profile.`,
     },
-    { role: "assistant", content: "What's the loan amount in Naira (₦)?" },
+    {
+      role: "assistant",
+      content: "Would you like to link a bank account? (Yes/No)",
+    },
   ]);
 
   const [formData, setFormData] = useState({
@@ -88,7 +92,6 @@ export default function ApplicationChat({
       ]);
       setStep("complete");
       setShouldExplain(true);
-      // TODO: Fetch application and display results with Gemini
     });
 
     on("application_error", (data: { message: string }) => {
@@ -133,14 +136,14 @@ export default function ApplicationChat({
             ...prev,
             {
               role: "system",
-              content: `✅ ${data.bankAccount.institution} account linked! (${linkedAccountsCount + 1} account${linkedAccountsCount + 1 > 1 ? "s" : ""} linked)`,
+              content: `✅ ${data.bankAccount.institution} account linked! (${linkedAccountsCount + 1} account${linkedAccountsCount + 1 > 1 ? "s" : ""} total)`,
             },
             {
               role: "assistant",
-              content: "Would you like to link another bank account? (Yes/No)",
+              content: "Great! Would you like to link another bank account? (Yes/No)",
             },
           ]);
-          setStep("ask-more");
+          setStep("ask-more-accounts");
           toast.success("Bank account linked!");
         },
         onError: (error: any) => {
@@ -150,8 +153,12 @@ export default function ApplicationChat({
               role: "system",
               content: `❌ Failed to link account: ${error.message}`,
             },
+            {
+              role: "assistant",
+              content: "Would you like to try again or use manual linking? (Retry/Manual/Skip)",
+            },
           ]);
-          setStep("link");
+          setStep("link-account");
           toast.error("Failed to link bank account");
         },
       },
@@ -165,11 +172,14 @@ export default function ApplicationChat({
         ...prev,
         {
           role: "system",
-          content:
-            "❌ Mono public key not found. Please add your API keys first.",
+          content: "❌ Mono public key not found. Please add your API keys first.",
+        },
+        {
+          role: "assistant",
+          content: "Would you like to try manual linking instead? (Yes/No)",
         },
       ]);
-      setStep("link");
+      setStep("link-account");
       return;
     }
 
@@ -188,11 +198,14 @@ export default function ApplicationChat({
             ...prev,
             {
               role: "system",
-              content:
-                "Mono Connect closed. Type 'Yes' to try again or 'No' to skip.",
+              content: "Mono Connect closed.",
+            },
+            {
+              role: "assistant",
+              content: "Would you like to try again or use manual linking? (Retry/Manual/Skip)",
             },
           ]);
-          setStep("link");
+          setStep("link-account");
         }
       },
     });
@@ -235,13 +248,65 @@ export default function ApplicationChat({
     );
   };
 
+  const proceedToLoanDetails = () => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: `Perfect! You have ${linkedAccountsCount} bank account${linkedAccountsCount > 1 ? "s" : ""} linked. Now let's create your loan application.`,
+      },
+      {
+        role: "assistant",
+        content: "What's the loan amount in Naira (₦)?",
+      },
+    ]);
+    setStep("amount");
+  };
+
   const handleSubmit = () => {
     if (!currentInput.trim()) return;
 
     const userMessage: Message = { role: "user", content: currentInput };
     setMessages((prev) => [...prev, userMessage]);
 
-    if (step === "amount") {
+    if (step === "welcome" || step === "link-account") {
+      const response = currentInput.toLowerCase();
+
+      if (response === "yes" || response === "y") {
+        openMonoWidget();
+      } else if (response === "manual") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Manual linking coming soon! For now, please use Mono Connect. Type 'Retry' to try again.",
+          },
+        ]);
+        setStep("link-account");
+      } else if (response === "retry") {
+        openMonoWidget();
+      } else if (response === "skip" || response === "no" || response === "n") {
+        if (linkedAccountsCount > 0) {
+          proceedToLoanDetails();
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: "⚠️ You need at least one bank account to proceed. Would you like to link one now? (Yes/No)",
+            },
+          ]);
+        }
+      }
+    } else if (step === "ask-more-accounts") {
+      const response = currentInput.toLowerCase();
+
+      if (response === "yes" || response === "y") {
+        openMonoWidget();
+      } else {
+        proceedToLoanDetails();
+      }
+    } else if (step === "amount") {
       setFormData({ ...formData, amount: currentInput });
       setMessages((prev) => [
         ...prev,
@@ -267,8 +332,7 @@ export default function ApplicationChat({
         ...prev,
         {
           role: "assistant",
-          content:
-            "What's the purpose of this loan? (optional - press Enter to skip)",
+          content: "What's the purpose of this loan? (optional - press Enter to skip)",
         },
       ]);
       setStep("purpose");
@@ -281,14 +345,6 @@ export default function ApplicationChat({
         { role: "system", content: "⏳ Creating application..." },
       ]);
       setStep("creating");
-
-      console.log("Frontend sending:", {
-        applicantId,
-        amount: Number(updatedFormData.amount),
-        tenor: Number(updatedFormData.tenor),
-        interestRate: Number(updatedFormData.rate),
-        purpose: updatedFormData.purpose || undefined,
-      });
 
       createApplication(
         {
@@ -306,11 +362,13 @@ export default function ApplicationChat({
               { role: "system", content: "✅ Application created!" },
               {
                 role: "assistant",
-                content: "Would you like to link a bank account? (Yes/No)",
+                content: "Starting automatic analysis...",
               },
             ]);
-            setStep("link");
             toast.success("Application created!");
+            
+            // Auto-start analysis
+            setTimeout(() => handleStartAnalysis(), 1000);
           },
           onError: (error: any) => {
             setMessages((prev) => [
@@ -322,30 +380,6 @@ export default function ApplicationChat({
           },
         },
       );
-    } else if (step === "link") {
-      const response = currentInput.toLowerCase();
-
-      if (response === "yes" || response === "y") {
-        openMonoWidget();
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "system",
-            content:
-              "✅ Application ready! Link accounts later to start analysis.",
-          },
-        ]);
-        setStep("complete");
-      }
-    } else if (step === "ask-more") {
-      const response = currentInput.toLowerCase();
-
-      if (response === "yes" || response === "y") {
-        openMonoWidget();
-      } else {
-        handleStartAnalysis();
-      }
     }
 
     setCurrentInput("");
@@ -353,6 +387,10 @@ export default function ApplicationChat({
 
   const getPlaceholder = () => {
     switch (step) {
+      case "welcome":
+      case "link-account":
+      case "ask-more-accounts":
+        return "Type 'Yes' or 'No'";
       case "amount":
         return "Enter amount (e.g., 100000)";
       case "tenor":
@@ -361,9 +399,6 @@ export default function ApplicationChat({
         return "Enter interest rate (e.g., 5.0)";
       case "purpose":
         return "Enter purpose or press Enter to skip";
-      case "link":
-      case "ask-more":
-        return "Type 'Yes' or 'No'";
       default:
         return "";
     }
