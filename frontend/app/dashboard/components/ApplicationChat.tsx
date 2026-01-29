@@ -108,13 +108,15 @@ export default function ApplicationChat({
   }, [on, off]);
 
   useEffect(() => {
-  if (explanation?.explanation) {
-    setMessages((prev) => [...prev, { role: "assistant", content: explanation.explanation }]);
-    setStep("complete");
-    toast.success("Results ready!");
-  }
-}, [explanation]);
-
+    if (explanation?.explanation) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: explanation.explanation },
+      ]);
+      setStep("complete");
+      toast.success("Results ready!");
+    }
+  }, [explanation]);
 
   const handleMonoSuccess = (code: string) => {
     setMessages((prev) => [
@@ -279,6 +281,14 @@ export default function ApplicationChat({
         { role: "system", content: "⏳ Creating application..." },
       ]);
       setStep("creating");
+
+      console.log("Frontend sending:", {
+        applicantId,
+        amount: Number(updatedFormData.amount),
+        tenor: Number(updatedFormData.tenor),
+        interestRate: Number(updatedFormData.rate),
+        purpose: updatedFormData.purpose || undefined,
+      });
 
       createApplication(
         {

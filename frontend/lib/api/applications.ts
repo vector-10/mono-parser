@@ -34,6 +34,7 @@ export interface Application {
 
 export const applicationsApi = {
   create: async (data: CreateApplicationData): Promise<{ applicationId: string; status: string; message: string }> => {
+    
     const response = await api.post('/applications', data)
     return response.data
   },

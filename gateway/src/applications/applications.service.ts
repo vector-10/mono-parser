@@ -10,11 +10,16 @@ import { CreateApplicationDto } from './dto/create-application.dto';
 export class ApplicationsService {
   constructor(private prisma: PrismaService) {}
 
-  async createApplication(
-  fintechId: string,
-  data: CreateApplicationDto             
-) {
-  const { applicantId, amount, tenor, interestRate, purpose } = data;
+  async createApplication(fintechId: string, data: CreateApplicationDto) {
+    const { applicantId, amount, tenor, interestRate, purpose } = data;
+
+    console.log('Service destructured:', {
+      applicantId,
+      amount,
+      tenor,
+      interestRate,
+      purpose,
+    });
 
     const applicant = await this.prisma.applicant.findFirst({
       where: { id: applicantId, fintechId },

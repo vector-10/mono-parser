@@ -27,9 +27,11 @@ export class ApplicationsController {
 
   @Post()
   async create(@Request() req, @Body() body: CreateApplicationDto) {
+    console.log('Controller received body:', body);
+    console.log('Parsed applicantId:', body.applicantId);
     const application = await this.applicationsService.createApplication(
       req.user.id,
-      body
+      body,
     );
 
     return {

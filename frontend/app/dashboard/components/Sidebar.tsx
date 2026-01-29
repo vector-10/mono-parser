@@ -91,9 +91,9 @@ export default function Sidebar() {
                       {applicants?.map((applicant) => (
                         <Link
                           key={applicant.id}
-                          href={`/dashboard/operations/${applicant.id}`}
+                          href={`/dashboard/operations/${applicant.id}/chat`}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
-                            pathname === `/dashboard/operations/${applicant.id}`
+                            pathname.startsWith(`/dashboard/operations/${applicant.id}/chat`)
                               ? "bg-[#0055ba]/10 text-[#0055ba] font-medium"
                               : "text-gray-600 hover:bg-gray-50"
                           }`}
