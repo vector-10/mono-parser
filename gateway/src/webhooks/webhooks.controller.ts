@@ -59,14 +59,17 @@ export class WebhooksController {
       return { status: 'ignored' };
     }
 
-    handler(payload.data).catch((error) => {
+    try {
+      const result = await handler(payload.data); 
+      return { status: 'received', result };
+    } catch (error) {
       this.logger.error(
         { err: error, event: payload.event },
-        'Background handler failed',
+        'Handler failed',
       );
-    });
+      return { status: 'error', message: error.message };
+    }
 
-    return { status: 'received' };
   }
 
   private verifyWebhookSignature(
