@@ -11,6 +11,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
+  namespace: '/api',
   cors: {
     origin: '*',
   },
@@ -53,7 +54,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.join(room);
     this.logger.info(`Client ${client.id} joined room: ${room}`);
   }
-  
+
   @SubscribeMessage('join_user_room')
   handleJoinUserRoom(
     @ConnectedSocket() client: Socket,
