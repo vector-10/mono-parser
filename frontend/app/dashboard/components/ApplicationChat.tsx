@@ -9,6 +9,13 @@ import { useApplicationActions } from "@/lib/hooks/useApplicationActions";
 import { useApplicationFlow } from "@/lib/hooks/useApplicationFlow";
 import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
 import { useApplication } from "@/lib/hooks/queries/use-application";
+import { useApplicant } from "@/lib/hooks/queries/use-applicant";
+
+type Message = {
+  role: "system" | "user" | "assistant";
+  content: string;
+  link?: string;
+};
 
 interface ApplicationChatProps {
   applicantId: string;
@@ -24,7 +31,8 @@ export default function ApplicationChat({
   const [currentInput, setCurrentInput] = useState("");
   const [shouldExplain, setShouldExplain] = useState(false);
 
-  // Actions hook
+  const { data: applicant } = useApplicant(applicantId);
+
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
     (data) => {
@@ -46,11 +54,10 @@ export default function ApplicationChat({
   const actions = useApplicationActions(
     applicantId,
     applicantName,
-    (messages) => flow.addMessages(messages),
+    (messages: Message[]) => flow.addMessages(messages),
     getClientId
   );
 
-  // Flow hook
   const flow = useApplicationFlow(
     applicantName,
     user?.name || "User",
@@ -59,7 +66,41 @@ export default function ApplicationChat({
     actions.handleCreateApplication
   );
 
-  // Fetch application data and explanation
+  useEffect(() => {
+    if (!applicant) return;
+
+    const bankAccountCount = applicant.bankAccounts?.length || 0;
+    const applicationCount = applicant.applications?.length || 0;
+
+    setLinkedAccountsCount(bankAccountCount);
+
+    if (bankAccountCount > 0 && applicationCount > 0) {
+      flow.setMessages([
+        {
+          role: "assistant",
+          content: `Welcome back! ${applicantName} has ${bankAccountCount} bank account${bankAccountCount > 1 ? "s" : ""} linked and ${applicationCount} previous application${applicationCount > 1 ? "s" : ""}.`,
+        },
+        {
+          role: "assistant",
+          content: "Would you like to create a new loan application? (Yes/No)",
+        },
+      ]);
+      flow.setStep("welcome");
+    } else if (bankAccountCount > 0) {
+      flow.setMessages([
+        {
+          role: "assistant",
+          content: `Welcome! ${applicantName} has ${bankAccountCount} bank account${bankAccountCount > 1 ? "s" : ""} already linked. Let's create a loan application!`,
+        },
+        {
+          role: "assistant",
+          content: "What's the loan amount in Naira (₦)?",
+        },
+      ]);
+      flow.setStep("amount");
+    }
+  }, [applicant, applicantName]);
+
   const { data: applicationData } = useApplication(actions.applicationId);
   const { data: explanation } = useExplainResults(
     actions.applicationId,
