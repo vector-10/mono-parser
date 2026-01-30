@@ -103,11 +103,14 @@ export class ApplicationProcessorService {
         'Brain analysis complete',
       );
 
+      const bankAccountIds = application.applicant.bankAccounts.map(acc => acc.id);
+
       const updatedApp = await this.applicationsService.updateStatus(
         applicationId,
         'COMPLETED',
         brainResponse.score,
         brainResponse,
+        bankAccountIds,
       );
 
       this.logger.info(

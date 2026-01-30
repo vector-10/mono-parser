@@ -95,6 +95,7 @@ export class ApplicationsService {
     status: string,
     score?: number,
     decision?: any,
+    bankAccountIds?: string[],
   ) {
     return this.prisma.application.update({
       where: { id: applicationId },
@@ -102,6 +103,7 @@ export class ApplicationsService {
         status,
         score,
         decision,
+        bankAccountIds,
         updatedAt: new Date(),
       },
     });

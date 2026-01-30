@@ -86,6 +86,9 @@ model Application {
   status            String    @default("PENDING")
   score             Int?
   decision          Json?
+
+  explanation       String?   @db.Text      
+  bankAccountIds    String[]
   
   approvedAmount    Int?
   approvedTenor     Int?
