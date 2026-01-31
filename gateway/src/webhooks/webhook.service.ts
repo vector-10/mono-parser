@@ -107,7 +107,7 @@ export class MonoWebhookService {
   }
 
   async handleAccountReauthorised(data: any) {
-    const { account: monoAccountId } = data;
+    const monoAccountId = data.account?._id;  
     await this.prisma.bankAccount.update({
       where: { monoAccountId },
       data: { updatedAt: new Date() },
