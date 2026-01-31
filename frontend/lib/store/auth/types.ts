@@ -5,7 +5,6 @@ export interface User {
   companyName: string;
   apiKey: string;
   monoApiKey: string | null;
-  monoPublicKey: string | null
 }
 
 export interface AuthState {

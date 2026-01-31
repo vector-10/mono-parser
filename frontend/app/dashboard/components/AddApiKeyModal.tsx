@@ -11,17 +11,16 @@ interface AddApiKeyModalProps {
 
 export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps) {
   const [monoApiKey, setMonoApiKey] = useState("");
-  const [monoPublicKey, setMonoPublicKey] = useState("");
   const { mutate: updateApiKey, isPending } = useUpdateApiKey();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    updateApiKey({ monoApiKey, monoPublicKey }, {
+    updateApiKey({ monoApiKey  }, {
       onSuccess: () => {
         toast.success("API keys saved successfully!");
         setMonoApiKey("");
-        setMonoPublicKey("");
+      
         onClose();
       },
       onError: (error: any) => {
@@ -65,22 +64,7 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mono Public Key <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={monoPublicKey}
-              onChange={(e) => setMonoPublicKey(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0055ba] focus:border-transparent font-mono text-sm"
-              placeholder="live_pk_xxxxxxxxxxxxx"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Used for Mono Connect widget
-            </p>
-          </div>
+          
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
@@ -107,7 +91,7 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
             </button>
             <button
               type="submit"
-              disabled={isPending || !monoApiKey.trim() || !monoPublicKey.trim()}
+              disabled={isPending || !monoApiKey.trim() }
               className="flex-1 px-4 py-2 bg-[#0055ba] text-white rounded-lg hover:bg-[#004494] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isPending ? (

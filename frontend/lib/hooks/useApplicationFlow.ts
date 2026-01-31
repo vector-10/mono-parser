@@ -267,7 +267,7 @@ export function useApplicationFlow(
       {
         role: "assistant",
         content:
-          "Great! Would you like to generate another linking URL? (Yes/No)",
+          "Great! Would you like to generate a new URL for another bank? (Yes/No)",
       },
     ]);
     setStep("ask-more-accounts");

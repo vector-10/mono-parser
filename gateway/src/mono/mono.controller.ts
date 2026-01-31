@@ -47,7 +47,7 @@ export class MonoController {
       req.user.monoApiKey,
     );
   }
-// TODO: find out why the callback is not working
+
   @Public()
   @Get('auth/callback')
   async handleMonoCallback(
