@@ -36,21 +36,42 @@ export class MonoWebhookService {
       };
     }
 
-
-    this.logger.info({ monoAccountId, applicantId }, 'Parsed webhook data');
-   
+    this.logger.info({ monoAccountId, applicantId }, 'Parsed webhook data');   
 
     try {
-      const bankAccount = await this.prisma.bankAccount.upsert({
+
+      const existingAccount = await this.prisma.bankAccount.findUnique({
         where: { monoAccountId },
-        update: {
-          updatedAt: new Date(),
-          accountName: accountData?.name,
-          accountNumber: accountData?.accountNumber,
-          balance: accountData?.balance,
-          institution: accountData?.institution?.name,
-        },
-        create: {
+      })
+
+      if(existingAccount) {
+        const updated = await this.prisma.bankAccount.update({
+          where: { monoAccountId },
+          data: {
+            updatedAt: new Date(),
+            accountName: accountData?.name,
+            accountNumber: accountData?.accountNumber,
+            balance: accountData?.balance,
+            institution: accountData?.institution?.name,
+          },
+          include: { applicant: true}
+        });
+        this.logger.info(
+          { monoAccountId, applicantId },
+          ` Successfully updated Bank to Applicant `,
+        );
+        this.eventsGateway.emitToUser(updated.applicant.fintechId, 'account_already_linked', {
+          applicantId,
+          accountId: updated.id,
+          institution: updated.institution,
+          accountNumber: updated.accountNumber,
+        });
+        return { status: 'success', accountId: updated.id, linked:false };
+      }
+
+
+       const bankAccount = await this.prisma.bankAccount.create({
+        data: {
           monoAccountId,
           applicantId,
           accountName: accountData?.name,
@@ -63,19 +84,23 @@ export class MonoWebhookService {
 
       this.logger.info(
         { monoAccountId, applicantId },
-        ` Successfully linked Bank to Applicant `,
+        'New bank account linked successfully',
       );
-      this.eventsGateway.emitToUser(bankAccount.applicant.fintechId, 'account_linked', {
-        applicantId,
-        accountId: bankAccount.id,
-        institution: bankAccount.institution,
-        accountNumber: bankAccount.accountNumber,
-      });
-      return { status: 'success', accountId: bankAccount.id };
+
+     this.eventsGateway.emitToUser(
+        bankAccount.applicant.fintechId,
+        'account_linked',
+        {
+          applicantId,
+          accountId: bankAccount.id,
+          institution: bankAccount.institution,
+          accountNumber: bankAccount.accountNumber,
+        },
+      );return { status: 'success', accountId: bankAccount.id, linked: true };
     } catch (error) {
       this.logger.error(
         { err: error, monoAccountId, applicantId },
-        `Failed to upsert bank account: ${error.message}`,
+        `Failed to link bank account: ${error.message}`,
       );
       return { status: 'error', reason: 'database_failure' };
     }
