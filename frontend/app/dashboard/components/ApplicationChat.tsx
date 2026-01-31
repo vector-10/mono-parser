@@ -75,6 +75,7 @@ export default function ApplicationChat({
     linkedAccountsCount,
     actions.handleGenerateLink,
     actions.handleCreateApplication,
+    actions.handleStartAnalysis
   );
 
   useEffect(() => {

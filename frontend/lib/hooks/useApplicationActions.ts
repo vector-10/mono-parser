@@ -10,26 +10,63 @@ type Message = {
   link?: string;
 };
 
+const getActionableError = (error: any, action: string): string => {
+  const message = error?.response?.data?.message || error?.message || "";
+
+  switch (action) {
+    case "generate-link":
+      if (message.includes("monoApiKey") || message.includes("API key"))
+        return "Mono API key is missing. Please add your Mono API key in settings before retrying.";
+      if (message.includes("401") || message.includes("unauthorized"))
+        return "Invalid Mono API key. Please update your API key in settings.";
+      if (message.includes("network") || message.includes("timeout"))
+        return "Network error. Check your connection and try again.";
+      return `Failed to generate link: ${message}`;
+
+    case "create-application":
+      if (message.includes("bank account"))
+        return "No bank account linked. Link a bank account first before creating an application.";
+      if (message.includes("not found"))
+        return "Applicant not found. Please refresh and try again.";
+      if (message.includes("amount"))
+        return "Invalid loan amount. Please enter a valid number.";
+      return `Failed to create application: ${message}`;
+
+    case "start-analysis":
+      if (message.includes("bank account"))
+        return "No bank account available for analysis. Link a bank account first.";
+      if (message.includes("WebSocket") || message.includes("socket"))
+        return "Connection lost. Please refresh the page and try again.";
+      if (message.includes("brain") || message.includes("analysis service"))
+        return "Analysis service is temporarily unavailable. Please try again in a moment.";
+      return `Failed to start analysis: ${message}`;
+
+    default:
+      return message || "An unexpected error occurred.";
+  }
+};
+
 export function useApplicationActions(
   applicantId: string,
   applicantName: string,
   addMessages: (messages: Message[]) => void,
-  getClientId: () => string | null
+  getClientId: () => string | null,
 ) {
   const { mutate: createApplication } = useCreateApplication();
   const { mutate: startAnalysis } = useStartAnalysis();
-  const { mutate: initiateMonoLink, isPending: isGeneratingLink } = useInitiateMonoLink();
+  const { mutate: initiateMonoLink, isPending: isGeneratingLink } =
+    useInitiateMonoLink();
   const [applicationId, setApplicationId] = useState<string | null>(null);
 
   const handleGenerateLink = (onSuccess: () => void, onError: () => void) => {
     addMessages([
-      { role: "system", content: "🔗 Generating bank linking URL..." },
+      { role: "system", content: "Generating bank linking URL..." },
     ]);
 
     initiateMonoLink(applicantId, {
       onSuccess: (data) => {
         addMessages([
-          { role: "system", content: "✅ Link generated successfully!" },
+          { role: "system", content: " Link generated successfully!" },
           {
             role: "assistant",
             content: `Here's the bank linking URL for ${applicantName}. Copy and send it to them:`,
@@ -37,18 +74,20 @@ export function useApplicationActions(
           },
           {
             role: "assistant",
-            content: "I'll notify you when they complete the linking process. Would you like to generate another link? (Yes/No)",
+            content:
+              "I'll notify you when they complete the linking process. Would you like to generate another link? (Yes/No)",
           },
         ]);
         toast.success("Link generated!");
         onSuccess();
       },
       onError: (error: any) => {
+        const errorMsg = getActionableError(error, "generate-link");
         addMessages([
-          { role: "system", content: `❌ Failed to generate link: ${error.message}` },
-          { role: "assistant", content: "Would you like to try again? (Yes/No)" },
+          { role: "system", content: ` ${errorMsg}` },
+          { role: "assistant", content: "Would you like to retry? (Yes/No)" },
         ]);
-        toast.error("Failed to generate link");
+        toast.error(errorMsg);
         onError();
       },
     });
@@ -62,11 +101,9 @@ export function useApplicationActions(
       purpose?: string;
     },
     onSuccess: () => void,
-    onError: () => void
+    onError: () => void,
   ) => {
-    addMessages([
-      { role: "system", content: "⏳ Creating application..." },
-    ]);
+    addMessages([{ role: "system", content: "Creating application..." }]);
 
     createApplication(
       {
@@ -77,23 +114,23 @@ export function useApplicationActions(
         onSuccess: (response) => {
           setApplicationId(response.applicationId);
           addMessages([
-            { role: "system", content: "✅ Application created!" },
+            { role: "system", content: " Application created!" },
             { role: "assistant", content: "Starting automatic analysis..." },
           ]);
           toast.success("Application created!");
-          
-          // Auto-start analysis
           setTimeout(() => handleStartAnalysis(response.applicationId), 1000);
           onSuccess();
         },
         onError: (error: any) => {
+          const errorMsg = getActionableError(error, "create-application");
           addMessages([
-            { role: "system", content: `❌ Failed: ${error.message}` },
+            { role: "system", content: ` ${errorMsg}` },
+            { role: "assistant", content: "Would you like to retry? (Yes/No)" },
           ]);
-          toast.error("Failed to create application");
+          toast.error(errorMsg);
           onError();
         },
-      }
+      },
     );
   };
 
@@ -102,29 +139,36 @@ export function useApplicationActions(
     const targetAppId = appId || applicationId;
 
     if (!clientId) {
-      toast.error("WebSocket not connected");
+      toast.error("WebSocket not connected. Please refresh the page and try again.");
+      addMessages([
+        { role: "system", content: "WebSocket not connected. Please refresh the page." },
+        { role: "assistant", content: "Would you like to retry? (Yes/No)" },
+      ]);
       return;
     }
 
     if (!targetAppId) {
-      toast.error("No application to analyze");
+      toast.error("No application found. Please create an application first.");
+      addMessages([
+        { role: "system", content: " No application found. Please create one first." },
+      ]);
       return;
     }
 
-    addMessages([
-      { role: "system", content: "🧠 Starting analysis..." },
-    ]);
+    addMessages([{ role: "system", content: "Starting analysis..." }]);
 
     startAnalysis(
       { applicationId: targetAppId, clientId },
       {
         onError: (error: any) => {
+          const errorMsg = getActionableError(error, "start-analysis");
           addMessages([
-            { role: "system", content: `❌ Failed to start analysis: ${error.message}` },
+            { role: "system", content: ` ${errorMsg}` },
+            { role: "assistant", content: "Would you like to retry? (Yes/No)" },
           ]);
-          toast.error("Failed to start analysis");
+          toast.error(errorMsg);
         },
-      }
+      },
     );
   };
 

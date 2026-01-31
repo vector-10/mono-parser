@@ -5,10 +5,13 @@ type Step =
   | "link-account"
   | "linking"
   | "ask-more-accounts"
+  | "link-failed"
   | "amount"
   | "tenor"
   | "rate"
   | "purpose"
+  | "create-failed"
+  | "analysis-failed"
   | "creating"
   | "analyzing"
   | "complete";
@@ -25,10 +28,16 @@ export function useApplicationFlow(
   linkedAccountsCount: number,
   handleGenerateLink: (onSuccess: () => void, onError: () => void) => void,
   handleCreateApplication: (
-    data: { amount: number; tenor: number; interestRate: number; purpose?: string },
+    data: {
+      amount: number;
+      tenor: number;
+      interestRate: number;
+      purpose?: string;
+    },
     onSuccess: () => void,
-    onError: () => void
-  ) => void
+    onError: () => void,
+  ) => void,
+  handleStartAnalysis: () => void,
 ) {
   const [step, setStep] = useState<Step>("welcome");
   const [messages, setMessages] = useState<Message[]>([
@@ -82,7 +91,7 @@ export function useApplicationFlow(
       if (response === "yes" || response === "y") {
         handleGenerateLink(
           () => setStep("ask-more-accounts"),
-          () => setStep("link-account")
+          () => onGenerateLinkError(),
         );
       } else if (response === "skip" || response === "no" || response === "n") {
         if (linkedAccountsCount > 0) {
@@ -91,7 +100,8 @@ export function useApplicationFlow(
           addMessages([
             {
               role: "assistant",
-              content: "⚠️ At least one bank account must be linked to proceed. Would you like to generate a linking URL? (Yes/No)",
+              content:
+                "⚠️ At least one bank account must be linked to proceed. Would you like to generate a linking URL? (Yes/No)",
             },
           ]);
         }
@@ -102,7 +112,7 @@ export function useApplicationFlow(
       if (response === "yes" || response === "y") {
         handleGenerateLink(
           () => setStep("ask-more-accounts"),
-          () => setStep("link-account")
+          () => onGenerateLinkError(),
         );
       } else {
         proceedToLoanDetails();
@@ -130,7 +140,8 @@ export function useApplicationFlow(
       addMessages([
         {
           role: "assistant",
-          content: "What's the purpose of this loan? (optional - press Enter to skip)",
+          content:
+            "What's the purpose of this loan? (optional - press Enter to skip)",
         },
       ]);
       setStep("purpose");
@@ -147,8 +158,64 @@ export function useApplicationFlow(
           purpose: updatedFormData.purpose || undefined,
         },
         () => setStep("analyzing"),
-        () => setStep("purpose")
+        () => onCreateApplicationError(),
       );
+    } else if (step === "link-failed") {
+      const response = input.toLowerCase();
+      if (response === "yes" || response === "y" || response === "retry") {
+        handleGenerateLink(
+          () => setStep("ask-more-accounts"),
+          onGenerateLinkError,
+        );
+      } else {
+        addMessages([
+          {
+            role: "assistant",
+            content:
+              "Okay. Would you like to go back to linking accounts or proceed? (link/proceed)",
+          },
+        ]);
+        setStep("link-account");
+      }
+    } else if (step === "create-failed") {
+      const response = input.toLowerCase();
+      if (response === "yes" || response === "y" || response === "retry") {
+        setStep("creating");
+        handleCreateApplication(
+          {
+            amount: Number(formData.amount),
+            tenor: Number(formData.tenor),
+            interestRate: Number(formData.rate),
+            purpose: formData.purpose || undefined,
+          },
+          () => setStep("analyzing"),
+          onCreateApplicationError,
+        );
+      } else {
+        addMessages([
+          {
+            role: "assistant",
+            content:
+              "Okay. Would you like to start a new application? (Yes/No)",
+          },
+        ]);
+        setStep("welcome");
+      }
+    } else if (step === "analysis-failed") {
+      const response = input.toLowerCase();
+      if (response === "yes" || response === "y" || response === "retry") {
+        setStep("analyzing");
+        handleStartAnalysis();
+      } else {
+        addMessages([
+          {
+            role: "assistant",
+            content:
+              "Okay. Would you like to start a new application? (Yes/No)",
+          },
+        ]);
+        setStep("welcome");
+      }
     }
   };
 
@@ -166,18 +233,27 @@ export function useApplicationFlow(
         return "Enter interest rate (e.g., 5.0)";
       case "purpose":
         return "Enter purpose or press Enter to skip";
+      case "link-failed":
+      case "create-failed":
+      case "analysis-failed":
+        return "Type 'Yes' to retry or 'No' to go back";
       default:
         return "";
     }
   };
 
   const getInputType = () => {
-    return step === "amount" || step === "tenor" || step === "rate" ? "number" : "text";
+    return step === "amount" || step === "tenor" || step === "rate"
+      ? "number"
+      : "text";
   };
 
-  const isInputDisabled = step === "creating" || step === "linking" || step === "analyzing" || step === "complete";
+  const isInputDisabled =
+    step === "creating" ||
+    step === "linking" ||
+    step === "analyzing" ||
+    step === "complete";
 
-  // Update step and messages based on events
   const onAccountLinked = (data: {
     institution: string;
     accountNumber: string;
@@ -190,7 +266,8 @@ export function useApplicationFlow(
       },
       {
         role: "assistant",
-        content: "Great! Would you like to generate another linking URL? (Yes/No)",
+        content:
+          "Great! Would you like to generate another linking URL? (Yes/No)",
       },
     ]);
     setStep("ask-more-accounts");
@@ -207,14 +284,28 @@ export function useApplicationFlow(
   const onApplicationError = (message: string) => {
     addMessages([
       { role: "system", content: `❌ Error: ${message}` },
+      {
+        role: "assistant",
+        content: "Would you like to retry the analysis? (Yes/No)",
+      },
     ]);
-    setStep("complete");
+    setStep("analysis-failed");
+  };
+
+  const onGenerateLinkError = () => {
+    setStep("link-failed");
+  };
+
+  const onCreateApplicationError = () => {
+    setStep("create-failed");
+  };
+
+  const onAnalysisError = () => {
+    setStep("analysis-failed");
   };
 
   const onApplicationProgress = (message: string) => {
-    addMessages([
-      { role: "system", content: message },
-    ]);
+    addMessages([{ role: "system", content: message }]);
   };
 
   return {
