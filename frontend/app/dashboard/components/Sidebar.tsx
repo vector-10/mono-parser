@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useApplicants } from "@/lib/hooks/queries/use-applicants";
 import { useApplicantsStore } from "@/lib/store/applicants";
 import CreateApplicantModal from "./CreateApplicantModal";
+import ApplicantMenu from "./ApplicantMenu"
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -89,18 +90,24 @@ export default function Sidebar() {
                         </p>
                       )}
                       {applicants?.map((applicant) => (
-                        <Link
-                          key={applicant.id}
-                          href={`/dashboard/operations/${applicant.id}/chat`}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
-                            pathname.startsWith(`/dashboard/operations/${applicant.id}/chat`)
-                              ? "bg-[#0055ba]/10 text-[#0055ba] font-medium"
-                              : "text-gray-600 hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className="w-2 h-2 bg-[#59a927] rounded-full" />
-                          <span className="truncate">{`${applicant.firstName} ${applicant.lastName}`}</span>
-                        </Link>
+                        <div key={applicant.id} className="relative group">
+                          <Link
+                            href={`/dashboard/operations/${applicant.id}/chat`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
+                              pathname.startsWith(
+                                `/dashboard/operations/${applicant.id}/chat`,
+                              )
+                                ? "bg-[#0055ba]/10 text-[#0055ba] font-medium"
+                                : "text-gray-600 hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="w-2 h-2 bg-[#59a927] rounded-full" />
+                            <span className="truncate flex-1">{`${applicant.firstName} ${applicant.lastName}`}</span>
+                          </Link>
+
+                          {/* Three-dot menu */}
+                          <ApplicantMenu applicant={applicant} />
+                        </div>
                       ))}
                     </div>
                   )}
