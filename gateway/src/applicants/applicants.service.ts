@@ -49,4 +49,47 @@ export class ApplicantsService {
       },
     });
   }
+
+  async updateApplicant(applicantId: string, fintechId: string, data: Partial<CreateApplicantDto>) {
+    const existingApplicant = await this.prisma.applicant.findFirst({
+      where: {
+        id: applicantId,
+        fintechId,
+      },
+    });
+
+    if (!existingApplicant) { 
+      this.logger.warn({ applicantId, fintechId }, 'Applicant not found for update');
+      throw new Error('Applicant not found');
+    }
+    return this.prisma.applicant.update({
+      where: {
+        id: applicantId,
+      },
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async deleteApplicant(applicantId: string, fintechId: string) {
+    const existingApplicant = await this.prisma.applicant.findFirst({ 
+      where: {
+        id: applicantId,
+        fintechId,
+      },
+    });
+
+    if (!existingApplicant) { 
+      this.logger.warn({ applicantId, fintechId }, 'Applicant not found for deletion');
+      throw new Error('Applicant not found');
+    }
+
+    return this.prisma.applicant.delete({
+      where: {
+        id: applicantId,
+      },
+    });
+  }
 }

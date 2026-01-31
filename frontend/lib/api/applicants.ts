@@ -33,4 +33,13 @@ export const applicantsApi = {
     const response = await api.get(`/applicants/${id}`)
     return response.data
   },
+
+  update: async (id: string, data: Partial<CreateApplicantData>): Promise<Applicant> => {
+    const response = await api.patch(`/applicants/${id}`, data)
+    return response.data
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/applicants/${id}`)
+  },
 }
