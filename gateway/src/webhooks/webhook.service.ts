@@ -15,13 +15,17 @@ export class MonoWebhookService {
 
   async handleAccountLinked(data: any) {
     this.logger.info({ payload: data }, 'Full payload received');
+
     const accountData = data.account;
     const monoAccountId = accountData?._id ;
     const applicantId = data.meta?.user_id;
 
-    this.logger.info({ monoAccountId, applicantId }, 'Parsed webhook data');
+     if (!monoAccountId) {
+      this.logger.error({ payload: data }, `Missing account ID in webhook`);
+      return { status: 'error', reason: 'missing_account_id' };
+    }
 
-    if (!applicantId) {
+     if (!applicantId) {
       this.logger.info(
         { monoAccountId },
         'Account connected, waiting for full data',
@@ -32,10 +36,9 @@ export class MonoWebhookService {
       };
     }
 
-    if (!monoAccountId) {
-      this.logger.error({ payload: data }, `Missing account ID in webhook`);
-      return { status: 'error', reason: 'missing_account_id' };
-    }
+
+    this.logger.info({ monoAccountId, applicantId }, 'Parsed webhook data');
+   
 
     try {
       const bankAccount = await this.prisma.bankAccount.upsert({
@@ -85,29 +88,6 @@ export class MonoWebhookService {
       data: { updatedAt: new Date() },
     });
     this.logger.info({ monoAccountId }, `Bank Account reauthorised`);
-    return { status: 'success' };
-  }
-
-  async handleAccountIncome(data: any) {
-    const { account: monoAccountId } = data;
-
-    this.logger.info({ monoAccountId }, `Income data received for account`);
-    return { status: 'success' };
-  }
-
-  async handleStatementInsights(data: any) {
-    const { account: monoAccountId } = data;
-
-    this.logger.info({ monoAccountId }, 'Insights received for account ');
-    return { status: 'success' };
-  }
-
-  async handleCreditWorthiness(data: any) {
-    const { account: monoAccountId, can_afford } = data;
-    this.logger.info(
-      { canAfford: can_afford, monoAccountId },
-      ' Creditworthiness check',
-    );
     return { status: 'success' };
   }
 }
