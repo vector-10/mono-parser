@@ -16,7 +16,7 @@ export class MonoWebhookService {
   async handleAccountLinked(data: any) {
     this.logger.info({ payload: data }, 'Full payload received');
     const accountData = data.account;
-    const monoAccountId = accountData?._id || data.id;
+    const monoAccountId = accountData?._id ;
     const applicantId = data.meta?.user_id;
 
     this.logger.info({ monoAccountId, applicantId }, 'Parsed webhook data');
