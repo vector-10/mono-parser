@@ -10,7 +10,7 @@ export const api = axios.create({
   },
 })
 
-// Request Interceptor: Add token to all requests
+
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token
@@ -24,15 +24,14 @@ api.interceptors.request.use(
   }
 )
 
-// Response Interceptor: Handle 401 errors
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Logout and redirect
+
       useAuthStore.getState().actions.logout()
       
-      // Only redirect if not already on login/signup page
       if (typeof window !== 'undefined' && 
           !window.location.pathname.includes('/login') && 
           !window.location.pathname.includes('/signup')) {

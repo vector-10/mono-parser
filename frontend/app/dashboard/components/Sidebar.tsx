@@ -4,17 +4,25 @@ import { usePathname } from "next/navigation";
 import { Home, Computer, LogOut, ChevronDown, Plus, Users } from "lucide-react";
 import { useState } from "react";
 import { useApplicants } from "@/lib/hooks/queries/use-applicants";
+import { useAuthStore } from "@/lib/store/auth";
+import { useRouter } from "next/navigation";
 import { useApplicantsStore } from "@/lib/store/applicants";
 import CreateApplicantModal from "./CreateApplicantModal";
-import ApplicantMenu from "./ApplicantMenu"
+import ApplicantMenu from "./ApplicantMenu";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [operationsOpen, setOperationsOpen] = useState(true);
+  const router = useRouter();
+  const logout = useAuthStore((state) => state.actions.logout);
   const [applicantsOpen, setApplicantsOpen] = useState(true);
-
   const { data: applicants, isLoading } = useApplicants();
   const { isCreateModalOpen, actions } = useApplicantsStore();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <>
@@ -118,7 +126,10 @@ export default function Sidebar() {
         </nav>
 
         <div className="absolute bottom-6 left-4 right-4">
-          <button className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-50">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-50"
+          >
             <LogOut className="h-5 w-5" />
             Logout
           </button>
