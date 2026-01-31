@@ -141,7 +141,7 @@ export default function ApplicationChat({
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       {!isConnected && (
         <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800">
-          ⚠️ Connecting to server...
+           Connecting to server...
         </div>
       )}
 
@@ -150,7 +150,7 @@ export default function ApplicationChat({
           <div key={i}>
             <ChatMessage role={msg.role} content={msg.content} />
             {msg.link && (
-              <div className="mt-2 ml-0 max-w-[50%]">
+              <div className="mt-2 ml-50 max-w-[40%]">
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
                     Bank Linking URL
