@@ -219,7 +219,9 @@ export function useApplicationFlow(
 
   return {
     step,
+    setStep,
     messages,
+    setMessages,
     handleSubmit,
     getPlaceholder,
     getInputType,

@@ -45,6 +45,7 @@ export class ApplicantsService {
       },
       include: {
         bankAccounts: true,
+        applications: true,
       },
     });
   }

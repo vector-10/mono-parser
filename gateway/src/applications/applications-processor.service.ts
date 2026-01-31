@@ -26,7 +26,7 @@ export class ApplicationProcessorService {
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,
-          '📊 Fetching applicant data...',
+          'Fetching applicant data...',
         );
       }
 
@@ -56,7 +56,7 @@ export class ApplicationProcessorService {
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,
-          '✓ Applicant verified. Fetching bank data...',
+          'Applicant verified.',
         );
       }
 
@@ -74,18 +74,17 @@ export class ApplicationProcessorService {
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,
-          '💳 Analyzing transactions and income...',
+          'Analyzing transactions and income...',
         );
       }
 
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,
-          '🧠 Running creditworthiness analysis...',
+          'Running creditworthiness analysis...',
         );
       }
 
-      // Call Brain service
       const brainResponse = await this.callBrainService({
         applicant_id: application.applicantId,
         loan_amount: application.amount,
@@ -124,7 +123,7 @@ export class ApplicationProcessorService {
           status: updatedApp.status,
           score: updatedApp.score,
           decision: updatedApp.decision,
-          message: '✅ Analysis complete!',
+          message: 'Analysis complete!',
         });
       }
 

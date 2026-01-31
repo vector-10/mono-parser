@@ -1,21 +1,60 @@
+import { Loader2, CheckCircle, XCircle, Info, Link } from "lucide-react";
+
 interface ChatMessageProps {
   role: "system" | "user" | "assistant";
   content: string;
 }
 
 export default function ChatMessage({ role, content }: ChatMessageProps) {
+  const isSuccess = content.startsWith("✅") || (!content.endsWith("...") && !content.startsWith("❌") && (
+    content.includes("verified") ||
+    content.includes("linked successfully") ||
+    content.includes("generated successfully") ||
+    content.includes("complete")
+  ));
+  const isError = content.startsWith("❌");
+  const isProcessing = !isSuccess && !isError && content.endsWith("...");
+  const isLink = content.includes("bank linking");
+
+  const getSystemStyle = () => {
+    if (isSuccess) return "bg-green-50 text-green-700 border border-green-200";
+    if (isError) return "bg-red-50 text-red-700 border border-red-200";
+    if (isProcessing || isLink) return "bg-amber-50 text-amber-700 border border-amber-200";
+    return "bg-blue-50 text-blue-700 border border-blue-200";
+  };
+
+  const getIcon = () => {
+    if (isSuccess) return <CheckCircle className="h-4 w-4 shrink-0" />;
+    if (isError) return <XCircle className="h-4 w-4 shrink-0" />;
+    if (isLink) return <Link className="h-4 w-4 shrink-0" />;
+    if (isProcessing) return <Loader2 className="h-4 w-4 shrink-0 animate-spin" />;
+    return <Info className="h-4 w-4 shrink-0" />;
+  };
+
+
+  const cleanContent = content
+    .replace(/^✅\s*/, "")
+    .replace(/^❌\s*/, "")
+    .replace(/^⏳\s*/, "")
+    .replace(/^🔗\s*/, "")
+    .replace(/^🧠\s*/, "")
+    .replace(/^📊\s*/, "")
+    .replace(/^💳\s*/, "")
+    .replace(/^✓\s*/, "");
+
   return (
-    <div className="flex justify-center">
+    <div className={`flex ${role === "user" ? "justify-end" : "justify-start"}`}>
       <div
-        className={`rounded-lg px-6 py-4 max-w-3xl w-full ${
+        className={`rounded-lg ${
           role === "system"
-            ? "bg-blue-50 text-blue-700 text-sm"
+            ? `px-3 py-2 text-sm font-medium inline-flex items-center gap-2 ${getSystemStyle()}`
             : role === "user"
-            ? "bg-gray-100 text-gray-900"
-            : "bg-white border border-gray-200 text-gray-900"
+            ? "px-4 py-2.5 bg-[#0055ba] text-white max-w-[75%]"
+            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[75%]"
         }`}
       >
-        {content}
+        {role === "system" && getIcon()}
+        {role === "system" ? cleanContent : content}
       </div>
     </div>
   );

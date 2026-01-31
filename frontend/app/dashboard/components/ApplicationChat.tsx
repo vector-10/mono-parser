@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -17,6 +17,14 @@ type Message = {
   link?: string;
 };
 
+type ApplicantWithRelations = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  bankAccounts: Array<{ id: string; institution?: string }>;
+  applications: Array<{ id: string }>;
+};
+
 interface ApplicationChatProps {
   applicantId: string;
   applicantName: string;
@@ -29,9 +37,12 @@ export default function ApplicationChat({
   const user = useAuthStore((state) => state.user);
   const [linkedAccountsCount, setLinkedAccountsCount] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const [shouldExplain, setShouldExplain] = useState(false);
 
-  const { data: applicant } = useApplicant(applicantId);
+  const { data: applicant } = useApplicant(applicantId) as {
+    data: ApplicantWithRelations | undefined;
+  };
 
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
@@ -48,14 +59,14 @@ export default function ApplicationChat({
       flow.onApplicationComplete();
       setShouldExplain(true);
     },
-    (message) => flow.onApplicationError(message)
+    (message) => flow.onApplicationError(message),
   );
 
   const actions = useApplicationActions(
     applicantId,
     applicantName,
     (messages: Message[]) => flow.addMessages(messages),
-    getClientId
+    getClientId,
   );
 
   const flow = useApplicationFlow(
@@ -63,7 +74,7 @@ export default function ApplicationChat({
     user?.name || "User",
     linkedAccountsCount,
     actions.handleGenerateLink,
-    actions.handleCreateApplication
+    actions.handleCreateApplication,
   );
 
   useEffect(() => {
@@ -104,7 +115,7 @@ export default function ApplicationChat({
   const { data: applicationData } = useApplication(actions.applicationId);
   const { data: explanation } = useExplainResults(
     actions.applicationId,
-    shouldExplain
+    shouldExplain,
   );
 
   useEffect(() => {
@@ -115,6 +126,10 @@ export default function ApplicationChat({
       toast.success("Results ready!");
     }
   }, [explanation]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [flow.messages]);
 
   const handleSubmit = () => {
     flow.handleSubmit(currentInput);
@@ -129,34 +144,36 @@ export default function ApplicationChat({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
         {flow.messages.map((msg, i) => (
           <div key={i}>
             <ChatMessage role={msg.role} content={msg.content} />
             {msg.link && (
-              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">Linking URL:</p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={msg.link}
-                    readOnly
-                    className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(msg.link!);
-                      toast.success("Link copied!");
-                    }}
-                    className="px-4 py-2 bg-[#0055ba] text-white rounded hover:bg-[#004494] text-sm"
-                  >
-                    Copy
-                  </button>
+              <div className="mt-2 ml-0 max-w-[50%]">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
+                    Bank Linking URL
+                  </p>
+                  <div className="flex gap-2">
+                    <p className="flex-1 text-sm text-blue-700 truncate bg-white border border-blue-100 rounded px-3 py-2">
+                      {msg.link}
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(msg.link!);
+                        toast.success("Link copied!");
+                      }}
+                      className="px-3 py-2 bg-[#0055ba] text-white rounded hover:bg-[#004494] text-xs font-medium whitespace-nowrap"
+                    >
+                      Copy
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         ))}
+        <div ref={chatEndRef} />
       </div>
 
       <ChatInput
