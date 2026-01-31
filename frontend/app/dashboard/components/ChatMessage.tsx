@@ -43,19 +43,21 @@ export default function ChatMessage({ role, content }: ChatMessageProps) {
     .replace(/^✓\s*/, "");
 
   return (
-    <div className={`flex ${role === "user" ? "justify-end" : "justify-start"}`}>
+
+      <div className={`flex ${role === "user" ? "justify-end pr-50 " : "justify-start pl-50"}`}>
       <div
         className={`rounded-lg ${
           role === "system"
             ? `px-3 py-2 text-sm font-medium inline-flex items-center gap-2 ${getSystemStyle()}`
             : role === "user"
-            ? "px-4 py-2.5 bg-[#0055ba] text-white max-w-[75%]"
-            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[75%]"
+            ? "px-4 py-2.5 bg-[#0055ba] text-white max-w-[50%]"
+            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[50%]"
         }`}
       >
         {role === "system" && getIcon()}
         {role === "system" ? cleanContent : content}
       </div>
     </div>
+  
   );
 }
