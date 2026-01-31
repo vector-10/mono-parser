@@ -14,7 +14,8 @@ type Step =
   | "analysis-failed"
   | "creating"
   | "analyzing"
-  | "complete";
+  | "complete"
+  | "restart";
 
 type Message = {
   role: "system" | "user" | "assistant";
@@ -43,7 +44,7 @@ export function useApplicationFlow(
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Welcome ${userName}! 👋 To create a loan application for ${applicantName}, let's start by linking their bank accounts. This helps us analyze the applicant's financial profile.`,
+      content: `Welcome ${userName}! To create a loan application for ${applicantName}, let's start by linking their bank accounts. This helps us analyze the applicant's financial profile.`,
     },
     {
       role: "assistant",
@@ -101,7 +102,7 @@ export function useApplicationFlow(
             {
               role: "assistant",
               content:
-                "⚠️ At least one bank account must be linked to proceed. Would you like to generate a linking URL? (Yes/No)",
+                " At least one bank account must be linked to proceed. Would you like to generate a linking URL? (Yes/No)",
             },
           ]);
         }
@@ -216,6 +217,26 @@ export function useApplicationFlow(
         ]);
         setStep("welcome");
       }
+    } else if (step === "restart") {
+      const response = input.toLowerCase();
+      if (response === "yes" || response === "y") {
+        setFormData({ amount: "", tenor: "", rate: "", purpose: "" });
+        addMessages([
+          {
+            role: "assistant",
+            content: `Sure! ${applicantName} currently has ${linkedAccountsCount} bank account${linkedAccountsCount > 1 ? "s" : ""} linked. Would you like to link another bank account before proceeding? (Yes/No)`,
+          },
+        ]);
+        setStep("ask-more-accounts");
+      } else {
+        addMessages([
+          {
+            role: "assistant",
+            content: "Okay, we're done here. Feel free to come back anytime!",
+          },
+        ]);
+        setStep("complete");
+      }
     }
   };
 
@@ -237,6 +258,8 @@ export function useApplicationFlow(
       case "create-failed":
       case "analysis-failed":
         return "Type 'Yes' to retry or 'No' to go back";
+      case "restart":
+        return "Type 'Yes' to create another or 'No' to finish";
       default:
         return "";
     }
@@ -251,8 +274,7 @@ export function useApplicationFlow(
   const isInputDisabled =
     step === "creating" ||
     step === "linking" ||
-    step === "analyzing" ||
-    step === "complete";
+    step === "analyzing" 
 
   const onAccountLinked = (data: {
     institution: string;
@@ -262,7 +284,7 @@ export function useApplicationFlow(
     addMessages([
       {
         role: "system",
-        content: `✅ ${data.institution} account (${data.accountNumber}) linked successfully! (${data.accountsTotal} account${data.accountsTotal > 1 ? "s" : ""} total)`,
+        content: `${data.institution} account (${data.accountNumber}) linked successfully! (${data.accountsTotal} account${data.accountsTotal > 1 ? "s" : ""} total)`,
       },
       {
         role: "assistant",
@@ -275,7 +297,7 @@ export function useApplicationFlow(
 
   const onApplicationComplete = () => {
     addMessages([
-      { role: "system", content: "✅ Analysis complete!" },
+      { role: "system", content: " Analysis complete!" },
       { role: "assistant", content: "Processing results..." },
     ]);
     setStep("complete");
@@ -283,7 +305,7 @@ export function useApplicationFlow(
 
   const onApplicationError = (message: string) => {
     addMessages([
-      { role: "system", content: `❌ Error: ${message}` },
+      { role: "system", content: ` Error: ${message}` },
       {
         role: "assistant",
         content: "Would you like to retry the analysis? (Yes/No)",

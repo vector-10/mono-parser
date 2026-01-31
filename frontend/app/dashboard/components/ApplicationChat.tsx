@@ -22,7 +22,14 @@ type ApplicantWithRelations = {
   firstName: string;
   lastName: string;
   bankAccounts: Array<{ id: string; institution?: string }>;
-  applications: Array<{ id: string }>;
+  applications: Array<{
+    id: string;
+    amount: number;
+    status: string;
+    purpose?: string;
+    score?: number;
+    createdAt: string;
+  }>;
 };
 
 interface ApplicationChatProps {
@@ -75,7 +82,7 @@ export default function ApplicationChat({
     linkedAccountsCount,
     actions.handleGenerateLink,
     actions.handleCreateApplication,
-    actions.handleStartAnalysis
+    actions.handleStartAnalysis,
   );
 
   useEffect(() => {
@@ -87,6 +94,21 @@ export default function ApplicationChat({
     setLinkedAccountsCount(bankAccountCount);
 
     if (bankAccountCount > 0 && applicationCount > 0) {
+      const lastApplication = applicant.applications.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )[0];
+
+      const statusText =
+        lastApplication.status === "APPROVED" ? "Approved" : "Denied";
+      const amountText = `₦${lastApplication.amount.toLocaleString()}`;
+      const purposeText = lastApplication.purpose
+        ? ` for ${lastApplication.purpose}`
+        : "";
+      const scoreText = lastApplication.score
+        ? ` (score: ${lastApplication.score}/1000)`
+        : "";
+
       flow.setMessages([
         {
           role: "assistant",
@@ -123,7 +145,12 @@ export default function ApplicationChat({
     if (explanation?.explanation) {
       flow.addMessages([
         { role: "assistant", content: explanation.explanation },
+        {
+          role: "assistant",
+          content: "Would you like to create another application? (Yes/No)",
+        },
       ]);
+      flow.setStep("restart");
       toast.success("Results ready!");
     }
   }, [explanation]);
@@ -141,7 +168,7 @@ export default function ApplicationChat({
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       {!isConnected && (
         <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800">
-           Connecting to server...
+          Connecting to server...
         </div>
       )}
 

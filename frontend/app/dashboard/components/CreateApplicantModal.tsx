@@ -23,7 +23,6 @@ export default function CreateApplicantModal({ isOpen, onClose }: CreateApplican
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Remove empty optional fields
     const payload = {
       firstName: formData.firstName,
       lastName: formData.lastName,
