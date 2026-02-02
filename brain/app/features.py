@@ -5,11 +5,11 @@ import statistics
 class FeatureExtractor:
     def __init__(self, accounts_data: List[Dict]):
         self.accounts = accounts_data
-        self.data = mono_data
-        self.credits_data = mono_data.get('credits', {}).get('data', {})
-        self.debits_data = mono_data.get('debits', {}).get('data', {})
-        self.income_data = mono_data.get('income_records', {}).get('data', [])
-        self.transactions = mono_data.get('transactions', [])
+        self.data = accounts_data
+        self.credits_data = accounts_data.get('credits', {}).get('data', {})
+        self.debits_data = accounts_data.get('debits', {}).get('data', {})
+        self.income_data = accounts_data.get('income_records', {}).get('data', [])
+        self.transactions = accounts_data.get('transactions', [])
         
     def extract_all_features(self) -> Dict:
         return {

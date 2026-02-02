@@ -117,20 +117,61 @@ export class DataAggregationService {
     return results;
   }
 
-  async gatherMultiAccountData( accountIds: string[], monoApiKey: string, bvn?: string, ) {
-    this.logger.info({ accountIds, count: accountIds.length }, 'Starting multi-account data aggregation');
+  async gatherMultiAccountData(
+    accountIds: string[],
+    monoApiKey: string,
+    bvn?: string,
+  ) {
+    this.logger.info(
+      { accountIds, count: accountIds.length },
+      'Starting multi-account data aggregation',
+    );
 
-    const accountsData = await Promise.all(
-      accountIds.map(accountId => 
-        this.gatherApplicantData(accountId, monoApiKey, bvn)
-      )
+    if (!accountIds.length) {
+      throw new Error('No account IDs provided');
+    }
+
+    const accountsDataPromises = accountIds.map((accountId) =>
+      this.gatherApplicantData(accountId, monoApiKey, bvn),
+    );
+
+    const accountsData = await Promise.all(accountsDataPromises);
+
+    const accountsWithErrors = accountsData.filter((data) => !data.success);
+    if (accountsWithErrors.length > 0) {
+      this.logger.warn(
+        {
+          totalAccounts: accountIds.length,
+          accountsWithErrors: accountsWithErrors.length,
+        },
+        'Some accounts had errors during data aggregation',
+      );
+    }
+
+    const formattedAccounts = accountsData.map((data, index) => ({
+      account_id: accountIds[index],
+      account_details: data.accountDetails || {},
+      balance: data.balance || 0,
+      transactions: data.transactions || [],
+      income_records: data.incomeRecords || {},
+      credits: data.credits || {},
+      debits: data.debits || {},
+      identity: data.identity || null,
+    }));
+
+    this.logger.info(
+      {
+        totalAccounts: accountIds.length,
+        successfulAccounts: accountsData.filter((d) => d.success).length,
+      },
+      'Multi-account data aggregation completed',
     );
 
     return {
-      accounts: accountsData,
+      accounts: formattedAccounts,
       totalAccounts: accountIds.length,
-    }
-
+      successfulAccounts: accountsData.filter((d) => d.success).length,
+    };
   }
 
   private async fetchSafely<T>(
@@ -140,7 +181,7 @@ export class DataAggregationService {
     try {
       return await fetchFn();
     } catch (error) {
-      this.logger.error({err: error, name}, `Error fetching`);
+      this.logger.error({ err: error, name }, `Error fetching`);
       throw error;
     }
   }
