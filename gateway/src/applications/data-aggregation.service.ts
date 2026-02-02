@@ -117,6 +117,22 @@ export class DataAggregationService {
     return results;
   }
 
+  async gatherMultiAccountData( accountIds: string[], monoApiKey: string, bvn?: string, ) {
+    this.logger.info({ accountIds, count: accountIds.length }, 'Starting multi-account data aggregation');
+
+    const accountsData = await Promise.all(
+      accountIds.map(accountId => 
+        this.gatherApplicantData(accountId, monoApiKey, bvn)
+      )
+    );
+
+    return {
+      accounts: accountsData,
+      totalAccounts: accountIds.length,
+    }
+
+  }
+
   private async fetchSafely<T>(
     fetchFn: () => Promise<T>,
     name: string,

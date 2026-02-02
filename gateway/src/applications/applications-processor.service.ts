@@ -46,10 +46,10 @@ export class ApplicationProcessorService {
         throw new Error('Application not found');
       }
 
-      const bankAccount = application.applicant.bankAccounts[0];
+      const accountIds = application.applicant.bankAccounts.map(acc => acc.monoAccountId);
       const monoApiKey = application.applicant.fintech.monoApiKey;
 
-      if (!bankAccount || !monoApiKey) {
+      if (!accountIds.length || !monoApiKey) {
         throw new Error('Missing bank account or API key');
       }
 
@@ -61,12 +61,12 @@ export class ApplicationProcessorService {
       }
 
       this.logger.info(
-        { accountId: bankAccount.monoAccountId },
+        { accountIds, count: accountIds.length },
         'Fetching data for account',
       );
       const financialData =
-        await this.dataAggregationService.gatherApplicantData(
-          bankAccount.monoAccountId,
+        await this.dataAggregationService.gatherMultiAccountData(
+          accountIds,
           monoApiKey,
           application.applicant.bvn || undefined,
         );
@@ -162,6 +162,7 @@ export class ApplicationProcessorService {
       loan_amount: payload.loan_amount,
       tenor_months: payload.tenor_months,
       interest_rate: payload.interest_rate,
+      accounts: payload.accounts,
       account_details: payload.accountDetails,
       income_records: payload.incomeRecords,
       balance: payload.balance,
