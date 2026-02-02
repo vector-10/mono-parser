@@ -15,8 +15,7 @@ export default function ChatMessage({
   isComplete = false,
   isLastSystemMessage = false,
 }: ChatMessageProps) {
-  
-  // For system messages that are process steps (processing or complete)
+
   if (role === "system" && (isProcessing || isComplete)) {
     const squareColor = isComplete ? "bg-green-500" : "bg-blue-500";
     const spinnerColor = isComplete ? "border-green-500" : "border-blue-500";
