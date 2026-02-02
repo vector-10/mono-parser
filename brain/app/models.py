@@ -1,8 +1,8 @@
-    from pydantic import BaseModel, Field
-    from typing import List, Dict, Optional, Any
-    from datetime import datetime
+from pydantic import BaseModel, Field
+from typing import List, Dict, Optional, Any
+from datetime import datetime
 
-    class MonoTransaction(BaseModel):
+class MonoTransaction(BaseModel):
         id: str
         amount: float
         type: str
@@ -11,25 +11,25 @@
         balance: float
         currency: str
 
-    class MonoIncomeStream(BaseModel):
+class MonoIncomeStream(BaseModel):
         income_type: str
         stability: float
         monthly_average: float
         frequency: str
         last_income_amount: float
 
-    class MonoCreditDebits(BaseModel):
+class MonoCreditDebits(BaseModel):
         total:float
         history: List[Dict[str, Any]]
 
-    class MonoAccountDetails(BaseModel):
+class MonoAccountDetails(BaseModel):
         balance: float
         account_number: str
         currency: str
         type: str
         bvn: Optional[str] = None
 
-    class AccountData(BaseModel):
+class AccountData(BaseModel):
         account_id: str
         account_details: Dict
         balance: float
@@ -39,7 +39,7 @@
         debits: Dict
         identity: Optional[Dict] = None
 
-    class AnalyzeRequest(BaseModel):
+class AnalyzeRequest(BaseModel):
         applicant_id: str
         loan_amount: float
         tenor_months: int
@@ -48,7 +48,7 @@
         accounts: List[AccountData]
         
 
-    class ScoreBreakdown(BaseModel):
+class ScoreBreakdown(BaseModel):
         income_stability: float
         cash_flow_health: float
         debt_service_capacity: float
@@ -57,12 +57,12 @@
         total: int
 
 
-    class EligibleTenor(BaseModel):
+class EligibleTenor(BaseModel):
         tenor: int
         max_amount: float
 
 
-    class DecisionResult(BaseModel):
+class DecisionResult(BaseModel):
         decision: str
         max_monthly_repayment: float
         safe_monthly_income: float
@@ -73,7 +73,7 @@
         reasons: List[str]
 
 
-    class AnalyzeResponse(BaseModel):
+class AnalyzeResponse(BaseModel):
         applicant_id: str
         score: int
         score_breakdown: ScoreBreakdown
