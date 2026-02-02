@@ -21,6 +21,8 @@ type Message = {
   role: "system" | "user" | "assistant";
   content: string;
   link?: string;
+  isProcessing?: boolean;  
+  isComplete?: boolean;   
 };
 
 export function useApplicationFlow(
@@ -39,18 +41,26 @@ export function useApplicationFlow(
     onError: () => void,
   ) => void,
   handleStartAnalysis: () => void,
+    messages: Message[],        
+  setMessages: (messages: Message[] | ((prev: Message[]) => Message[])) => void, 
+  updateMessageState: (content: string, updates: Partial<Message>) => void, /   
 ) {
   const [step, setStep] = useState<Step>("welcome");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: `Welcome ${userName}! To create a loan application for ${applicantName}, let's start by linking their bank accounts. This helps us analyze the applicant's financial profile.`,
-    },
-    {
-      role: "assistant",
-      content: "Would you like to generate a bank linking URL? (Yes/No)",
-    },
-  ]);
+   
+useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          role: "assistant",
+          content: `Welcome ${userName}! To create a loan application for ${applicantName}, let's start by linking their bank accounts...`,
+        },
+        {
+          role: "assistant",
+          content: "Would you like to generate a bank linking URL? (Yes/No)",
+        },
+      ]);
+    }
+  }, []);
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -66,6 +76,13 @@ export function useApplicationFlow(
   const addUserMessage = (content: string) => {
     setMessages((prev) => [...prev, { role: "user", content }]);
   };
+  const updateMessageState = (content: string, updates: Partial<Message>) => {
+  setMessages((prev) =>
+    prev.map((msg) =>
+      msg.content === content ? { ...msg, ...updates } : msg
+    )
+  );
+};
 
   const proceedToLoanDetails = () => {
     addMessages([
@@ -296,12 +313,19 @@ export function useApplicationFlow(
   };
 
   const onApplicationComplete = () => {
-    addMessages([
-      { role: "system", content: " Analysis complete!" },
-      { role: "assistant", content: "Processing results..." },
-    ]);
-    setStep("complete");
-  };
+  setMessages((prev) =>
+    prev.map((msg) =>
+      msg.isProcessing
+        ? { ...msg, isProcessing: false, isComplete: true }
+        : msg
+    )
+  );
+  addMessages([
+    { role: "system", content: "Analysis complete!" },
+    { role: "assistant", content: "Processing results..." },
+  ]);
+  setStep("complete");
+};
 
   const onApplicationError = (message: string) => {
     addMessages([
@@ -327,6 +351,12 @@ export function useApplicationFlow(
   };
 
   const onApplicationProgress = (message: string) => {
+    if (message.includes("Fetching applicant data")) {
+    updateMessageState("Starting analysis", {
+      isProcessing: false,
+      isComplete: true,
+    });
+  }
     addMessages([{ role: "system", content: message }]);
   };
 
@@ -340,6 +370,7 @@ export function useApplicationFlow(
     getInputType,
     isInputDisabled,
     addMessages,
+    updateMessageState,
     onAccountLinked,
     onApplicationComplete,
     onApplicationError,

@@ -45,6 +45,7 @@ export default function ApplicationChat({
   const [linkedAccountsCount, setLinkedAccountsCount] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [shouldExplain, setShouldExplain] = useState(false);
 
   const { data: applicant } = useApplicant(applicantId) as {
@@ -69,13 +70,23 @@ export default function ApplicationChat({
     (message) => flow.onApplicationError(message),
   );
 
+  const updateMessageState = (content: string, updates: Partial<Message>) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.content === content ? { ...msg, ...updates } : msg,
+      ),
+    );
+  };
+
   const actions = useApplicationActions(
     applicantId,
     applicantName,
-    (messages: Message[]) => flow.addMessages(messages),
+    (newMessages: Message[]) => {
+      setMessages((prev) => [...prev, ...newMessages]);
+    },
     getClientId,
+    updateMessageState,
   );
-
   const flow = useApplicationFlow(
     applicantName,
     user?.name || "User",
@@ -83,6 +94,9 @@ export default function ApplicationChat({
     actions.handleGenerateLink,
     actions.handleCreateApplication,
     actions.handleStartAnalysis,
+    messages,
+    setMessages,
+    updateMessageState,
   );
 
   useEffect(() => {

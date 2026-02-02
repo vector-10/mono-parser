@@ -1,11 +1,35 @@
 import { Loader2, CheckCircle, XCircle, Info, Link } from "lucide-react";
+import ProcessStep from "./ProcessStep";
+
 
 interface ChatMessageProps {
   role: "system" | "user" | "assistant";
   content: string;
+  isProcessing?: boolean;
+  isComplete?: boolean;
+  isLastSystemMessage?: boolean;  
 }
 
-export default function ChatMessage({ role, content }: ChatMessageProps) {
+
+export default function ChatMessage({ role, 
+  content, 
+  isProcessing = false,
+  isComplete = false,
+  isLastSystemMessage = false }: ChatMessageProps) {
+
+    if (role === "system" && (isProcessing || isComplete)) {
+    return (
+      <div className="flex justify-center my-2">
+        <ProcessStep
+          content={content}
+          isProcessing={isProcessing}
+          isComplete={isComplete}
+          showConnector={!isLastSystemMessage}
+        />
+      </div>
+    );
+  }
+
   const isSuccess = content.startsWith("✅") || (!content.endsWith("...") && !content.startsWith("❌") && (
     content.includes("verified") ||
     content.includes("linked successfully") ||
@@ -13,7 +37,6 @@ export default function ChatMessage({ role, content }: ChatMessageProps) {
     content.includes("complete")
   ));
   const isError = content.startsWith("❌");
-  const isProcessing = !isSuccess && !isError && content.endsWith("...");
   const isLink = content.includes("bank linking");
 
   const getSystemStyle = () => {

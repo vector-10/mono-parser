@@ -8,6 +8,8 @@ type Message = {
   role: "system" | "user" | "assistant";
   content: string;
   link?: string;
+  isProcessing?: boolean;  
+  isComplete?: boolean;   
 };
 
 const getActionableError = (error: any, action: string): string => {
@@ -51,6 +53,7 @@ export function useApplicationActions(
   applicantName: string,
   addMessages: (messages: Message[]) => void,
   getClientId: () => string | null,
+   updateMessageState: (content: string, updates: Partial<Message>) => void,
 ) {
   const { mutate: createApplication } = useCreateApplication();
   const { mutate: startAnalysis } = useStartAnalysis();
@@ -60,11 +63,15 @@ export function useApplicationActions(
 
   const handleGenerateLink = (onSuccess: () => void, onError: () => void) => {
     addMessages([
-      { role: "system", content: "Generating bank linking URL..." },
+      { role: "system", content: "Generating bank linking URL" },
     ]);
 
     initiateMonoLink(applicantId, {
       onSuccess: (data) => {
+        updateMessageState("Generating bank linking URL", {
+          isProcessing: false,
+          isComplete: true,
+        });
         addMessages([
           { role: "system", content: " Link generated successfully!" },
           {
@@ -103,7 +110,7 @@ export function useApplicationActions(
     onSuccess: () => void,
     onError: () => void,
   ) => {
-    addMessages([{ role: "system", content: "Creating application..." }]);
+    addMessages([{ role: "system", content: "Creating application " }]);
 
     createApplication(
       {
@@ -155,7 +162,7 @@ export function useApplicationActions(
       return;
     }
 
-    addMessages([{ role: "system", content: "Starting analysis..." }]);
+    addMessages([{ role: "system", content: "Starting analysis" }]);
 
     startAnalysis(
       { applicationId: targetAppId, clientId },
