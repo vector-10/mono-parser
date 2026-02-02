@@ -17,19 +17,23 @@ class AnalysisEngine:
     def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         logger.info(f"Starting analysis for applicant: {request.applicant_id}")
         logger.info(f"Loan amount: {request.loan_amount}, Tenor: {request.tenor_months} months, Interest rate: {request.interest_rate}%")
-        
-        mono_data = {
-            'account_details': request.account_details,
-            'balance': request.balance,
-            'transactions': request.transactions,
-            'income_records': request.income_records,
-            'credits': request.credits,
-            'debits': request.debits,
-            'identity': request.identity
-        }
+        logger.info(f"Analyzing {len(request.accounts)} bank account(s)")
+
+        accounts_data = []
+        for account in request.accounts:
+            accounts_data.append({
+                'account_id': account.account_id,
+                'account_details': account.account_details,
+                'balance': account.balance,
+                'transactions': account.transactions,
+                'income_records': account.income_records,
+                'credits': account.credits,
+                'debits': account.debits, 
+                'identity': account.identity           
+                  })
         
         logger.info("Step 1: Extracting features from Mono data...")
-        extractor = FeatureExtractor(mono_data)
+        extractor = FeatureExtractor(accounts_data)
         features = extractor.extract_all_features()
         
         logger.info(f"Features extracted: {list(features.keys())}")

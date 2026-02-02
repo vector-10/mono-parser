@@ -29,12 +29,23 @@ class MonoAccountDetails(BaseModel):
     type: str
     bvn: Optional[str] = None
 
+class AccountData(BaseModel):
+    account_id: str
+    account_details: Dict
+    balance: float
+    transactions: List[Dict]
+    income_records: Dict
+    credits: Dict
+    debits: Dict
+    identity: Optional[Dict] = None
+
 class AnalyzeRequest(BaseModel):
     applicant_id: str
     loan_amount: float
     tenor_months: int
     interest_rate: float  
     purpose: Optional[str] = None
+    accounts: List[AccountData]
     account_details: Dict
     balance: float
     transactions: List[Dict]
