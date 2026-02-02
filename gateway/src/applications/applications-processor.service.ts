@@ -170,6 +170,8 @@
         
       };
 
+      this.logger.info({ brainPayload: JSON.stringify(brainPayload, null, 2) }, 'Sending payload to brain');
+
       const response = await fetch(`${brainUrl}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

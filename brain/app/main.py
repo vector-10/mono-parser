@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from datetime import datetime
 import logging
 import traceback
@@ -37,11 +38,33 @@ def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    body = await request.body()
+    logger.error(f"Validation error: {exc.errors()}")
+    logger.error(f"Request body (first 1000 chars): {body.decode()[:1000]}")
+    
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": exc.errors(),
+            "body": body.decode()[:500] 
+        }
+    )
+
+
 
 @app.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_applicant(request: AnalyzeRequest):
+async def analyze_applicant(request: Request):
     try:
-        response = AnalysisEngine.analyze(request)
+        body = await request.body()
+        logger.info(f"Received analyze request (first 500 chars): {body.decode()[:500]}")
+        
+        data = AnalyzeRequest.parse_raw(body)
+        logger.info(f"Successfully parsed request for applicant: {data.applicant_id}")
+        logger.info(f"Number of accounts: {len(data.accounts)}")
+        
+        response = AnalysisEngine.analyze(data)
         return response
         
     except ValueError as e:
