@@ -167,13 +167,7 @@
         tenor_months: payload.tenor_months,
         interest_rate: payload.interest_rate,
         accounts: payload.accounts,
-        account_details: payload.accountDetails,
-        income_records: payload.incomeRecords,
-        balance: payload.balance,
-        transactions: payload.transactions,
-        credits: payload.credits,
-        debits: payload.debits,
-        identity: payload.identity,
+        
       };
 
       const response = await fetch(`${brainUrl}/analyze`, {
