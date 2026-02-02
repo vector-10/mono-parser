@@ -5,12 +5,115 @@ import statistics
 class FeatureExtractor:
     def __init__(self, accounts_data: List[Dict]):
         self.accounts = accounts_data
-        self.data = accounts_data
-        self.credits_data = accounts_data.get('credits', {}).get('data', {})
-        self.debits_data = accounts_data.get('debits', {}).get('data', {})
-        self.income_data = accounts_data.get('income_records', {}).get('data', [])
-        self.transactions = accounts_data.get('transactions', [])
+        self.aggregated_data = self._aggregate_accounts()
         
+        self.credits_data = self.aggregated_data.get('credits', {}).get('data', {})
+        self.debits_data = self.aggregated_data.get('debits', {}).get('data', {})
+        self.income_data = self.aggregated_data.get('income_records', {}).get('data', [])
+        self.transactions = self.aggregated_data.get('transactions', [])
+        
+    def _aggregate_accounts(self) -> Dict:
+        """
+        Combine data from multiple accounts into one unified dataset
+        """
+        if not self.accounts:
+            return {}
+        
+        total_balance = sum(acc.get('balance', 0) for acc in self.accounts)
+        
+        all_transactions = []
+        for acc in self.accounts:
+            all_transactions.extend(acc.get('transactions', []))
+        all_transactions.sort(key=lambda x: x.get('date', ''))
+        
+        # Aggregate credits
+        aggregated_credits = self._aggregate_credits_debits('credits')
+        
+        # Aggregate debits
+        aggregated_debits = self._aggregate_credits_debits('debits')
+        
+        # Combine income streams
+        aggregated_income = self._aggregate_income()
+        
+        # Use identity from first account
+        identity = self.accounts[0].get('identity') if self.accounts else None
+        
+        return {
+            'balance': total_balance,
+            'transactions': all_transactions,
+            'credits': aggregated_credits,
+            'debits': aggregated_debits,
+            'income_records': aggregated_income,
+            'identity': identity
+        }
+    
+    def _aggregate_credits_debits(self, data_type: str) -> Dict:
+        """
+        Sum credits or debits across all accounts
+        """
+        total_amount = 0
+        merged_history = {}
+        
+        for acc in self.accounts:
+            data = acc.get(data_type, {}).get('data', {})
+            total_amount += data.get('total', 0)
+            
+            history = data.get('history', [])
+            for entry in history:
+                period = entry.get('period', 'unknown')
+                amount = entry.get('amount', 0)
+                
+                if period in merged_history:
+                    merged_history[period]['amount'] += amount
+                else:
+                    merged_history[period] = {'amount': amount, 'period': period}
+        
+        # Convert back to list
+        history_list = list(merged_history.values())
+        history_list.sort(key=lambda x: x.get('period', ''))
+        
+        return {
+            'data': {
+                'total': total_amount,
+                'history': history_list
+            }
+        }
+    
+    def _aggregate_income(self) -> Dict:
+        """
+        Combine income streams from all accounts
+        """
+        all_streams = []
+        
+        for acc in self.accounts:
+            income_data = acc.get('income_records', {}).get('data', [])
+            if not income_data:
+                continue
+                
+            income_record = income_data[0] if isinstance(income_data, list) else income_data
+            streams = income_record.get('income_streams', [])
+            all_streams.extend(streams)
+        
+        # Remove duplicate streams (same employer/source)
+        unique_streams = {}
+        for stream in all_streams:
+            income_type = stream.get('income_type', 'UNKNOWN')
+            # Use income_type as key for now (can be improved)
+            key = income_type
+            
+            if key not in unique_streams:
+                unique_streams[key] = stream
+            else:
+                # If duplicate, take the one with higher monthly_average
+                if stream.get('monthly_average', 0) > unique_streams[key].get('monthly_average', 0):
+                    unique_streams[key] = stream
+        
+        return {
+            'data': [{
+                'income_streams': list(unique_streams.values())
+            }]
+        }
+    
     def extract_all_features(self) -> Dict:
         return {
             **self.extract_income_features(),
@@ -111,7 +214,7 @@ class FeatureExtractor:
         }
     
     def extract_account_features(self) -> Dict:
-        current_balance = self.data.get('balance', 0)
+        current_balance = self.aggregated_data.get('balance', 0)  # Changed from self.data
         avg_monthly_debits = self.extract_cash_flow_features()['avg_monthly_debits']
         
         balance_coverage = current_balance / avg_monthly_debits if avg_monthly_debits > 0 else 0
