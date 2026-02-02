@@ -91,11 +91,14 @@ export class ApplicationsController {
     return this.applicationsService.findAll(req.user.id, status);
   }
 
-  @Get('test-aggregation/:accountId')
-  async testAggregation(@Request() req, @Param('accountId') accountId: string) {
-    return this.dataAggregationService.gatherApplicantData(
-      accountId,
-      req.user.monoApiKey,
+  @Get('test-aggregation/:applicantId')
+  async testAggregation(
+    @Request() req,
+    @Param('applicantId') applicantId: string,
+  ) {
+    return this.dataAggregationService.testMultiAccountAggregation(
+      applicantId,
+      req.user.id,
     );
   }
 

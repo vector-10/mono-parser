@@ -174,6 +174,47 @@ export class DataAggregationService {
     };
   }
 
+  async testMultiAccountAggregation(applicantId: string, fintechId: string) {
+    this.logger.info(
+      { applicantId, fintechId },
+      'Testing multi-account aggregation',
+    );
+
+    const applicant = await this.prisma.applicant.findFirst({
+      where: { id: applicantId, fintechId },
+      include: {
+        bankAccounts: true,
+        fintech: true,
+      },
+    });
+
+    if (!applicant) {
+      throw new Error('Applicant not found or unauthorized');
+    }
+
+    if (!applicant.bankAccounts.length) {
+      throw new Error('Applicant has no linked bank accounts');
+    }
+
+    const accountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
+    const monoApiKey = applicant.fintech.monoApiKey;
+
+    if (!monoApiKey) {
+      throw new Error('Fintech has no Mono API key configured');
+    }
+
+    this.logger.info(
+      { applicantId, accountCount: accountIds.length },
+      'Gathering data for test',
+    );
+
+    return this.gatherMultiAccountData(
+      accountIds,
+      monoApiKey,
+      applicant.bvn || undefined,
+    );
+  }
+
   private async fetchSafely<T>(
     fetchFn: () => Promise<T>,
     name: string,
