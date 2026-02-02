@@ -15,6 +15,8 @@ type Message = {
   role: "system" | "user" | "assistant";
   content: string;
   link?: string;
+  isProcessing?: boolean;
+  isComplete?: boolean;
 };
 
 type ApplicantWithRelations = {
@@ -187,34 +189,47 @@ export default function ApplicationChat({
       )}
 
       <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50">
-        {flow.messages.map((msg, i) => (
-          <div key={i}>
-            <ChatMessage role={msg.role} content={msg.content} />
-            {msg.link && (
-              <div className="mt-2 ml-50 max-w-[40%]">
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
-                    Bank Linking URL
-                  </p>
-                  <div className="flex gap-2">
-                    <p className="flex-1 text-sm text-blue-700 truncate bg-white border border-blue-100 rounded px-3 py-2">
-                      {msg.link}
+        {flow.messages.map((msg, i) => {
+          const isLastSystemMessage =
+            msg.role === "system" &&
+            (i === flow.messages.length - 1 ||
+              flow.messages[i + 1]?.role !== "system");
+
+          return (
+            <div key={i}>
+              <ChatMessage
+                role={msg.role}
+                content={msg.content}
+                isProcessing={msg.isProcessing}
+                isComplete={msg.isComplete}
+                isLastSystemMessage={isLastSystemMessage}
+              />
+              {msg.link && (
+                <div className="mt-2 ml-50 max-w-[40%]">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
+                      Bank Linking URL
                     </p>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(msg.link!);
-                        toast.success("Link copied!");
-                      }}
-                      className="px-3 py-2 bg-[#0055ba] text-white rounded hover:bg-[#004494] text-xs font-medium whitespace-nowrap"
-                    >
-                      Copy
-                    </button>
+                    <div className="flex gap-2">
+                      <p className="flex-1 text-sm text-blue-700 truncate bg-white border border-blue-100 rounded px-3 py-2">
+                        {msg.link}
+                      </p>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.link!);
+                          toast.success("Link copied!");
+                        }}
+                        className="px-3 py-2 bg-[#0055ba] text-white rounded hover:bg-[#004494] text-xs font-medium whitespace-nowrap"
+                      >
+                        Copy
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
         <div ref={chatEndRef} />
       </div>
 
