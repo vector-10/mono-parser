@@ -52,8 +52,7 @@ class DecisionEngine:
         max_monthly_repayment = 0.35 * safe_monthly_income
         monthly_payment = self._calculate_monthly_payment(self.loan_amount, self.interest_rate, self.tenor_months)
         
-        account_age_months = self.features.get('account_age_months', 0)
-        max_allowed_tenor = min(account_age_months, 24)
+        max_allowed_tenor = 12
         
         if self.tenor_months > max_allowed_tenor:
             return {
@@ -101,7 +100,7 @@ class DecisionEngine:
         
         reasons.append(f'Score: {self.score}/1000')
         reasons.append(f'Monthly payment (₦{monthly_payment:,.0f}) within 35% affordability cap')
-        reasons.append(f'Tenor ({self.tenor_months} months) within observed account activity')
+        reasons.append(f'Tenor ({self.tenor_months} months) within maximum allowed limit')
         
         return {
             'decision': 'APPROVED',
