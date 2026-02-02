@@ -124,7 +124,7 @@ class DecisionEngine:
     def _calculate_eligible_tenors(self, max_monthly_repayment: float, max_allowed_tenor: int) -> List[Dict]:
         eligible_tenors = []
         
-        for tenor in [6, 12, 18, 24]:
+        for tenor in [3, 6, 9, 12]:
             if tenor > max_allowed_tenor:
                 break
             
