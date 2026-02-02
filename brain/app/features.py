@@ -26,16 +26,13 @@ class FeatureExtractor:
             all_transactions.extend(acc.get('transactions', []))
         all_transactions.sort(key=lambda x: x.get('date', ''))
         
-        # Aggregate credits
+
         aggregated_credits = self._aggregate_credits_debits('credits')
         
-        # Aggregate debits
         aggregated_debits = self._aggregate_credits_debits('debits')
         
-        # Combine income streams
         aggregated_income = self._aggregate_income()
         
-        # Use identity from first account
         identity = self.accounts[0].get('identity') if self.accounts else None
         
         return {
