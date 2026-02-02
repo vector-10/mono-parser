@@ -57,14 +57,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_applicant(request: AnalyzeRequest):
     try:
-        body = await request.body()
-        logger.info(f"Received analyze request (first 500 chars): {body.decode()[:500]}")
         
-        data = AnalyzeRequest.parse_raw(body)
-        logger.info(f"Successfully parsed request for applicant: {data.applicant_id}")
-        logger.info(f"Number of accounts: {len(data.accounts)}")
+        logger.info(f"Received analyze request for applicant: {request.applicant_id}")
+        logger.info(f"Number of accounts: {len(request.accounts)}")
         
-        response = AnalysisEngine.analyze(data)
+        response = AnalysisEngine.analyze(request)
         return response
         
     except ValueError as e:
