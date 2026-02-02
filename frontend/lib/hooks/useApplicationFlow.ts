@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Step =
   | "welcome"
@@ -43,7 +43,7 @@ export function useApplicationFlow(
   handleStartAnalysis: () => void,
     messages: Message[],        
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[])) => void, 
-  updateMessageState: (content: string, updates: Partial<Message>) => void, /   
+  updateMessageState: (content: string, updates: Partial<Message>) => void,    
 ) {
   const [step, setStep] = useState<Step>("welcome");
    
@@ -76,13 +76,6 @@ useEffect(() => {
   const addUserMessage = (content: string) => {
     setMessages((prev) => [...prev, { role: "user", content }]);
   };
-  const updateMessageState = (content: string, updates: Partial<Message>) => {
-  setMessages((prev) =>
-    prev.map((msg) =>
-      msg.content === content ? { ...msg, ...updates } : msg
-    )
-  );
-};
 
   const proceedToLoanDetails = () => {
     addMessages([
@@ -350,14 +343,14 @@ useEffect(() => {
     setStep("analysis-failed");
   };
 
-  const onApplicationProgress = (message: string) => {
+   const onApplicationProgress = (message: string) => {
     if (message.includes("Fetching applicant data")) {
-    updateMessageState("Starting analysis", {
-      isProcessing: false,
-      isComplete: true,
-    });
-  }
-    addMessages([{ role: "system", content: message }]);
+      updateMessageState("Starting analysis", {
+        isProcessing: false,
+        isComplete: true,
+      });
+    }
+    addMessages([{ role: "system", content: message, isProcessing: true }]); 
   };
 
   return {
