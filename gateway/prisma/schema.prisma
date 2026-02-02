@@ -76,7 +76,6 @@ model BankAccount {
 model Application {
   id                String    @id @default(uuid())
   applicantId       String
-  bankAccountId     String?
   
   amount            Int
   tenor             Int

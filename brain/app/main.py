@@ -55,7 +55,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 @app.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_applicant(request: Request):
+async def analyze_applicant(request: AnalyzeRequest):
     try:
         body = await request.body()
         logger.info(f"Received analyze request (first 500 chars): {body.decode()[:500]}")

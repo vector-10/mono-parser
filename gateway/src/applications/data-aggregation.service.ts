@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { MonoService } from 'src/mono/mono.service';
 
 @Injectable()
 export class DataAggregationService {
   constructor(
     private monoService: MonoService,
+    private prisma: PrismaService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(DataAggregationService.name);
