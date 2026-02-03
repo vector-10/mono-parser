@@ -190,15 +190,11 @@ export default function ApplicationChat({
 
       <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50 max-w-4xl mx-auto w-full custom-scrollbar">
         {flow.messages.map((msg, i) => {
-          // Check if this message is part of a process sequence
           const isProcessStep = msg.isProcessing || msg.isComplete;
 
-          // Check if the NEXT message is also a process step
           const nextMsg = flow.messages[i + 1];
           const nextIsProcessStep =
             nextMsg && (nextMsg.isProcessing || nextMsg.isComplete);
-
-          // Only show connector line if current is process step AND next is also process step
           const isLastInSequence = isProcessStep && !nextIsProcessStep;
 
           return (

@@ -58,11 +58,10 @@ Write a professional credit decision explanation with the following structure:
     const result = await this.model.generateContent(prompt);
     const response = await result.response;
     let text = response.text();
-    
-    // Clean up any markdown artifacts Gemini might add
+
     text = text
-      .replace(/\*\*/g, '') // Remove bold markers
-      .replace(/#{1,6}\s/g, '') // Remove headers
+      .replace(/\*\*/g, '') 
+      .replace(/#{1,6}\s/g, '') 
       .trim();
     
     this.logger.info('Gemini explanation generated successfully');
