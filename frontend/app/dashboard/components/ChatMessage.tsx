@@ -1,72 +1,57 @@
-import { CheckCircle, XCircle, Info, Link } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Info, Link } from "lucide-react";
 
 interface ChatMessageProps {
   role: "system" | "user" | "assistant";
   content: string;
   isProcessing?: boolean;
   isComplete?: boolean;
-  isLastSystemMessage?: boolean;
+  isLastInSequence?: boolean;
 }
 
-export default function ChatMessage({
-  role,
-  content,
-  isProcessing = false,
+export default function ChatMessage({ 
+  role, 
+  content, 
+  isProcessing = false, 
   isComplete = false,
-  isLastSystemMessage = false,
+  isLastInSequence = false
 }: ChatMessageProps) {
-
+  
+  // Square layout for application creation + analysis steps
   if (role === "system" && (isProcessing || isComplete)) {
-    const squareColor = isComplete ? "bg-green-500" : "bg-blue-500";
-    const spinnerColor = isComplete ? "border-green-500" : "border-blue-500";
-    const lineColor = isComplete ? "bg-green-500" : "bg-blue-500";
-
     return (
-      <div className="flex justify-start pl-50">
+      <div className="flex justify-start">
         <div className="flex flex-col items-start">
-          {/* Square with spinner */}
-          <div className="relative">
-            {/* Circular spinner border */}
-            {isProcessing && !isComplete && (
-              <div className="absolute inset-0 -m-2">
-                <div
-                  className={`w-[calc(100%+16px)] h-[calc(100%+16px)] rounded-full border-2 border-t-transparent ${spinnerColor} animate-spin`}
-                />
+          <div className="flex items-start gap-3">
+            {/* Small square with spinner or checkmark */}
+            <div className="relative flex-shrink-0">
+              {/* Spinner ring around square */}
+              {isProcessing && (
+                <div className="absolute -inset-1">
+                  <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
+                </div>
+              )}
+              
+              {/* The square */}
+              <div className={`w-4 h-4 rounded ${isComplete ? 'bg-green-500' : 'bg-blue-500'} relative z-10 flex items-center justify-center`}>
+                {isComplete && <CheckCircle className="h-3 w-3 text-white" />}
               </div>
-            )}
-
-            {/* Completed ring (no animation) */}
-            {isComplete && (
-              <div className="absolute inset-0 -m-2">
-                <div
-                  className={`w-[calc(100%+16px)] h-[calc(100%+16px)] rounded-full border-2 ${spinnerColor}`}
-                />
-              </div>
-            )}
-
-            {/* The square */}
-            <div
-              className={`relative z-10 px-3 py-2 ${squareColor} rounded-lg flex items-center justify-center text-white text-sm font-medium`}
-            >
-              {content}
             </div>
+
+            {/* Text beside square */}
+            <span className="text-sm text-gray-700 pt-0.5">{content}</span>
           </div>
 
           {/* Vertical connector line */}
-          {!isLastSystemMessage && (
-            <div className={`w-0.5 h-4 ${lineColor} ml-[50%] my-1`} />
+          {!isLastInSequence && (
+            <div className="w-0.5 h-4 bg-gray-300 ml-2 my-1" />
           )}
         </div>
       </div>
     );
   }
 
-  // For non-process system messages (success/error/info)
-  const isSuccess =
-    content.includes("verified") ||
-    content.includes("linked successfully") ||
-    content.includes("generated successfully") ||
-    content.includes("complete");
+  // Pill layout for everything else (links, errors, successes)
+  const isSuccess = content.includes("verified") || content.includes("linked successfully") || content.includes("generated successfully");
   const isError = content.includes("Error") || content.includes("Failed");
   const isLink = content.includes("bank linking");
 
@@ -95,14 +80,14 @@ export default function ChatMessage({
     .replace(/^✓\s*/, "");
 
   return (
-    <div className={`flex ${role === "user" ? "justify-end pr-50" : "justify-start pl-50"}`}>
+    <div className={`flex ${role === "user" ? "justify-end" : "justify-start"}`}>
       <div
         className={`rounded-lg ${
           role === "system"
             ? `px-3 py-2 text-sm font-medium inline-flex items-center gap-2 ${getSystemStyle()}`
             : role === "user"
-            ? "px-4 py-2.5 bg-[#0055ba] text-white max-w-[50%]"
-            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[50%]"
+            ? "px-4 py-2.5 bg-[#0055ba] text-white max-w-[75%]"
+            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[75%]"
         }`}
       >
         {role === "system" && getIcon()}

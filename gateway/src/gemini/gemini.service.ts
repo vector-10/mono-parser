@@ -19,6 +19,8 @@ export class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
+
+
   async explainLoanDecision(analysisData: any): Promise<string> {
   const decision = analysisData.decision || {};
   
@@ -37,17 +39,31 @@ ${decision.reasons ? decision.reasons.map((r: string) => `- ${r}`).join('\n') : 
 Additional Details:
 ${JSON.stringify(decision, null, 2)}
 
-Provide a clear, professional explanation of:
-1. Why this decision was made
-2. The most important factors that influenced it  
-3. What the applicant could do to improve their chances
+Write a professional credit decision explanation with the following structure:
 
-Keep it concise (3-4 paragraphs) and use simple language. Focus on actionable insights.`;
+**Opening:** Start with a greeting and clear statement of the loan decision and credit score.
+
+**Key Approval Factors:** Explain the 3-4 most important reasons this loan was approved, with specific numbers and percentages from the data.
+
+**Recommendations:** Provide 2-3 suggestions for future improvement or maintaining their creditworthiness.
+
+**Important:** 
+- Use clear paragraph breaks (double line breaks between sections)
+- Keep it 6-7 paragraphs total
+- Use specific numbers from the data
+- Write professionally but keep language simple
+- Do NOT use markdown formatting like ** or # - just plain text with line breaks`;
 
   try {
     const result = await this.model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    let text = response.text();
+    
+    // Clean up any markdown artifacts Gemini might add
+    text = text
+      .replace(/\*\*/g, '') // Remove bold markers
+      .replace(/#{1,6}\s/g, '') // Remove headers
+      .trim();
     
     this.logger.info('Gemini explanation generated successfully');
     return text;
@@ -55,4 +71,7 @@ Keep it concise (3-4 paragraphs) and use simple language. Focus on actionable in
     this.logger.error({ err: error }, 'Gemini API failed');
     throw new Error('Failed to generate explanation');
   }
-}}
+}
+
+
+}

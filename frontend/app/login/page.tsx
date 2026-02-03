@@ -54,9 +54,7 @@ export default function LoginPage() {
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
               Welcome back to the future of credit scoring
             </h1>        
-           
 
-            
           </div>
 
           {/* Right Side - Login Form */}
