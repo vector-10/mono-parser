@@ -16,7 +16,6 @@ export class DataAggregationService {
   async gatherApplicantData(
     accountId: string,
     monoApiKey: string,
-    bvn?: string,
   ) {
     this.logger.info({ accountId }, 'Starting data aggregation for account');
 
@@ -73,12 +72,6 @@ export class DataAggregationService {
       ),
     };
 
-    if (bvn) {
-      dataPromises['creditHistory'] = this.fetchSafely(
-        () => this.monoService.getCreditHistory(bvn, monoApiKey),
-        'creditHistory',
-      );
-    }
 
     const settled = await Promise.allSettled(Object.values(dataPromises));
 
@@ -122,7 +115,6 @@ export class DataAggregationService {
   async gatherMultiAccountData(
     accountIds: string[],
     monoApiKey: string,
-    bvn?: string,
   ) {
     this.logger.info(
       { accountIds, count: accountIds.length },
@@ -134,7 +126,7 @@ export class DataAggregationService {
     }
 
     const accountsDataPromises = accountIds.map((accountId) =>
-      this.gatherApplicantData(accountId, monoApiKey, bvn),
+      this.gatherApplicantData(accountId, monoApiKey),
     );
 
     const accountsData = await Promise.all(accountsDataPromises);
@@ -213,7 +205,6 @@ export class DataAggregationService {
     return this.gatherMultiAccountData(
       accountIds,
       monoApiKey,
-      applicant.bvn || undefined,
     );
   }
 

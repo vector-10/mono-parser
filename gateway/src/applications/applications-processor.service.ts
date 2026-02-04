@@ -70,7 +70,6 @@
       const financialData = await this.dataAggregationService.gatherMultiAccountData(
         accountIds,
         monoApiKey,
-        application.applicant.bvn || undefined,
       );
 
       if (clientId) {
