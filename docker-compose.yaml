@@ -27,6 +27,7 @@ services:
       - ./gateway/.env 
     ports:
       - "5000:5000"
+      - "5555:5555"
     depends_on:
       db:
         condition: service_healthy
