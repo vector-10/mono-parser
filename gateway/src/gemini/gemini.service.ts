@@ -7,7 +7,7 @@ export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private model: any;
   private lastGeminiCall: number = 0;
-  private readonly GEMINI_REQUEST_DELAY = 6000;
+  private readonly GEMINI_REQUEST_DELAY = 10000;
 
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(GeminiService.name);

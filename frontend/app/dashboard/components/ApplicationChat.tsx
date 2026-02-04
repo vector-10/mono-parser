@@ -151,8 +151,19 @@ export default function ApplicationChat({
     }
   }, [applicant, applicantName]);
 
+  useEffect(() => {
+    console.log("=== EXPLAIN TRIGGER DEBUG ===");
+    console.log("shouldExplain:", shouldExplain);
+    console.log("applicationId:", actions.applicationId);
+    console.log(
+      "Will trigger explain:",
+      shouldExplain && !!actions.applicationId,
+    );
+    console.log("============================");
+  }, [shouldExplain, actions.applicationId]);
+
   const { data: applicationData } = useApplication(actions.applicationId);
-  const { data: explanation } = useExplainResults(
+  const { data: explanation, error: explainError } = useExplainResults(
     actions.applicationId,
     shouldExplain,
   );
@@ -174,6 +185,14 @@ export default function ApplicationChat({
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [flow.messages]);
+
+  useEffect(() => {
+  if (explainError) {
+    console.error('Explain error:', explainError);
+    toast.error('Failed to generate explanation');
+    setShouldExplain(false);
+  }
+}, [explainError]);
 
   const handleSubmit = () => {
     flow.handleSubmit(currentInput);
