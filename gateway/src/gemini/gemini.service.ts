@@ -6,6 +6,8 @@ import { PinoLogger } from 'nestjs-pino';
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private model: any;
+  private lastGeminiCall: number = 0;
+  private readonly GEMINI_REQUEST_DELAY = 6000;
 
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(GeminiService.name);
@@ -19,14 +21,20 @@ export class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
-  const GEMINI_REQUEST_DELAY = 6000; // 6 seconds = 10 RPM max
-let lastGeminiCall = 0;
-
-
   async explainLoanDecision(analysisData: any): Promise<string> {
-  const decision = analysisData.decision || {};
-  
-  const prompt = `You are a financial analyst explaining loan decisions to fintech credit officers.
+    const now = Date.now();
+    const timeSinceLastCall = now - this.lastGeminiCall;
+    if (timeSinceLastCall < this.GEMINI_REQUEST_DELAY) {
+      const waitTime = this.GEMINI_REQUEST_DELAY - timeSinceLastCall;
+      this.logger.info({ waitTime }, 'Rate limiting Gemini request');
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+    }
+
+    this.lastGeminiCall = Date.now();
+
+    const decision = analysisData.decision || {};
+
+    const prompt = `You are a financial analyst explaining loan decisions to fintech credit officers.
 
 Given this credit analysis result:
 - Credit Score: ${analysisData.score || 'N/A'}
@@ -56,23 +64,21 @@ Write a professional credit decision explanation with the following structure:
 - Write professionally but keep language simple
 - Do NOT use markdown formatting like ** or # - just plain text with line breaks`;
 
-  try {
-    const result = await this.model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      let text = response.text();
 
-    text = text
-      .replace(/\*\*/g, '') 
-      .replace(/#{1,6}\s/g, '') 
-      .trim();
-    
-    this.logger.info('Gemini explanation generated successfully');
-    return text;
-  } catch (error) {
-    this.logger.error({ err: error }, 'Gemini API failed');
-    throw new Error('Failed to generate explanation');
+      text = text
+        .replace(/\*\*/g, '')
+        .replace(/#{1,6}\s/g, '')
+        .trim();
+
+      this.logger.info('Gemini explanation generated successfully');
+      return text;
+    } catch (error) {
+      this.logger.error({ err: error }, 'Gemini API failed');
+      throw new Error('Failed to generate explanation');
+    }
   }
-}
-
-
 }
