@@ -10,13 +10,13 @@ datasource db {
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
-  password    String   // Hashed with bcrypt
+  password    String   
   name        String
   companyName String
   
   apiKey      String   @unique @default(uuid())  
   monoApiKey  String?   
-  monoPublicKey  String?  // Public key for widget ← ADD THIS  
+  monoPublicKey  String?  
 
   monoCustomerId String? 
 
@@ -63,10 +63,10 @@ model BankAccount {
   balance        Int?     
 
   applicantId    String
-  applicant      Applicant @relation(fields: [applicantId], references: [id])
+  applicant      Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  updatedAt      DateTime  @updatedAt 
 
   transactions   Transaction[]
   @@index([applicantId])
@@ -97,18 +97,17 @@ model Application {
   updatedAt         DateTime  @updatedAt
   processedAt       DateTime?
   
-  applicant         Applicant @relation(fields: [applicantId], references: [id])
+  applicant         Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   
   @@index([applicantId])
   @@index([status])
 }
 
 
-
 model Transaction {
   id             String      @id @default(uuid())
   accountId      String
-  bankAccount    BankAccount @relation(fields: [accountId], references: [monoAccountId])
+  bankAccount    BankAccount @relation(fields: [accountId], references: [monoAccountId], onDelete: Cascade)
   amount         Int
   type           String      
   description    String
