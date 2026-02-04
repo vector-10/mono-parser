@@ -28,7 +28,6 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
       },
     });
   };
-
   if (!isOpen) return null;
 
   return (

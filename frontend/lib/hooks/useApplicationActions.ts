@@ -14,7 +14,6 @@ type Message = {
 
 const getActionableError = (error: any, action: string): string => {
   const message = error?.response?.data?.message || error?.message || "";
-
   switch (action) {
     case "generate-link":
       if (message.includes("monoApiKey") || message.includes("API key"))
@@ -143,6 +142,11 @@ export function useApplicationActions(
 
   const handleStartAnalysis = (appId?: string) => {
     const clientId = getClientId();
+    console.log('=== START ANALYSIS DEBUG ===');
+  console.log('Client ID:', clientId);
+  console.log('Application ID:', applicationId);
+  console.log('===========================');
+
     const targetAppId = appId || applicationId;
 
     if (!clientId) {

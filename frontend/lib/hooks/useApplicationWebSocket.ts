@@ -31,7 +31,6 @@ export function useApplicationWebSocket(
     onApplicationError,
   });
 
-
   useEffect(() => {
     callbacksRef.current = {
       onAccountLinked,

@@ -19,6 +19,8 @@ export class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
+  const GEMINI_REQUEST_DELAY = 6000; // 6 seconds = 10 RPM max
+let lastGeminiCall = 0;
 
 
   async explainLoanDecision(analysisData: any): Promise<string> {

@@ -90,6 +90,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   emitApplicationComplete(clientId: string, data: any) {
+    this.logger.info({ clientId, data }, 'Emitting application complete');
     this.emitToClient(clientId, 'application_complete', data);
   }
 
