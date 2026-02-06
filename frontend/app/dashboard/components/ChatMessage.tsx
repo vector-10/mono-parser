@@ -16,7 +16,6 @@ export default function ChatMessage({
   isLastInSequence = false
 }: ChatMessageProps) {
   
-  // Square layout for application creation + analysis steps
   if (role === "system" && (isProcessing || isComplete)) {
     return (
       <div className="flex justify-start">
@@ -50,7 +49,7 @@ export default function ChatMessage({
     );
   }
 
-  // Pill layout for everything else (links, errors, successes)
+
   const isSuccess = content.includes("verified") || content.includes("linked successfully") || content.includes("generated successfully");
   const isError = content.includes("Error") || content.includes("Failed");
   const isLink = content.includes("bank linking");

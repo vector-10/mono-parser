@@ -51,17 +51,27 @@ ${JSON.stringify(decision, null, 2)}
 
 Write a professional credit decision explanation with the following structure:
 
-**Opening:** Start with a greeting and clear statement of the loan decision and credit score.
+PARAGRAPH 1: State the decision (APPROVED/DENIED) and credit score (X out of 1000). Explain what this score indicates about creditworthiness.
 
-**Key Approval Factors:** Explain the 3-4 most important reasons this loan was approved or rejected, with specific numbers and percentages from the data.
+PARAGRAPH 2: Explain the PRIMARY strength - affordability. Include specific numbers: proposed monthly payment, affordability cap percentage, and how it compares.
 
-**Recommendations:** Provide 2-3 suggestions for future improvement or maintaining their creditworthiness.
+PARAGRAPH 3: Detail the income analysis. Include safe monthly income, maximum repayment capacity, and how the requested payment compares as a fraction of capacity.
 
-**Important:** 
-- Use clear paragraph breaks (double line breaks between sections)
-- Keep it 6-7 paragraphs total
+PARAGRAPH 4: Discuss tenor fit. Explain the requested tenor and how it aligns with system-provided eligible options (range from X to Y months).
+
+PARAGRAPH 5: Highlight strong underlying metrics with specific scores (Debt Service Capacity, Income Stability, Spending Behavior) and what they indicate about repayment reliability.
+
+PARAGRAPH 6: State the final approved amount and tenor based on all factors analyzed.
+
+PARAGRAPH 7: Provide 2-3 actionable recommendations for maintaining strong credit standing and potential future improvements.
+
+IMPORTANT RULES:
+- NO greeting ("Good morning team" etc.)
+- NO applicant IDs or technical identifiers
+- Use TWO line breaks between paragraphs (\n\n)
+- Write 7 distinct paragraphs
 - Use specific numbers from the data
-- Write professionally but keep language simple
+- Keep language professional but simple
 - Do NOT use markdown formatting like ** or # - just plain text with line breaks`;
 
     try {
