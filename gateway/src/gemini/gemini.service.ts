@@ -42,41 +42,27 @@ Given this credit analysis result:
 - Status: ${decision.status || 'N/A'}
 - Recommended Tenor: ${decision.recommended_tenor || 'N/A'} months
 - Maximum Tenor: ${decision.max_tenor || 'N/A'} months
-- Monthly Payment: ${decision.monthly_payment ? `₦${decision.monthly_payment.toLocaleString()}` : 'N/A'}
-- Safe Monthly Income: ${decision.safe_monthly_income ? `₦${decision.safe_monthly_income.toLocaleString()}` : 'N/A'}
-- Max Monthly Repayment: ${decision.max_monthly_repayment ? `₦${decision.max_monthly_repayment.toLocaleString()}` : 'N/A'}
 
 Reasons for Decision:
 ${decision.reasons ? decision.reasons.map((r: string) => `- ${r}`).join('\n') : 'No reasons provided'}
 
-Score Breakdown:
-- Debt Service Capacity: ${decision.score_breakdown?.debt_service_capacity || 'N/A'}
-- Income Stability: ${decision.score_breakdown?.income_stability || 'N/A'}
-- Spending Behavior: ${decision.score_breakdown?.spending_behavior || 'N/A'}
+Additional Details:
+${JSON.stringify(decision, null, 2)}
 
-Write a professional credit analysis report with proper paragraph structure:
+Write a professional credit decision explanation with the following structure:
 
-PARAGRAPH 1: State the decision (APPROVED/DENIED) and credit score (X out of 1000). Explain what this score indicates about creditworthiness.
+**Opening:** Start with a greeting and clear statement of the loan decision and credit score.
 
-PARAGRAPH 2: Explain the PRIMARY strength - affordability. Include specific numbers: proposed monthly payment, affordability cap percentage, and how it compares.
+**Key Approval Factors:** Explain the 3-4 most important reasons this loan was approved or rejected, with specific numbers and percentages from the data.
 
-PARAGRAPH 3: Detail the income analysis. Include safe monthly income, maximum repayment capacity, and how the requested payment compares as a fraction of capacity.
+**Recommendations:** Provide 2-3 suggestions for future improvement or maintaining their creditworthiness.
 
-PARAGRAPH 4: Discuss tenor fit. Explain the requested tenor and how it aligns with system-provided eligible options (range from X to Y months).
-
-PARAGRAPH 5: Highlight strong underlying metrics with specific scores (Debt Service Capacity, Income Stability, Spending Behavior) and what they indicate about repayment reliability.
-
-PARAGRAPH 6: State the final approved amount and tenor based on all factors analyzed.
-
-PARAGRAPH 7: Provide 2-3 actionable recommendations for maintaining strong credit standing and potential future improvements.
-
-IMPORTANT RULES:
-- NO greeting ("Good morning team" etc.)
-- NO applicant IDs or technical identifiers
-- Use double line breaks between paragraphs
-- Write 7 distinct paragraphs
+**Important:** 
+- Use clear paragraph breaks (double line breaks between sections)
+- Keep it 6-7 paragraphs total
 - Use specific numbers from the data
-- Keep language professional but simple`;
+- Write professionally but keep language simple
+- Do NOT use markdown formatting like ** or # - just plain text with line breaks`;
 
     try {
       const result = await this.model.generateContent(prompt);
