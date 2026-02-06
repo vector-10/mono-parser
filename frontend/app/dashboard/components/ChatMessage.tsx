@@ -86,7 +86,7 @@ export default function ChatMessage({
             ? `px-3 py-2 text-sm font-medium inline-flex items-center gap-2 ${getSystemStyle()}`
             : role === "user"
             ? "px-4 py-2.5 bg-[#0055ba] text-white max-w-[75%]"
-            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[75%]"
+            : "px-4 py-2.5 bg-white border border-gray-200 text-gray-900 max-w-[75%] whitespace-pre-line"
         }`}
       >
         {role === "system" && getIcon()}

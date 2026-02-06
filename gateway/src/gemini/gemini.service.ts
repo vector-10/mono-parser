@@ -68,7 +68,7 @@ PARAGRAPH 7: Provide 2-3 actionable recommendations for maintaining strong credi
 IMPORTANT RULES:
 - NO greeting ("Good morning team" etc.)
 - NO applicant IDs or technical identifiers
-- Use TWO line breaks between paragraphs (\n\n)
+- Use ONE line breaks between paragraphs (\n)
 - Write 7 distinct paragraphs
 - Use specific numbers from the data
 - Keep language professional but simple
