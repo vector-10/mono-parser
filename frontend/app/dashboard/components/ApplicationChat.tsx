@@ -49,10 +49,41 @@ export default function ApplicationChat({
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [shouldExplain, setShouldExplain] = useState(false);
+  const clientIdRef = useRef<string>("");
 
   const { data: applicant } = useApplicant(applicantId) as {
     data: ApplicantWithRelations | undefined;
   };
+
+  const updateMessageState = (content: string, updates: Partial<Message>) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.content === content ? { ...msg, ...updates } : msg,
+      ),
+    );
+  };
+
+  const actions = useApplicationActions(
+    applicantId,
+    applicantName,
+    (newMessages: Message[]) => {
+      setMessages((prev) => [...prev, ...newMessages]);
+    },
+    () => clientIdRef.current,
+    updateMessageState,
+  );
+
+  const flow = useApplicationFlow(
+    applicantName,
+    user?.name || "User",
+    linkedAccountsCount,
+    actions.handleGenerateLink,
+    actions.handleCreateApplication,
+    actions.handleStartAnalysis,
+    messages,
+    setMessages,
+    updateMessageState,
+  );
 
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
@@ -72,34 +103,9 @@ export default function ApplicationChat({
     (message) => flow.onApplicationError(message),
   );
 
-  const updateMessageState = (content: string, updates: Partial<Message>) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.content === content ? { ...msg, ...updates } : msg,
-      ),
-    );
-  };
-
-  const actions = useApplicationActions(
-    applicantId,
-    applicantName,
-    (newMessages: Message[]) => {
-      setMessages((prev) => [...prev, ...newMessages]);
-    },
-    getClientId,
-    updateMessageState,
-  );
-  const flow = useApplicationFlow(
-    applicantName,
-    user?.name || "User",
-    linkedAccountsCount,
-    actions.handleGenerateLink,
-    actions.handleCreateApplication,
-    actions.handleStartAnalysis,
-    messages,
-    setMessages,
-    updateMessageState,
-  );
+  useEffect(() => {
+  clientIdRef.current = getClientId() || "";
+}, [getClientId]);
 
   useEffect(() => {
     if (!applicant) return;
@@ -114,16 +120,6 @@ export default function ApplicationChat({
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )[0];
-
-      const statusText =
-        lastApplication.status === "APPROVED" ? "Approved" : "Denied";
-      const amountText = `₦${lastApplication.amount.toLocaleString()}`;
-      const purposeText = lastApplication.purpose
-        ? ` for ${lastApplication.purpose}`
-        : "";
-      const scoreText = lastApplication.score
-        ? ` (score: ${lastApplication.score}/1000)`
-        : "";
 
       flow.setMessages([
         {
@@ -187,12 +183,12 @@ export default function ApplicationChat({
   }, [flow.messages]);
 
   useEffect(() => {
-  if (explainError) {
-    console.error('Explain error:', explainError);
-    toast.error('Failed to generate explanation');
-    setShouldExplain(false);
-  }
-}, [explainError]);
+    if (explainError) {
+      console.error("Explain error:", explainError);
+      toast.error("Failed to generate explanation");
+      setShouldExplain(false);
+    }
+  }, [explainError]);
 
   const handleSubmit = () => {
     flow.handleSubmit(currentInput);
