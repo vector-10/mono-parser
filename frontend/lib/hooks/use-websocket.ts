@@ -32,13 +32,13 @@ export function useWebSocket() {
     };
   }, []);
 
-  const on = (event: string, callback: (data: any) => void) => {
+  const on = (event: string, callback: (data: unknown) => void) => {
     if (socketRef.current) {
       socketRef.current.on(event, callback);
     }
   };
 
-  const off = (event: string, callback?: (data: any) => void) => {
+  const off = (event: string, callback?: (data: unknown) => void) => {
     if (socketRef.current) {
       if (callback) {
         socketRef.current.off(event, callback);
@@ -48,7 +48,7 @@ export function useWebSocket() {
     }
   };
 
-  const emit = (event: string, data: any) => {
+  const emit = (event: string, data: unknown) => {
     if (socketRef.current) {
       socketRef.current.emit(event, data);
     }
@@ -64,6 +64,6 @@ export function useWebSocket() {
     off,
     emit,
     getClientId,
-    socket: socketRef.current,
+    // socket: socketRef.current,
   };
 }

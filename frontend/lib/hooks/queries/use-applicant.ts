@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { applicantsApi, CreateApplicantData } from '@/lib/api/applicants'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
 
 export function useApplicant(id: string | null) {
   return useQuery({
@@ -21,7 +22,7 @@ export function useUpdateApplicant() {
       queryClient.invalidateQueries({ queryKey: ['applicants'] })
       toast.success('Applicant updated successfully')
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error?.response?.data?.message || 'Failed to update applicant')
     },
   })
@@ -36,7 +37,7 @@ export function useDeleteApplicant() {
       queryClient.invalidateQueries({ queryKey: ['applicants'] })
       toast.success('Applicant deleted successfully')
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error?.response?.data?.message || 'Failed to delete applicant')
     },
   })

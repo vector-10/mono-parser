@@ -2,18 +2,21 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateApplication } from "@/lib/hooks/queries/use-create-application";
 import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
+import { AxiosError } from "axios";
 import { useInitiateMonoLink } from "@/lib/hooks/queries/use-initiate-mono-link";
 
 type Message = {
   role: "system" | "user" | "assistant";
   content: string;
   link?: string;
-  isProcessing?: boolean;  
-  isComplete?: boolean;   
+  isProcessing?: boolean;
+  isComplete?: boolean;
 };
 
-const getActionableError = (error: any, action: string): string => {
-  const message = error?.response?.data?.message || error?.message || "";
+const getActionableError = (error: unknown, action: string): string => {
+  const axiosError = error as AxiosError<{ message?: string }>;
+  const message =
+    axiosError?.response?.data?.message || axiosError?.message || "";
   switch (action) {
     case "generate-link":
       if (message.includes("monoApiKey") || message.includes("API key"))
@@ -52,7 +55,7 @@ export function useApplicationActions(
   applicantName: string,
   addMessages: (messages: Message[]) => void,
   getClientId: () => string | null,
-   updateMessageState: (content: string, updates: Partial<Message>) => void,
+  updateMessageState: (content: string, updates: Partial<Message>) => void,
 ) {
   const { mutate: createApplication } = useCreateApplication();
   const { mutate: startAnalysis } = useStartAnalysis();
@@ -61,9 +64,7 @@ export function useApplicationActions(
   const [applicationId, setApplicationId] = useState<string | null>(null);
 
   const handleGenerateLink = (onSuccess: () => void, onError: () => void) => {
-    addMessages([
-      { role: "system", content: "Generating bank linking URL" },
-    ]);
+    addMessages([{ role: "system", content: "Generating bank linking URL" }]);
 
     initiateMonoLink(applicantId, {
       onSuccess: (data) => {
@@ -87,7 +88,7 @@ export function useApplicationActions(
         toast.success("Link generated!");
         onSuccess();
       },
-      onError: (error: any) => {
+      onError: (error) => {
         const errorMsg = getActionableError(error, "generate-link");
         addMessages([
           { role: "system", content: ` ${errorMsg}` },
@@ -127,7 +128,7 @@ export function useApplicationActions(
           setTimeout(() => handleStartAnalysis(response.applicationId), 1000);
           onSuccess();
         },
-        onError: (error: any) => {
+        onError: (error) => {
           const errorMsg = getActionableError(error, "create-application");
           addMessages([
             { role: "system", content: ` ${errorMsg}` },
@@ -142,17 +143,22 @@ export function useApplicationActions(
 
   const handleStartAnalysis = (appId?: string) => {
     const clientId = getClientId();
-    console.log('=== START ANALYSIS DEBUG ===');
-  console.log('Client ID:', clientId);
-  console.log('Application ID:', applicationId);
-  console.log('===========================');
+    console.log("=== START ANALYSIS DEBUG ===");
+    console.log("Client ID:", clientId);
+    console.log("Application ID:", applicationId);
+    console.log("===========================");
 
     const targetAppId = appId || applicationId;
 
     if (!clientId) {
-      toast.error("WebSocket not connected. Please refresh the page and try again.");
+      toast.error(
+        "WebSocket not connected. Please refresh the page and try again.",
+      );
       addMessages([
-        { role: "system", content: "WebSocket not connected. Please refresh the page." },
+        {
+          role: "system",
+          content: "WebSocket not connected. Please refresh the page.",
+        },
         { role: "assistant", content: "Would you like to retry? (Yes/No)" },
       ]);
       return;
@@ -161,7 +167,10 @@ export function useApplicationActions(
     if (!targetAppId) {
       toast.error("No application found. Please create an application first.");
       addMessages([
-        { role: "system", content: " No application found. Please create one first." },
+        {
+          role: "system",
+          content: " No application found. Please create one first.",
+        },
       ]);
       return;
     }
@@ -171,7 +180,7 @@ export function useApplicationActions(
     startAnalysis(
       { applicationId: targetAppId, clientId },
       {
-        onError: (error: any) => {
+        onError: (error) => {
           const errorMsg = getActionableError(error, "start-analysis");
           addMessages([
             { role: "system", content: ` ${errorMsg}` },
