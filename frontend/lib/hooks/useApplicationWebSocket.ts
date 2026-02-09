@@ -1,7 +1,6 @@
 
 import { useEffect, useRef } from "react";
 import { useWebSocket } from "@/lib/hooks/use-websocket";
-import { useAuthStore } from "@/lib/store/auth";
 import { toast } from "sonner";
 
 
@@ -19,7 +18,7 @@ export function useApplicationWebSocket(
   onApplicationError: (message: string) => void
 ) {
   const { isConnected, on, off, getClientId } = useWebSocket(); 
-  const user = useAuthStore((state) => state.user);
+ // const user = useAuthStore((state) => state.user);
 
   const callbacksRef = useRef({
     onAccountLinked,
@@ -45,7 +44,7 @@ export function useApplicationWebSocket(
     callbacksRef.current.onApplicationProgress(typedData.message);
   };
 
-  const handleComplete = (data: unknown) => {
+  const handleComplete = () => {
     callbacksRef.current.onApplicationComplete();
   };
 
