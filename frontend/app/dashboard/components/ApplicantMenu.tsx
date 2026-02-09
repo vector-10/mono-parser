@@ -5,9 +5,11 @@ import  DeleteApplicantModal  from "./DeleteApplicantModal";
 
 interface Applicant {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
+  phone?: string;
+  bvn?: string;
   createdAt: string;
 }
 
