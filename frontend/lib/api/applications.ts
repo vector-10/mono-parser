@@ -21,7 +21,7 @@ export interface Application {
   purpose?: string
   status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
   score?: number
-  decision?: any
+  decision?: string
   createdAt: string
   updatedAt: string
   applicant?: {

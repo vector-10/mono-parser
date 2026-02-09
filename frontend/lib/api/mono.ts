@@ -6,7 +6,7 @@ export const monoApi = {
     return response.data
   },
 
-  exchangeToken: async (code: string, applicantId: string): Promise<{ accountId: string; bankAccount: any; message: string }> => {
+  exchangeToken: async (code: string, applicantId: string): Promise<{ accountId: string;  bankAccount: Record<string, unknown>;  message: string }> => {
     const response = await api.post('/mono/exchange-token', { code, applicantId })
     return response.data
   },
