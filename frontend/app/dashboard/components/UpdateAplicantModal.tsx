@@ -1,6 +1,6 @@
 "use client";
 import { X, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUpdateApplicant } from "@/lib/hooks/queries/use-applicant";
 
 interface UpdateApplicantModalProps {
@@ -22,26 +22,26 @@ export default function UpdateApplicantModal({
   applicant,
 }: UpdateApplicantModalProps) {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    bvn: "",
+    firstName: applicant.firstName,
+    lastName: applicant.lastName,
+    email: applicant.email,
+    phone: applicant.phone || "",
+    bvn: applicant.bvn || "",
   });
 
   const { mutate: updateApplicant, isPending } = useUpdateApplicant();
 
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        firstName: applicant.firstName,
-        lastName: applicant.lastName,
-        email: applicant.email,
-        phone: applicant.phone || "",
-        bvn: applicant.bvn || "",
-      });
-    }
-  }, [isOpen, applicant]);
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     setFormData({
+  //       firstName: applicant.firstName,
+  //       lastName: applicant.lastName,
+  //       email: applicant.email,
+  //       phone: applicant.phone || "",
+  //       bvn: applicant.bvn || "",
+  //     });
+  //   }
+  // }, [isOpen, applicant.id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

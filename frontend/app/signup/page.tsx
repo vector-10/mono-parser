@@ -45,7 +45,7 @@ export default function SignupPage() {
       setUserEmail(data.email);
       setStep("verify");
       toast.success(response.message);
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Signup failed. Please try again.";
       toast.error(errorMessage);
@@ -65,7 +65,7 @@ export default function SignupPage() {
 
       toast.success("Email verified successfully!");
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Invalid OTP. Please try again.";
       toast.error(errorMessage);
@@ -77,7 +77,7 @@ export default function SignupPage() {
     try {
       const response = await authApi.resendOtp(userEmail);
       toast.success(response.message);
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Failed to resend OTP.";
       toast.error(errorMessage);

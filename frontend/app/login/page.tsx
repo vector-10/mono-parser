@@ -32,7 +32,7 @@ export default function LoginPage() {
       
       toast.success('Login successful!')
       router.push('/dashboard')
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.'
       toast.error(errorMessage)
     }

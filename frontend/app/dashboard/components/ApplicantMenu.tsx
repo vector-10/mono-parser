@@ -58,6 +58,7 @@ function ApplicantMenu({ applicant }: { applicant: Applicant }) {
       </div>
 
       <UpdateApplicantModal
+       key={applicant.id} 
         isOpen={showUpdateModal}
         onClose={() => setShowUpdateModal(false)}
         applicant={applicant}
