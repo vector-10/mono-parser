@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react'
 import Link from 'next/link'
+import { AxiosError } from 'axios'
 import {toast} from "sonner"
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -33,9 +34,10 @@ export default function LoginPage() {
       toast.success('Login successful!')
       router.push('/dashboard')
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.'
-      toast.error(errorMessage)
-    }
+  const axiosError = error as AxiosError<{ message?: string }>;
+  const errorMessage = axiosError.response?.data?.message || 'Login failed. Please try again.'
+  toast.error(errorMessage)
+}
   }
 
   return (

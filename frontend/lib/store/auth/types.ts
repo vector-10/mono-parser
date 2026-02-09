@@ -4,7 +4,7 @@ export interface User {
   name: string;
   companyName: string;
   apiKey: string;
-  monoApiKey: string | null;
+  monoApiKey?: string | null;
 }
 
 export interface AuthState {

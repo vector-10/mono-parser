@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api/auth";
@@ -46,12 +47,12 @@ export default function SignupPage() {
       setStep("verify");
       toast.success(response.message);
     } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
       const errorMessage =
-        error.response?.data?.message || "Signup failed. Please try again.";
+        axiosError.response?.data?.message || "Signup failed. Please try again.";
       toast.error(errorMessage);
     }
   };
-
 
   const onVerifyOtp = async (data: VerifyOtpFormData) => {
     try {
@@ -60,26 +61,26 @@ export default function SignupPage() {
         otp: data.otp,
       });
 
-
       setAuth(response.user, response.access_token);
 
       toast.success("Email verified successfully!");
       router.push("/dashboard");
     } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
       const errorMessage =
-        error.response?.data?.message || "Invalid OTP. Please try again.";
+        axiosError.response?.data?.message || "invalid OTP. Please try again.";
       toast.error(errorMessage);
     }
   };
-
 
   const handleResendOtp = async () => {
     try {
       const response = await authApi.resendOtp(userEmail);
       toast.success(response.message);
     } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
       const errorMessage =
-        error.response?.data?.message || "Failed to resend OTP.";
+        axiosError.response?.data?.message || "Failed to resend OTP.";
       toast.error(errorMessage);
     }
   };
