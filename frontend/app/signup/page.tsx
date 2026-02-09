@@ -38,7 +38,6 @@ export default function SignupPage() {
     resolver: zodResolver(verifyOtpSchema),
   });
 
-  // Handle signup
   const onSignup = async (data: SignupFormData) => {
     try {
       const response = await authApi.signup(data);
@@ -53,7 +52,7 @@ export default function SignupPage() {
     }
   };
 
-  // Handle OTP verification
+
   const onVerifyOtp = async (data: VerifyOtpFormData) => {
     try {
       const response = await authApi.verifyOtp({
@@ -61,7 +60,7 @@ export default function SignupPage() {
         otp: data.otp,
       });
 
-      // Store auth in Zustand
+
       setAuth(response.user, response.access_token);
 
       toast.success("Email verified successfully!");
@@ -73,7 +72,7 @@ export default function SignupPage() {
     }
   };
 
-  // Handle resend OTP
+
   const handleResendOtp = async () => {
     try {
       const response = await authApi.resendOtp(userEmail);
