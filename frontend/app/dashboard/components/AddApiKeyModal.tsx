@@ -23,7 +23,7 @@ export default function AddApiKeyModal({ isOpen, onClose }: AddApiKeyModalProps)
       
         onClose();
       },
-      onError: (error: any) => {
+      onError: (error) => {
         toast.error(error?.message || "Failed to save API keys");
       },
     });

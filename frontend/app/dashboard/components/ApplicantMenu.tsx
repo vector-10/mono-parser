@@ -3,7 +3,15 @@ import { useState } from "react";
 import  UpdateApplicantModal  from "./UpdateAplicantModal";
 import  DeleteApplicantModal  from "./DeleteApplicantModal";
 
-function ApplicantMenu({ applicant }: { applicant: any }) {
+interface Applicant {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+}
+
+function ApplicantMenu({ applicant }: { applicant: Applicant }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
