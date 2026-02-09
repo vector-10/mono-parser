@@ -8,7 +8,6 @@ import { useApplicationWebSocket } from "@/lib/hooks/useApplicationWebSocket";
 import { useApplicationActions } from "@/lib/hooks/useApplicationActions";
 import { useApplicationFlow } from "@/lib/hooks/useApplicationFlow";
 import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
-import { useApplication } from "@/lib/hooks/queries/use-application";
 import { useApplicant } from "@/lib/hooks/queries/use-applicant";
 
 type Message = {
@@ -44,7 +43,7 @@ export default function ApplicationChat({
   applicantName,
 }: ApplicationChatProps) {
   const user = useAuthStore((state) => state.user);
-  const [linkedAccountsCount, setLinkedAccountsCount] = useState(0);
+
   const [currentInput, setCurrentInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,6 +53,8 @@ export default function ApplicationChat({
   const { data: applicant } = useApplicant(applicantId) as {
     data: ApplicantWithRelations | undefined;
   };
+
+  const linkedAccountsCount = applicant?.bankAccounts?.length || 0;
 
   const updateMessageState = (content: string, updates: Partial<Message>) => {
     setMessages((prev) =>
@@ -88,7 +89,6 @@ export default function ApplicationChat({
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
     (data) => {
-      setLinkedAccountsCount((prev) => prev + 1);
       flow.onAccountLinked({
         institution: data.institution,
         accountNumber: data.accountNumber,
@@ -107,19 +107,21 @@ export default function ApplicationChat({
   clientIdRef.current = getClientId() || "";
 }, [getClientId]);
 
+
+
   useEffect(() => {
     if (!applicant) return;
 
     const bankAccountCount = applicant.bankAccounts?.length || 0;
     const applicationCount = applicant.applications?.length || 0;
 
-    setLinkedAccountsCount(bankAccountCount);
+
 
     if (bankAccountCount > 0 && applicationCount > 0) {
-      const lastApplication = applicant.applications.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )[0];
+      // const lastApplication = applicant.applications.sort(
+      //   (a, b) =>
+      //     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      // )[0];
 
       flow.setMessages([
         {
@@ -145,7 +147,7 @@ export default function ApplicationChat({
       ]);
       flow.setStep("amount");
     }
-  }, [applicant, applicantName]);
+  }, [applicant, applicantName, flow]);
 
   useEffect(() => {
     console.log("=== EXPLAIN TRIGGER DEBUG ===");
@@ -158,7 +160,7 @@ export default function ApplicationChat({
     console.log("============================");
   }, [shouldExplain, actions.applicationId]);
 
-  const { data: applicationData } = useApplication(actions.applicationId);
+  //const { data: applicationData } = useApplication(actions.applicationId);
   const { data: explanation, error: explainError } = useExplainResults(
     actions.applicationId,
     shouldExplain,
@@ -176,7 +178,7 @@ export default function ApplicationChat({
       flow.setStep("restart");
       toast.success("Results ready!");
     }
-  }, [explanation]);
+  }, [explanation, flow]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -186,7 +188,7 @@ export default function ApplicationChat({
     if (explainError) {
       console.error("Explain error:", explainError);
       toast.error("Failed to generate explanation");
-      setShouldExplain(false);
+      // setShouldExplain(false);
     }
   }, [explainError]);
 

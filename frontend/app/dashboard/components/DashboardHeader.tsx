@@ -1,5 +1,5 @@
 "use client";
-import { Bell, User, Key } from "lucide-react";
+import { Bell,  Key } from "lucide-react";
 import { useState } from "react";
 import { useAuthStore } from "@/lib/store/auth";
 import AddApiKeyModal from "./AddApiKeyModal";
