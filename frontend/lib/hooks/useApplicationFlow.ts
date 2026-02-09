@@ -21,8 +21,8 @@ type Message = {
   role: "system" | "user" | "assistant";
   content: string;
   link?: string;
-  isProcessing?: boolean;  
-  isComplete?: boolean;   
+  isProcessing?: boolean;
+  isComplete?: boolean;
 };
 
 export function useApplicationFlow(
@@ -41,13 +41,13 @@ export function useApplicationFlow(
     onError: () => void,
   ) => void,
   handleStartAnalysis: () => void,
-    messages: Message[],        
-  setMessages: (messages: Message[] | ((prev: Message[]) => Message[])) => void, 
-  updateMessageState: (content: string, updates: Partial<Message>) => void,    
+  messages: Message[],
+  setMessages: (messages: Message[] | ((prev: Message[]) => Message[])) => void,
+  updateMessageState: (content: string, updates: Partial<Message>) => void,
 ) {
   const [step, setStep] = useState<Step>("welcome");
-   
-useEffect(() => {
+
+  useEffect(() => {
     if (messages.length === 0) {
       setMessages([
         {
@@ -60,7 +60,7 @@ useEffect(() => {
         },
       ]);
     }
-  }, []);
+  }, [messages.length, setMessages, userName, applicantName]);
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -282,9 +282,7 @@ useEffect(() => {
   };
 
   const isInputDisabled =
-    step === "creating" ||
-    step === "linking" ||
-    step === "analyzing" 
+    step === "creating" || step === "linking" || step === "analyzing";
 
   const onAccountLinked = (data: {
     institution: string;
@@ -306,19 +304,19 @@ useEffect(() => {
   };
 
   const onApplicationComplete = () => {
-  setMessages((prev) =>
-    prev.map((msg) =>
-      msg.isProcessing
-        ? { ...msg, isProcessing: false, isComplete: true }
-        : msg
-    )
-  );
-  addMessages([
-    { role: "system", content: "Analysis complete!" },
-    { role: "assistant", content: "Processing results..." },
-  ]);
-  setStep("complete");
-};
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.isProcessing
+          ? { ...msg, isProcessing: false, isComplete: true }
+          : msg,
+      ),
+    );
+    addMessages([
+      { role: "system", content: "Analysis complete!" },
+      { role: "assistant", content: "Processing results..." },
+    ]);
+    setStep("complete");
+  };
 
   const onApplicationError = (message: string) => {
     addMessages([
@@ -339,18 +337,14 @@ useEffect(() => {
     setStep("create-failed");
   };
 
-  const onAnalysisError = () => {
-    setStep("analysis-failed");
-  };
-
-   const onApplicationProgress = (message: string) => {
+  const onApplicationProgress = (message: string) => {
     if (message.includes("Fetching applicant data")) {
       updateMessageState("Starting analysis", {
         isProcessing: false,
         isComplete: true,
       });
     }
-    addMessages([{ role: "system", content: message, isProcessing: true }]); 
+    addMessages([{ role: "system", content: message, isProcessing: true }]);
   };
 
   return {
