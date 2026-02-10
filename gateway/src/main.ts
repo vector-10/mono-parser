@@ -1,9 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
-import { Logger } from 'nestjs-pino'
+import { Logger } from 'nestjs-pino';
+import { execSync } from 'child_process';
 
 async function bootstrap() {
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      console.log('Running database migrations...');
+      execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+      console.log('Migrations completed successfully');
+    } catch (error) {
+      console.error('Migration failed:', error);
+      process.exit(1);
+    }
+  }
+
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   const configService = app.get(ConfigService);
 
