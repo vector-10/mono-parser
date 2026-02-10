@@ -303,7 +303,7 @@ export default function SignupPage() {
                       </Link>{" "}
                       and{" "}
                       <Link
-                        href="/privacy"
+                        href=""
                         className="text-[#0055ba] hover:underline"
                       >
                         Privacy Policy

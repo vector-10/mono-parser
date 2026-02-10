@@ -420,7 +420,7 @@ const data = await response.json();
               <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                 <li>
                   <Link
-                    href="/privacy"
+                    href=""
                     className="text-gray-400 hover:text-white transition"
                   >
                     Privacy
