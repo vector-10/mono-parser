@@ -67,7 +67,12 @@ export function useApplicationFlow(
   }, [addMessages, applicantName, linkedAccountsCount]);
 
   const handleSubmit = useCallback(
-    (input: string, onGenerateLink: () => void, onCreateApplication: (data: any) => void) => {
+    (input: string, onGenerateLink: () => void, onCreateApplication: (data:{
+      amount: number;
+      tenor: number;
+      interestRate: number;
+      purpose?: string;
+    }) => void) => {
       if (!input.trim()) return;
 
       setMessages((prev) => [...prev, { role: "user", content: input }]);

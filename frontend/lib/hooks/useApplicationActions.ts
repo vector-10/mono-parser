@@ -4,7 +4,7 @@
 
 
 "use client";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useCreateApplication } from "@/lib/hooks/queries/use-create-application";
 import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";

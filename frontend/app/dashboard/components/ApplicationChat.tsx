@@ -6,7 +6,7 @@ import ChatInput from "./ChatInput";
 import { useAuthStore } from "@/lib/store/auth";
 import { useApplicationWebSocket } from "@/lib/hooks/useApplicationWebSocket";
 import { useApplicationActions } from "@/lib/hooks/useApplicationActions";
-import { useApplicationFlow, Message } from "@/lib/hooks/useApplicationFlow";
+import { useApplicationFlow } from "@/lib/hooks/useApplicationFlow";
 import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
 import { useApplicant } from "@/lib/hooks/queries/use-applicant";
 
@@ -137,7 +137,9 @@ export default function ApplicationChat({
       ]);
       flow.setStep("restart");
       toast.success("Results ready!");
+      setTimeout(() => {
       setShouldExplain(false);
+    }, 0);
     }
   }, [explanation]);
 
