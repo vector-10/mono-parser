@@ -36,7 +36,17 @@ export class WebhooksController {
   async handleMonoWebhook(
     @Body() payload: any,
     @Headers('mono-webhook-secret') webhookSecret: string,
+    @Headers() allHeaders: any,
   ) {
+    this.logger.info(
+      {
+        payload,
+        webhookSecret,
+        allHeaders,
+        timestamp: new Date().toISOString(),
+      },
+      ' RAW WEBHOOK RECEIVED FROM MONO',
+    );
     this.logger.info({ event: payload.event }, `Webhook received:`);
 
     if (!this.verifyWebhookSignature(payload, webhookSecret)) {
@@ -54,16 +64,12 @@ export class WebhooksController {
     }
 
     try {
-      const result = await handler(payload.data); 
+      const result = await handler(payload.data);
       return { status: 'received', result };
     } catch (error) {
-      this.logger.error(
-        { err: error, event: payload.event },
-        'Handler failed',
-      );
+      this.logger.error({ err: error, event: payload.event }, 'Handler failed');
       return { status: 'error', message: error.message };
     }
-
   }
 
   private verifyWebhookSignature(

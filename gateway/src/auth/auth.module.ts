@@ -7,16 +7,26 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { EmailModule } from '../email/email.module';
 import { TokenService } from './token.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET environment variable is not set');
+        }
+        return {
+          secret,
+          signOptions: { expiresIn: '24h' },
+        };
+      },
+      inject: [ConfigService],
     }),
     EmailModule,
     UsersModule,
