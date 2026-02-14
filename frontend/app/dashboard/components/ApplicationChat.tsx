@@ -61,9 +61,6 @@ export default function ApplicationChat({
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
     (data) => {
-      console.log("=== ACCOUNT LINKED SOCKET DATA ===");
-      console.log("Data received:", data);
-      console.log("=================================");
 
       flow.onAccountLinked({
         institution: data.institution,

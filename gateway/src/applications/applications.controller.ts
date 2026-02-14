@@ -27,8 +27,7 @@ export class ApplicationsController {
 
   @Post()
   async create(@Request() req, @Body() body: CreateApplicationDto) {
-    console.log('Controller received body:', body);
-    console.log('Parsed applicantId:', body.applicantId);
+
     const application = await this.applicationsService.createApplication(
       req.user.id,
       body,
@@ -78,13 +77,6 @@ export class ApplicationsController {
       throw new Error('Application analysis not complete yet');
     }
 
-    console.log('=== EXPLAIN ENDPOINT DEBUG ===');
-    console.log('Application ID:', application.id);
-    console.log('Score:', application.score);
-    console.log('Decision exists:', !!application.decision);
-    console.log('Decision type:', typeof application.decision);
-    console.log('Decision:', JSON.stringify(application.decision, null, 2));
-    console.log('==============================');
 
     const explanation = await this.geminiService.explainLoanDecision({
       score: application.score,

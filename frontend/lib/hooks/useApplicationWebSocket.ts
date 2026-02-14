@@ -35,11 +35,9 @@ export function useApplicationWebSocket(
     };
   }, [onAccountLinked, onApplicationProgress, onApplicationComplete, onApplicationError]);
 
-  // Join fintech user room
+
   useEffect(() => {
     if (isConnected && user?.id && emit) {
-      console.log("=== JOINING FINTECH ROOM ===");
-      console.log("Fintech ID:", user.id);
       emit("join_user_room", { userId: user.id });
     }
   }, [isConnected, user?.id, emit]);
@@ -61,8 +59,7 @@ export function useApplicationWebSocket(
     };
 
     const handleAccountLinked = (data: unknown) => {
-      console.log("=== ACCOUNT LINKED EVENT RECEIVED ===");
-      console.log("Data:", data);
+    
       
       const typedData = data as {
         applicantId: string;
