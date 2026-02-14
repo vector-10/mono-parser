@@ -1,44 +1,50 @@
 
-  import { useEffect, useRef } from "react";
-  import { useWebSocket } from "@/lib/hooks/use-websocket";
-  import { toast } from "sonner";
+import { useEffect, useRef } from "react";
+import { useWebSocket } from "@/lib/hooks/use-websocket";
+import { useAuthStore } from "@/lib/store/auth";
+import { toast } from "sonner";
 
+export function useApplicationWebSocket(
+  applicantId: string,
+  onAccountLinked: (data: {
+    applicantId: string;
+    accountId: string;
+    institution: string;
+    accountNumber: string;
+  }) => void,
+  onApplicationProgress: (message: string) => void,
+  onApplicationComplete: () => void,
+  onApplicationError: (message: string) => void
+) {
+  const { isConnected, on, off, getClientId, emit } = useWebSocket();
+  const user = useAuthStore((state) => state.user);
 
+  const callbacksRef = useRef({
+    onAccountLinked,
+    onApplicationProgress,
+    onApplicationComplete,
+    onApplicationError,
+  });
 
-  export function useApplicationWebSocket(
-    applicantId: string,
-    onAccountLinked: (data: {
-      applicantId: string;
-      accountId: string;
-      institution: string;
-      accountNumber: string;
-    }) => void,
-    onApplicationProgress: (message: string) => void,
-    onApplicationComplete: () => void,
-    onApplicationError: (message: string) => void
-  ) {
-    const { isConnected, on, off, getClientId } = useWebSocket(); 
-  // const user = useAuthStore((state) => state.user);
-
-    const callbacksRef = useRef({
+  useEffect(() => {
+    callbacksRef.current = {
       onAccountLinked,
       onApplicationProgress,
       onApplicationComplete,
       onApplicationError,
-    });
+    };
+  }, [onAccountLinked, onApplicationProgress, onApplicationComplete, onApplicationError]);
 
-    useEffect(() => {
-      callbacksRef.current = {
-        onAccountLinked,
-        onApplicationProgress,
-        onApplicationComplete,
-        onApplicationError,
-      };
-    }, [onAccountLinked, onApplicationProgress, onApplicationComplete, onApplicationError]);
+  // Join fintech user room
+  useEffect(() => {
+    if (isConnected && user?.id && emit) {
+      console.log("=== JOINING FINTECH ROOM ===");
+      console.log("Fintech ID:", user.id);
+      emit("join_user_room", { userId: user.id });
+    }
+  }, [isConnected, user?.id, emit]);
 
-
-
-    useEffect(() => {
+  useEffect(() => {
     const handleProgress = (data: unknown) => {
       const typedData = data as { message: string };
       callbacksRef.current.onApplicationProgress(typedData.message);
@@ -55,15 +61,21 @@
     };
 
     const handleAccountLinked = (data: unknown) => {
+      console.log("=== ACCOUNT LINKED EVENT RECEIVED ===");
+      console.log("Data:", data);
+      
       const typedData = data as {
         applicantId: string;
         accountId: string;
         institution: string;
         accountNumber: string;
       };
+      
       if (typedData.applicantId === applicantId) {
         callbacksRef.current.onAccountLinked(typedData);
         toast.success("Bank account linked!");
+      } else {
+        console.log("Applicant ID mismatch - event ignored");
       }
     };
 
@@ -80,10 +92,5 @@
     };
   }, [on, off, applicantId]);
 
-    useEffect(() => {
-      console.log("WebSocket connected:", isConnected);
-      console.log("Client ID:", getClientId());
-    }, [isConnected, getClientId]);
-
-    return { isConnected, getClientId };
-  }
+  return { isConnected, getClientId };
+}
