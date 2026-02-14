@@ -366,7 +366,6 @@
 // }
 
 
-
 "use client";
 import { useState, useCallback, useMemo } from "react";
 
@@ -395,21 +394,10 @@ export type Message = {
   isComplete?: boolean;
 };
 
-interface FlowActions {
-  handleGenerateLink: (onSuccess: () => void, onError: () => void) => void;
-  handleCreateApplication: (
-    data: { amount: number; tenor: number; interestRate: number; purpose?: string },
-    onSuccess: () => void,
-    onError: () => void
-  ) => void;
-  handleStartAnalysis: () => void;
-}
-
 export function useApplicationFlow(
   applicantName: string,
   userName: string,
-  linkedAccountsCount: number,
-  actions: FlowActions
+  linkedAccountsCount: number
 ) {
   const [step, setStep] = useState<Step>("welcome");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -420,7 +408,6 @@ export function useApplicationFlow(
     purpose: "",
   });
 
-  // --- Internal Message Helpers ---
   const addMessages = useCallback((newMessages: Message[]) => {
     setMessages((prev) => [...prev, ...newMessages]);
   }, []);
@@ -447,21 +434,16 @@ export function useApplicationFlow(
     setStep("amount");
   }, [addMessages, applicantName, linkedAccountsCount]);
 
-  // --- Core State Machine Logic ---
   const handleSubmit = useCallback(
-    (input: string) => {
+    (input: string, onGenerateLink: () => void, onCreateApplication: (data: any) => void) => {
       if (!input.trim()) return;
 
-      // Add user message immediately
       setMessages((prev) => [...prev, { role: "user", content: input }]);
       const response = input.toLowerCase();
 
       if (step === "welcome" || step === "link-account") {
         if (response === "yes" || response === "y") {
-          actions.handleGenerateLink(
-            () => setStep("ask-more-accounts"),
-            () => setStep("link-failed")
-          );
+          onGenerateLink();
         } else if (response === "skip" || response === "no" || response === "n") {
           if (linkedAccountsCount > 0) {
             proceedToLoanDetails();
@@ -476,10 +458,7 @@ export function useApplicationFlow(
         }
       } else if (step === "ask-more-accounts") {
         if (response === "yes" || response === "y") {
-          actions.handleGenerateLink(
-            () => setStep("ask-more-accounts"),
-            () => setStep("link-failed")
-          );
+          onGenerateLink();
         } else {
           proceedToLoanDetails();
         }
@@ -515,20 +494,15 @@ export function useApplicationFlow(
         setFormData(finalData);
         setStep("creating");
 
-        actions.handleCreateApplication(
-          {
-            amount: Number(finalData.amount),
-            tenor: Number(finalData.tenor),
-            interestRate: Number(finalData.rate),
-            purpose: finalData.purpose || undefined,
-          },
-          () => setStep("analyzing"),
-          () => setStep("create-failed")
-        );
+        onCreateApplication({
+          amount: Number(finalData.amount),
+          tenor: Number(finalData.tenor),
+          interestRate: Number(finalData.rate),
+          purpose: finalData.purpose || undefined,
+        });
       } else if (step === "link-failed" || step === "create-failed" || step === "analysis-failed") {
         if (response === "yes" || response === "y" || response === "retry") {
-          // Logic to retry based on specific failure step could go here
-          setStep("welcome"); // Fallback to reset
+          setStep("welcome");
         }
       } else if (step === "restart") {
         if (response === "yes" || response === "y") {
@@ -546,12 +520,11 @@ export function useApplicationFlow(
         }
       }
     },
-    [step, formData, linkedAccountsCount, applicantName, actions, proceedToLoanDetails, addMessages]
+    [step, formData, linkedAccountsCount, applicantName, proceedToLoanDetails, addMessages]
   );
 
-  // --- WebSocket Callbacks ---
   const onAccountLinked = useCallback(
-    (data: { institution: string; accountNumber: string; accountsTotal: number }) => {
+    (data: { institution: string; accountNumber: string }) => {
       addMessages([
         {
           role: "system",
@@ -599,7 +572,6 @@ export function useApplicationFlow(
     [addMessages]
   );
 
-  // --- Helper Getters ---
   const getPlaceholder = useCallback(() => {
     const placeholders: Record<string, string> = {
       welcome: "Type 'Yes' or 'No'",
@@ -619,7 +591,6 @@ export function useApplicationFlow(
 
   const isInputDisabled = ["creating", "linking", "analyzing"].includes(step);
 
-  // --- Final Memoized Output ---
   return useMemo(
     () => ({
       step,

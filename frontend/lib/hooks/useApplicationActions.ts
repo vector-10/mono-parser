@@ -206,15 +206,14 @@
 
 
 
-
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useCreateApplication } from "@/lib/hooks/queries/use-create-application";
 import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
 import { useInitiateMonoLink } from "@/lib/hooks/queries/use-initiate-mono-link";
 import { AxiosError } from "axios";
-
+import { Message } from "./useApplicationFlow";
 
 const getActionableError = (error: unknown, action: string): string => {
   const axiosError = error as AxiosError<{ message?: string }>;
@@ -232,44 +231,71 @@ const getActionableError = (error: unknown, action: string): string => {
   }
 };
 
+interface ActionsCallbacks {
+  addMessages: (messages: Message[]) => void;
+  updateMessageState: (content: string, updates: Partial<Message>) => void;
+  setStep: (step: string) => void;
+}
+
 export function useApplicationActions(
   applicantId: string,
   applicantName: string,
-  addMessages: (messages: any[]) => void, 
-  getClientId: () => string | null,
-  updateMessageState: (content: string, updates: any) => void
+  getClientId: () => string | null
 ) {
   const { mutate: createApplication } = useCreateApplication();
   const { mutate: startAnalysis } = useStartAnalysis();
   const { mutate: initiateMonoLink, isPending: isGeneratingLink } = useInitiateMonoLink();
   const [applicationId, setApplicationId] = useState<string | null>(null);
+  
+  const callbacksRef = useRef<ActionsCallbacks | null>(null);
 
-  const handleGenerateLink = useCallback((onSuccess: () => void, onError: () => void) => {
-    addMessages([{ role: "system", content: "Generating bank linking URL" }]);
+  const setCallbacks = useCallback((callbacks: ActionsCallbacks) => {
+    callbacksRef.current = callbacks;
+  }, []);
+
+  const handleGenerateLink = useCallback(() => {
+    const callbacks = callbacksRef.current;
+    if (!callbacks) return;
+
+    callbacks.addMessages([{ role: "system", content: "Generating bank linking URL" }]);
 
     initiateMonoLink(applicantId, {
       onSuccess: (data) => {
-        updateMessageState("Generating bank linking URL", { isProcessing: false, isComplete: true });
-        addMessages([
+        callbacks.updateMessageState("Generating bank linking URL", { 
+          isProcessing: false, 
+          isComplete: true 
+        });
+        callbacks.addMessages([
           { role: "system", content: " Link generated successfully!" },
           {
             role: "assistant",
             content: `Here's the bank linking URL for ${applicantName}:`,
             link: data.widgetUrl,
           },
+          {
+            role: "assistant",
+            content: "I'll notify you when they complete the linking. Would you like to generate another link? (Yes/No)",
+          },
         ]);
         toast.success("Link generated!");
-        onSuccess();
+        callbacks.setStep("ask-more-accounts");
       },
       onError: (error) => {
         const errorMsg = getActionableError(error, "generate-link");
-        addMessages([{ role: "system", content: ` ${errorMsg}` }]);
-        onError();
+        callbacks.addMessages([
+          { role: "system", content: ` ${errorMsg}` },
+          { role: "assistant", content: "Would you like to retry? (Yes/No)" }
+        ]);
+        toast.error(errorMsg);
+        callbacks.setStep("link-failed");
       },
     });
-  }, [applicantId, applicantName, addMessages, initiateMonoLink, updateMessageState]);
+  }, [applicantId, applicantName, initiateMonoLink]);
 
   const handleStartAnalysis = useCallback((appId?: string) => {
+    const callbacks = callbacksRef.current;
+    if (!callbacks) return;
+
     const clientId = getClientId();
     const targetAppId = appId || applicationId;
 
@@ -278,42 +304,56 @@ export function useApplicationActions(
       return;
     }
 
-    addMessages([{ role: "system", content: "Starting analysis" }]);
+    callbacks.addMessages([{ role: "system", content: "Starting analysis" }]);
     startAnalysis(
       { applicationId: targetAppId, clientId },
       {
         onError: (error) => {
           const errorMsg = getActionableError(error, "start-analysis");
-          addMessages([{ role: "system", content: ` ${errorMsg}` }]);
+          callbacks.addMessages([
+            { role: "system", content: ` ${errorMsg}` },
+            { role: "assistant", content: "Would you like to retry? (Yes/No)" }
+          ]);
+          toast.error(errorMsg);
+          callbacks.setStep("analysis-failed");
         },
       }
     );
-  }, [applicationId, getClientId, addMessages, startAnalysis]);
+  }, [applicationId, getClientId, startAnalysis]);
 
   const handleCreateApplication = useCallback((
-    data: { amount: number; tenor: number; interestRate: number; purpose?: string },
-    onSuccess: () => void,
-    onError: () => void
+    data: { amount: number; tenor: number; interestRate: number; purpose?: string }
   ) => {
-    addMessages([{ role: "system", content: "Creating application " }]);
+    const callbacks = callbacksRef.current;
+    if (!callbacks) return;
+
+    callbacks.addMessages([{ role: "system", content: "Creating application " }]);
 
     createApplication(
       { applicantId, ...data },
       {
         onSuccess: (response) => {
           setApplicationId(response.applicationId);
-          addMessages([{ role: "system", content: " Application created!" }]);
+          callbacks.addMessages([
+            { role: "system", content: " Application created!" },
+            { role: "assistant", content: "Starting automatic analysis..." }
+          ]);
+          toast.success("Application created!");
           setTimeout(() => handleStartAnalysis(response.applicationId), 1000);
-          onSuccess();
+          callbacks.setStep("analyzing");
         },
         onError: (error) => {
           const errorMsg = getActionableError(error, "create-application");
-          addMessages([{ role: "system", content: ` ${errorMsg}` }]);
-          onError();
+          callbacks.addMessages([
+            { role: "system", content: ` ${errorMsg}` },
+            { role: "assistant", content: "Would you like to retry? (Yes/No)" }
+          ]);
+          toast.error(errorMsg);
+          callbacks.setStep("create-failed");
         },
       }
     );
-  }, [applicantId, addMessages, createApplication, handleStartAnalysis]);
+  }, [applicantId, createApplication, handleStartAnalysis]);
 
   return {
     handleGenerateLink,
@@ -321,5 +361,6 @@ export function useApplicationActions(
     handleStartAnalysis,
     isGeneratingLink,
     applicationId,
+    setCallbacks,
   };
 }

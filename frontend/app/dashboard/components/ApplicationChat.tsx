@@ -265,6 +265,7 @@
 // }
 
 
+
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -302,25 +303,27 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
   const applicant = applicantData as unknown as ApplicantWithRelations;
   const linkedAccountsCount = applicant?.bankAccounts?.length || 0;
 
-  // Stable Actions
+  const flow = useApplicationFlow(applicantName, user?.name || "User", linkedAccountsCount);
+
   const actions = useApplicationActions(
     applicantId,
     applicantName,
-    (msgs: Message[]) => flow.addMessages(msgs), 
-    () => clientIdRef.current,
-    (content: string, updates: Partial<Message>) => flow.updateMessageState(content, updates)
+    () => clientIdRef.current
   );
 
-  // Master State Hook
-  const flow = useApplicationFlow(applicantName, user?.name || "User", linkedAccountsCount, actions);
+  useEffect(() => {
+    actions.setCallbacks({
+      addMessages: flow.addMessages,
+      updateMessageState: flow.updateMessageState,
+      setStep: flow.setStep,
+    });
+  }, [actions, flow.addMessages, flow.updateMessageState, flow.setStep]);
 
-  // WebSocket
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
     (data) => flow.onAccountLinked({
       institution: data.institution,
       accountNumber: data.accountNumber,
-      accountsTotal: (applicant?.bankAccounts?.length || 0) + 1,
     }),
     flow.onApplicationProgress,
     () => {
@@ -330,9 +333,10 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
     flow.onApplicationError
   );
 
-  useEffect(() => { clientIdRef.current = getClientId() || ""; }, [getClientId]);
+  useEffect(() => { 
+    clientIdRef.current = getClientId() || ""; 
+  }, [getClientId]);
 
-  // One-time Init Guard
   useEffect(() => {
     if (!applicant || hasInitialized.current) return;
     const bankCount = applicant.bankAccounts?.length || 0;
@@ -368,7 +372,9 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
     }
   }, [explanation, flow]);
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [flow.messages]);
+  useEffect(() => { 
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+  }, [flow.messages]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
@@ -392,7 +398,14 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
       <ChatInput
         value={currentInput}
         onChange={setCurrentInput}
-        onSubmit={() => { flow.handleSubmit(currentInput); setCurrentInput(""); }}
+        onSubmit={() => { 
+          flow.handleSubmit(
+            currentInput, 
+            actions.handleGenerateLink,
+            actions.handleCreateApplication
+          ); 
+          setCurrentInput(""); 
+        }}
         placeholder={flow.getPlaceholder()}
         type={flow.getInputType()}
         disabled={flow.isInputDisabled || actions.isGeneratingLink}
