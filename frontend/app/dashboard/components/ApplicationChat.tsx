@@ -360,17 +360,20 @@ export default function ApplicationChat({ applicantId, applicantName }: Applicat
 
   const { data: explanation } = useExplainResults(actions.applicationId || "", shouldExplain);
 
-  useEffect(() => {
-    if (explanation?.explanation) {
-      flow.addMessages([
-        { role: "assistant", content: explanation.explanation },
-        { role: "assistant", content: "Create another? (Yes/No)" },
-      ]);
-      flow.setStep("restart");
-      toast.success("Results ready!");
-      setShouldExplain(false);
-    }
-  }, [explanation, flow]);
+  const hasExplainedRef = useRef(false);
+
+useEffect(() => {
+  if (explanation?.explanation && !hasExplainedRef.current) {
+    hasExplainedRef.current = true;
+    flow.addMessages([
+      { role: "assistant", content: explanation.explanation },
+      { role: "assistant", content: "Create another? (Yes/No)" },
+    ]);
+    flow.setStep("restart");
+    toast.success("Results ready!");
+    setShouldExplain(false);
+  }
+}, [explanation]);
 
   useEffect(() => { 
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); 

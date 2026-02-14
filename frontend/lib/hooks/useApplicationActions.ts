@@ -213,7 +213,7 @@ import { useCreateApplication } from "@/lib/hooks/queries/use-create-application
 import { useStartAnalysis } from "@/lib/hooks/queries/use-start-analysis";
 import { useInitiateMonoLink } from "@/lib/hooks/queries/use-initiate-mono-link";
 import { AxiosError } from "axios";
-import { Message } from "./useApplicationFlow";
+import { Message, Step } from "./useApplicationFlow";
 
 const getActionableError = (error: unknown, action: string): string => {
   const axiosError = error as AxiosError<{ message?: string }>;
@@ -234,7 +234,7 @@ const getActionableError = (error: unknown, action: string): string => {
 interface ActionsCallbacks {
   addMessages: (messages: Message[]) => void;
   updateMessageState: (content: string, updates: Partial<Message>) => void;
-  setStep: (step: string) => void;
+  setStep: React.Dispatch<React.SetStateAction<Step>>;
 }
 
 export function useApplicationActions(
