@@ -265,7 +265,6 @@
 // }
 
 
-
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -274,53 +273,55 @@ import ChatInput from "./ChatInput";
 import { useAuthStore } from "@/lib/store/auth";
 import { useApplicationWebSocket } from "@/lib/hooks/useApplicationWebSocket";
 import { useApplicationActions } from "@/lib/hooks/useApplicationActions";
-import { useApplicationFlow } from "@/lib/hooks/useApplicationFlow";
+import { useApplicationFlow, Message } from "@/lib/hooks/useApplicationFlow";
 import { useExplainResults } from "@/lib/hooks/queries/use-explain-results";
 import { useApplicant } from "@/lib/hooks/queries/use-applicant";
+
+type ApplicantWithRelations = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  bankAccounts: Array<{ id: string; institution?: string }>;
+  applications: Array<{ id: string; createdAt: string }>;
+};
 
 interface ApplicationChatProps {
   applicantId: string;
   applicantName: string;
 }
 
-export default function ApplicationChat({
-  applicantId,
-  applicantName,
-}: ApplicationChatProps) {
+export default function ApplicationChat({ applicantId, applicantName }: ApplicationChatProps) {
   const user = useAuthStore((state) => state.user);
   const [currentInput, setCurrentInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const clientIdRef = useRef<string>("");
-  
-  // 1. Guard to prevent initialization loops
   const hasInitialized = useRef(false);
   const [shouldExplain, setShouldExplain] = useState(false);
 
-  const { data: applicant } = useApplicant(applicantId);
+  const { data: applicantData } = useApplicant(applicantId);
+  const applicant = applicantData as unknown as ApplicantWithRelations;
   const linkedAccountsCount = applicant?.bankAccounts?.length || 0;
 
-  // 2. Initialize Actions (Now return stable callbacks)
-  // Note: We pass dummy functions first, then use them in the flow
+  // Stable Actions
   const actions = useApplicationActions(
     applicantId,
     applicantName,
-    (msgs) => flow.addMessages(msgs), 
+    (msgs: Message[]) => flow.addMessages(msgs), 
     () => clientIdRef.current,
-    (content, updates) => flow.updateMessageState(content, updates)
+    (content: string, updates: Partial<Message>) => flow.updateMessageState(content, updates)
   );
 
-  // 3. Initialize Flow (The Master Hook)
-  const flow = useApplicationFlow(
-    applicantName,
-    user?.name || "User",
-    linkedAccountsCount,
-    actions
-  );
+  // Master State Hook
+  const flow = useApplicationFlow(applicantName, user?.name || "User", linkedAccountsCount, actions);
 
-  // 4. WebSocket setup (Passing stable flow callbacks)
+  // WebSocket
   const { isConnected, getClientId } = useApplicationWebSocket(
     applicantId,
-    flow.onAccountLinked,
+    (data) => flow.onAccountLinked({
+      institution: data.institution,
+      accountNumber: data.accountNumber,
+      accountsTotal: (applicant?.bankAccounts?.length || 0) + 1,
+    }),
     flow.onApplicationProgress,
     () => {
       flow.onApplicationComplete();
@@ -329,57 +330,37 @@ export default function ApplicationChat({
     flow.onApplicationError
   );
 
-  useEffect(() => {
-    clientIdRef.current = getClientId() || "";
-  }, [getClientId]);
+  useEffect(() => { clientIdRef.current = getClientId() || ""; }, [getClientId]);
 
-  // 5. THE LOOP KILLER: One-time Initialization
+  // One-time Init Guard
   useEffect(() => {
     if (!applicant || hasInitialized.current) return;
+    const bankCount = applicant.bankAccounts?.length || 0;
+    const appCount = applicant.applications?.length || 0;
 
-    const bankAccountCount = applicant.bankAccounts?.length || 0;
-    const applicationCount = applicant.applications?.length || 0;
-
-    if (bankAccountCount > 0 && applicationCount > 0) {
+    if (bankCount > 0 && appCount > 0) {
       flow.setMessages([
-        {
-          role: "assistant",
-          content: `Welcome back! ${applicantName} has ${bankAccountCount} bank account${bankAccountCount > 1 ? "s" : ""} linked and ${applicationCount} previous application${applicationCount > 1 ? "s" : ""}.`,
-        },
-        {
-          role: "assistant",
-          content: "Would you like to create a new loan application? (Yes/No)",
-        },
+        { role: "assistant", content: `Welcome back! ${applicantName} has ${bankCount} accounts and ${appCount} previous applications.` },
+        { role: "assistant", content: "Would you like to create a new loan application? (Yes/No)" }
       ]);
       flow.setStep("welcome");
-      hasInitialized.current = true; // Mark as initialized
-    } else if (bankAccountCount > 0) {
+    } else if (bankCount > 0) {
       flow.setMessages([
-        {
-          role: "assistant",
-          content: `Welcome! ${applicantName} has ${bankAccountCount} bank account${bankAccountCount > 1 ? "s" : ""} already linked.`,
-        },
-        {
-          role: "assistant",
-          content: "What's the loan amount in Naira (₦)?",
-        },
+        { role: "assistant", content: `Welcome! ${applicantName} has ${bankCount} accounts linked.` },
+        { role: "assistant", content: "What's the loan amount in Naira (₦)?" }
       ]);
       flow.setStep("amount");
-      hasInitialized.current = true;
     }
-  }, [applicant, applicantName, flow]); // flow is now stable!
+    hasInitialized.current = true;
+  }, [applicant, applicantName, flow]);
 
-  // 6. Explanation handling
-  const { data: explanation } = useExplainResults(
-    actions.applicationId,
-    shouldExplain
-  );
+  const { data: explanation } = useExplainResults(actions.applicationId || "", shouldExplain);
 
   useEffect(() => {
     if (explanation?.explanation) {
       flow.addMessages([
         { role: "assistant", content: explanation.explanation },
-        { role: "assistant", content: "Would you like to create another? (Yes/No)" },
+        { role: "assistant", content: "Create another? (Yes/No)" },
       ]);
       flow.setStep("restart");
       toast.success("Results ready!");
@@ -387,34 +368,31 @@ export default function ApplicationChat({
     }
   }, [explanation, flow]);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [flow.messages]);
-
-  const handleSubmit = () => {
-    flow.handleSubmit(currentInput);
-    setCurrentInput("");
-  };
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [flow.messages]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
-      {!isConnected && (
-        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800">
-          Connecting to server...
-        </div>
-      )}
-
-      <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50 max-w-4xl mx-auto w-full custom-scrollbar">
-        {flow.messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} content={msg.content} isProcessing={msg.isProcessing} isComplete={msg.isComplete} link={msg.link} />
-        ))}
+      {!isConnected && <div className="bg-yellow-50 px-4 py-2 text-xs text-yellow-800 border-b">Connecting...</div>}
+      
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 max-w-4xl mx-auto w-full custom-scrollbar">
+        {flow.messages.map((msg, i) => {
+          const isProcess = msg.isProcessing || msg.isComplete;
+          const next = flow.messages[i + 1];
+          return (
+            <ChatMessage 
+              key={i} 
+              {...msg} 
+              isLastInSequence={isProcess && !(next?.isProcessing || next?.isComplete)} 
+            />
+          );
+        })}
         <div ref={chatEndRef} />
       </div>
 
       <ChatInput
         value={currentInput}
         onChange={setCurrentInput}
-        onSubmit={handleSubmit}
+        onSubmit={() => { flow.handleSubmit(currentInput); setCurrentInput(""); }}
         placeholder={flow.getPlaceholder()}
         type={flow.getInputType()}
         disabled={flow.isInputDisabled || actions.isGeneratingLink}
