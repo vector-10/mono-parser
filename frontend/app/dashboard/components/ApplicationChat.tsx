@@ -128,7 +128,7 @@ export default function ApplicationChat({
 
   const hasExplainedRef = useRef(false);
 
-  useEffect(() => {
+  useEffect(() => { 
     if (explanation?.explanation && !hasExplainedRef.current) {
       hasExplainedRef.current = true;
       flow.addMessages([
@@ -142,6 +142,13 @@ export default function ApplicationChat({
     }, 0);
     }
   }, [explanation]);
+
+  useEffect(() => {
+    if(flow.step === "creating") {
+      hasExplainedRef.current = false;
+      setShouldExplain(false);
+    }
+  }, [flow.step ])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
