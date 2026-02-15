@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { ApplicationsController } from './applications.controller';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
@@ -9,7 +10,7 @@ import { MonoModule } from 'src/mono/mono.module';
 import { GeminiModule } from 'src/gemini/gemini.module';
 
 @Module({
-  imports: [PrismaModule, MonoModule, EventsModule, GeminiModule],
+  imports: [ConfigModule, PrismaModule, MonoModule, EventsModule, GeminiModule],
   controllers: [ApplicationsController],
   providers: [
     ApplicationsService,

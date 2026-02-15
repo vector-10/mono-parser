@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
@@ -8,15 +9,25 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ApplicationProcessorService {
+  private readonly brainUrl: string;
+
   constructor(
     private applicationsService: ApplicationsService,
     private dataAggregationService: DataAggregationService,
     private eventsGateway: EventsGateway,
     private prisma: PrismaService,
-    private monoService: MonoService,
+    private configService: ConfigService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(ApplicationProcessorService.name);
+    this.brainUrl = this.configService.get<string>(
+      'BRAIN_API_URL',
+      'http://brain:8000',
+    );
+    this.logger.info(
+      { brainUrl: this.brainUrl },
+      'Brain service URL configured',
+    );
   }
 
   async processApplication(applicationId: string, clientId?: string) {
@@ -164,9 +175,7 @@ export class ApplicationProcessorService {
   }
 
   private async callBrainService(payload: any) {
-    const brainUrl = process.env.BRAIN_API_URL || 'http://brain:8000';
-
-    this.logger.info(`Calling Brain service at ${brainUrl}/analyze`);
+    this.logger.info(`Calling Brain service at ${this.brainUrl}/analyze`);
 
     const brainPayload = {
       applicant_id: payload.applicant_id,
@@ -181,7 +190,7 @@ export class ApplicationProcessorService {
       'Sending payload to brain',
     );
 
-    const response = await fetch(`${brainUrl}/analyze`, {
+    const response = await fetch(`${this.brainUrl}/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(brainPayload),
@@ -194,7 +203,7 @@ export class ApplicationProcessorService {
           status: response.status,
           errorText,
           applicantId: payload.applicant_id,
-          brainUrl,
+          brainUrl: this.brainUrl,
         },
         'Brain service error',
       );
