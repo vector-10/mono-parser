@@ -9,8 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { ApplicationsService } from './applications.service';
-import { ApplicationProcessorService } from './applications-processor.service';
 import { GeminiService } from 'src/gemini/gemini.service';
 import { CreateApplicationDto } from 'src/applications/dto/create-application.dto';
 import { DataAggregationService } from './data-aggregation.service';
@@ -21,9 +22,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 export class ApplicationsController {
   constructor(
     private readonly applicationsService: ApplicationsService,
-    private readonly applicationProcessor: ApplicationProcessorService,
     private readonly dataAggregationService: DataAggregationService,
     private readonly geminiService: GeminiService,
+    @InjectQueue('applications') private readonly applicationsQueue: Queue,
   ) {}
 
   @Post()
@@ -58,11 +59,11 @@ export class ApplicationsController {
       throw new Error('Application already processed');
     }
 
-    this.applicationProcessor
-      .processApplication(id, clientId)
-      .catch((error) => {
-        console.error('Processing failed:', error);
-      });
+    await this.applicationsQueue.add('process-application', {
+      applicationId: id,
+      clientId,
+    });
+
 
     return {
       applicationId: id,
