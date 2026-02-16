@@ -6,8 +6,6 @@ import { PinoLogger } from 'nestjs-pino';
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private model: any;
-  private lastGeminiCall: number = 0;
-  private readonly GEMINI_REQUEST_DELAY = 10000;
 
   constructor(private readonly logger: PinoLogger) {
     this.logger.setContext(GeminiService.name);
@@ -22,16 +20,6 @@ export class GeminiService {
   }
 
   async explainLoanDecision(analysisData: any): Promise<string> {
-    const now = Date.now();
-    const timeSinceLastCall = now - this.lastGeminiCall;
-    if (timeSinceLastCall < this.GEMINI_REQUEST_DELAY) {
-      const waitTime = this.GEMINI_REQUEST_DELAY - timeSinceLastCall;
-      this.logger.info({ waitTime }, 'Rate limiting Gemini request');
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-    }
-
-    this.lastGeminiCall = Date.now();
-
     const decision = analysisData.decision || {};
 
     const prompt = `You are a financial analyst explaining loan decisions to fintech credit officers.
