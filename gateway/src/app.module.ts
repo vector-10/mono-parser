@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { UsersModule } from './users/users.module';
+import { QueueModule } from './queues/queue.module';
 import { EventsModule } from './events/events.module';
 import { MonoModule } from './mono/mono.module';
 import { PrismaModule } from './prisma/prisma.module';

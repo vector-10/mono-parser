@@ -54,11 +54,11 @@ export class MonoWebhookService {
             balance: accountData?.balance,
             institution: accountData?.institution?.name,
           },
-          include: { applicant: true}
+          include: { applicant: true }
         });
         this.logger.info(
           { monoAccountId, applicantId },
-          ` Successfully updated Bank to Applicant `,
+          ` Successfully updated Applicant Data with new bank Account `,
         );
         this.eventsGateway.emitToUser(updated.applicant.fintechId, 'account_already_linked', {
           applicantId,
@@ -68,7 +68,6 @@ export class MonoWebhookService {
         });
         return { status: 'success', accountId: updated.id, linked:false };
       }
-
 
        const bankAccount = await this.prisma.bankAccount.create({
         data: {
