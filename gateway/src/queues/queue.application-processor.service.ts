@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { ApplicationProcessorService } from 'src/applications/applications-processor.service';
 
-@Processor('applications')
+@Processor('applications', { concurrency: 5 })
 @Injectable()
 export class ApplicationProcessor extends WorkerHost {
     constructor(

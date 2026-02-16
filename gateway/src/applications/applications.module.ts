@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { QueueModule } from 'src/queues/queue.module';
 import { ApplicationsController } from './applications.controller';
@@ -11,7 +11,7 @@ import { MonoModule } from 'src/mono/mono.module';
 import { GeminiModule } from 'src/gemini/gemini.module';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, QueueModule, MonoModule, EventsModule, GeminiModule],
+  imports: [ConfigModule, PrismaModule, forwardRef(() => QueueModule), MonoModule, EventsModule, GeminiModule],
   controllers: [ApplicationsController],
   providers: [
     ApplicationsService,
