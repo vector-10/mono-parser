@@ -8,6 +8,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApplicationsService } from './applications.service';
 import { ApplicationProcessorService } from './applications-processor.service';
 import { GeminiService } from 'src/gemini/gemini.service';
@@ -40,6 +41,7 @@ export class ApplicationsController {
     };
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Post(':id/start-analysis')
   async startAnalysis(
     @Request() req,
@@ -69,6 +71,7 @@ export class ApplicationsController {
     };
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Get(':id/explain')
   async explainApplication(@Request() req, @Param('id') id: string) {
     const application = await this.applicationsService.findOne(id, req.user.id);

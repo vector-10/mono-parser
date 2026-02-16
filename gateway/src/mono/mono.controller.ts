@@ -9,6 +9,7 @@ import {
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { MonoService } from './mono.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Public } from 'src/auth/decorators/public.decorator';
@@ -23,6 +24,7 @@ export class MonoController {
   ) {}
 
 
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
   @Post('initiate/:applicantId')
   async initiate(@Request() req, @Param('applicantId') applicantId: string) {
     if (!req.user.monoApiKey) {
@@ -48,6 +50,7 @@ export class MonoController {
     );
   }
 
+  @SkipThrottle()
   @Public()
   @Get('auth/callback')
   async handleMonoCallback(
@@ -95,6 +98,7 @@ export class MonoController {
     return this.monoService.getTransactions(accountId, req.user.monoApiKey);
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
   @Post('account/:accountId/creditworthiness')
   async checkCredit(
     @Request() req,
@@ -113,6 +117,7 @@ export class MonoController {
     return this.monoService.getIdentity(accountId, req.user.monoApiKey);
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
   @Post('lookup/credit-history')
   async getHistory(@Request() req, @Body('bvn') bvn: string) {
     return this.monoService.getCreditHistory(bvn, req.user.monoApiKey);
