@@ -4,7 +4,6 @@ import { PinoLogger } from 'nestjs-pino';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
 import { EventsGateway } from 'src/events/events.gateway';
-import { MonoService } from 'src/mono/mono.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
