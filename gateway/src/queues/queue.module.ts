@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { ApplicationsModule } from 'src/applications/applications.module';
 import { ApplicationProcessor } from './queue.application-processor.service';
+import { QueueController } from './queue.controller';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ApplicationProcessor } from './queue.application-processor.service';
     forwardRef(() => ApplicationsModule),
   ],
   providers: [ApplicationProcessor],
+  controllers:[QueueController],
   exports: [BullModule],
 })
 export class QueueModule {}
