@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { Logger } from 'nestjs-pino';
 import { execSync } from 'child_process';
-import * as  cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   if (process.env.NODE_ENV === 'production') {
