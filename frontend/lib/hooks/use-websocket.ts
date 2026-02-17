@@ -64,6 +64,5 @@ export function useWebSocket() {
     off,
     emit,
     getClientId,
-    // socket: socketRef.current,
   };
 }

@@ -43,7 +43,7 @@ export default function ChatMessage({
     );
   }
 
-  // System Style Helpers
+
   const isSuccess = content.includes("verified") || content.includes("linked successfully") || content.includes("generated successfully");
   const isError = content.includes("Error") || content.includes("Failed");
   const isLinkMsg = content.includes("bank linking");

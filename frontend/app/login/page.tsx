@@ -28,7 +28,6 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(data)
       
-      // Store in Zustand (auto-persists to localStorage)
       // Refresh token is stored as HTTP-only cookie by the backend
       setAuth(response.user, response.access_token)
       

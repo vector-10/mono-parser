@@ -31,17 +31,6 @@ export default function UpdateApplicantModal({
 
   const { mutate: updateApplicant, isPending } = useUpdateApplicant();
 
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     setFormData({
-  //       firstName: applicant.firstName,
-  //       lastName: applicant.lastName,
-  //       email: applicant.email,
-  //       phone: applicant.phone || "",
-  //       bvn: applicant.bvn || "",
-  //     });
-  //   }
-  // }, [isOpen, applicant.id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
