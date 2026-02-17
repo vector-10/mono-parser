@@ -81,10 +81,12 @@ export class AuthService {
       user.id,
       user.email,
     );
+    const refresh_token = await this.tokenService.generateRefreshToken(user.id);
 
     return {
       message: 'Email verified successfully',
       access_token,
+      refresh_token,
       user: {
         id: user.id,
         email: user.email,
@@ -142,9 +144,11 @@ export class AuthService {
       user.id,
       user.email,
     );
+    const refresh_token = await this.tokenService.generateRefreshToken(user.id);
 
     return {
       access_token,
+      refresh_token,
       user: {
         id: user.id,
         email: user.email,
@@ -153,6 +157,30 @@ export class AuthService {
         apiKey: user.apiKey,
       },
     };
+  }
+
+  async refresh(refreshToken: string) {
+    const storedToken =
+      await this.tokenService.validateRefreshToken(refreshToken);
+
+    // Revoke the old refresh token (rotation)
+    await this.tokenService.revokeRefreshToken(refreshToken);
+
+    // Issue new pair
+    const access_token = this.tokenService.generateAccessToken(
+      storedToken.user.id,
+      storedToken.user.email,
+    );
+    const refresh_token = await this.tokenService.generateRefreshToken(
+      storedToken.userId,
+    );
+
+    return { access_token, refresh_token };
+  }
+
+  async logout(refreshToken: string) {
+    await this.tokenService.revokeRefreshToken(refreshToken);
+    return { message: 'Logged out successfully' };
   }
 
   async validateUser(userId: string) {
