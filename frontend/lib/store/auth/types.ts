@@ -3,16 +3,16 @@ export interface User {
   email: string;
   name: string;
   companyName: string;
-  apiKey: string;
-  monoApiKey?: string | null;
 }
 
 export interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   actions: {
-    setAuth: (user: User, token: string) => void;
+    setAuth: (user: User, token: string, refreshToken: string) => void;
+    setTokens: (token: string, refreshToken: string) => void;
     logout: () => void;
     clearAuth: () => void;
   };
