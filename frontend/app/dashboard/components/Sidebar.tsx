@@ -16,18 +16,15 @@ export default function Sidebar() {
   const [operationsOpen, setOperationsOpen] = useState(true);
   const router = useRouter();
   const logout = useAuthStore((state) => state.actions.logout);
-  const refreshToken = useAuthStore((state) => state.refreshToken);
   const [applicantsOpen, setApplicantsOpen] = useState(true);
   const { data: applicants, isLoading } = useApplicants();
   const { isCreateModalOpen, actions } = useApplicantsStore();
 
   const handleLogout = async () => {
-    if (refreshToken) {
-      try {
-        await authApi.logout(refreshToken);
-      } catch {
-        // Still logout locally even if API call fails
-      }
+    try {
+      await authApi.logout();
+    } catch {
+      // Still logout locally even if API call fails
     }
     logout();
     router.push("/login");

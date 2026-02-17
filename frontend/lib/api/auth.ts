@@ -19,7 +19,6 @@ export interface VerifyOtpData {
 
 export interface AuthResponse {
   access_token: string
-  refresh_token: string
   user: {
     id: string
     email: string
@@ -31,11 +30,6 @@ export interface AuthResponse {
 export interface SignupResponse {
     message: string
     email: string
-}
-
-export interface RefreshResponse {
-  access_token: string
-  refresh_token: string
 }
 
 export interface ResetPasswordData {
@@ -70,13 +64,13 @@ export const authApi = {
     return response.data
   },
 
-  refresh: async (refreshToken: string): Promise<RefreshResponse> => {
-    const response = await api.post('/auth/refresh', { refreshToken })
+  refresh: async (): Promise<{ access_token: string }> => {
+    const response = await api.post('/auth/refresh')
     return response.data
   },
 
-  logout: async (refreshToken: string): Promise<{ message: string }> => {
-    const response = await api.post('/auth/logout', { refreshToken })
+  logout: async (): Promise<{ message: string }> => {
+    const response = await api.post('/auth/logout')
     return response.data
   },
 

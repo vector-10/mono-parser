@@ -77,7 +77,7 @@ export default function SignupPage() {
         otp: data.otp,
       });
 
-      setAuth(response.user, response.access_token, response.refresh_token);
+      setAuth(response.user, response.access_token);
 
       toast.success("Email verified successfully!");
       router.push("/dashboard");

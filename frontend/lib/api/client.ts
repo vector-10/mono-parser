@@ -8,6 +8,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 })
 
 // Request interceptor - attach access token
@@ -48,14 +49,13 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    // Skip refresh for auth endpoints (login, refresh, etc.) or already retried requests
+    // Skip refresh for auth endpoints or already retried requests
     const isAuthEndpoint = originalRequest?.url?.startsWith('/auth/refresh') ||
       originalRequest?.url?.startsWith('/auth/login') ||
       originalRequest?.url?.startsWith('/auth/logout')
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthEndpoint) {
       if (isRefreshing) {
-        // Another refresh is in progress — queue this request
         return new Promise((resolve, reject) => {
           failedQueue.push({
             resolve: (token: string) => {
@@ -70,19 +70,12 @@ api.interceptors.response.use(
       originalRequest._retry = true
       isRefreshing = true
 
-      const refreshToken = useAuthStore.getState().refreshToken
-
-      if (!refreshToken) {
-        isRefreshing = false
-        forceLogout()
-        return Promise.reject(error)
-      }
-
       try {
-        const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken })
-        const { access_token, refresh_token } = response.data
+        // Cookie is sent automatically by the browser — no body needed
+        const response = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true })
+        const { access_token } = response.data
 
-        useAuthStore.getState().actions.setTokens(access_token, refresh_token)
+        useAuthStore.getState().actions.setToken(access_token)
 
         originalRequest.headers.Authorization = `Bearer ${access_token}`
         processQueue(null, access_token)

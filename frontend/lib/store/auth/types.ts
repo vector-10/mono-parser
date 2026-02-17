@@ -8,11 +8,10 @@ export interface User {
 export interface AuthState {
   user: User | null;
   token: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   actions: {
-    setAuth: (user: User, token: string, refreshToken: string) => void;
-    setTokens: (token: string, refreshToken: string) => void;
+    setAuth: (user: User, token: string) => void;
+    setToken: (token: string) => void;
     logout: () => void;
     clearAuth: () => void;
   };
