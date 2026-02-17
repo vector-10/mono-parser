@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { otpEmailTemplate } from './templates/otp.templates';
+import { passwordResetEmailTemplate } from './templates/password-reset.template';
 import axios from 'axios';
 
 @Injectable()
@@ -52,6 +53,17 @@ export class EmailService {
     return this.sendEmail(
       email,
       'Your Mono Parser Verification Code',
+      htmlContent,
+      name,
+    );
+  }
+
+  async sendPasswordResetOTP(email: string, otp: string, name?: string) {
+    const htmlContent = passwordResetEmailTemplate(name || 'there', otp);
+
+    return this.sendEmail(
+      email,
+      'Reset Your Mono Parser Password',
       htmlContent,
       name,
     );

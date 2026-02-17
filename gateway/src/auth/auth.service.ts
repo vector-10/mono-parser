@@ -3,6 +3,7 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { createHash, randomInt } from 'crypto';
 import { EmailService } from 'src/email/email.service';
 import { UsersService } from 'src/users/users.service';
 import { TokenService } from 'src/auth/token.service';
@@ -10,6 +11,8 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
+import { RequestResetDto } from './dto/request-reset.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +34,7 @@ export class AuthService {
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
-      await this.usersService.updateOTP(existingUser.id, otp, expiresAt);
+      await this.usersService.updateOTP(existingUser.id, this.hashOTP(otp), expiresAt);
       await this.emailService.sendOTP(signupDto.email, otp, signupDto.name);
 
       return {
@@ -51,7 +54,7 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
-    await this.usersService.updateOTP(user.id, otp, expiresAt);
+    await this.usersService.updateOTP(user.id, this.hashOTP(otp), expiresAt);
     await this.emailService.sendOTP(signupDto.email, otp, signupDto.name);
 
     return {
@@ -67,7 +70,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or OTP');
     }
 
-    if (user.otp !== verifyotpDto.otp) {
+    if (user.otp !== this.hashOTP(verifyotpDto.otp)) {
       throw new UnauthorizedException('Invalid OTP');
     }
 
@@ -92,7 +95,6 @@ export class AuthService {
         email: user.email,
         name: user.name,
         companyName: user.companyName,
-        apiKey: user.apiKey,
       },
     };
   }
@@ -112,7 +114,7 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
-    await this.usersService.updateOTP(user.id, otp, expiresAt);
+    await this.usersService.updateOTP(user.id, this.hashOTP(otp), expiresAt);
     await this.emailService.sendOTP(user.email, otp, user.name);
 
     return {
@@ -154,9 +156,54 @@ export class AuthService {
         email: user.email,
         name: user.name,
         companyName: user.companyName,
-        apiKey: user.apiKey,
       },
     };
+  }
+
+  async requestPasswordReset(requestResetDto: RequestResetDto) {
+    const user = await this.usersService.findByEmail(requestResetDto.email);
+
+    if (!user) {
+      // Don't reveal whether the email exists
+      return { message: 'If this email is registered, a reset code has been sent.' };
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException('Please verify your email first');
+    }
+
+    const otp = this.generateOTP();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+
+    await this.usersService.updateOTP(user.id, this.hashOTP(otp), expiresAt);
+    await this.emailService.sendPasswordResetOTP(user.email, otp, user.name);
+
+    return { message: 'If this email is registered, a reset code has been sent.' };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const user = await this.usersService.findByEmail(resetPasswordDto.email);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or OTP');
+    }
+
+    if (user.otp !== this.hashOTP(resetPasswordDto.otp)) {
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    if (!user.otpExpiry || user.otpExpiry < new Date()) {
+      throw new UnauthorizedException('OTP expired');
+    }
+
+    await this.usersService.updatePassword(user.id, resetPasswordDto.newPassword);
+
+    // Clear the OTP and revoke all refresh tokens (force re-login everywhere)
+    await this.usersService.updateOTP(user.id, null, null);
+    await this.tokenService.revokeAllUserTokens(user.id);
+
+    return { message: 'Password reset successfully. Please log in with your new password.' };
   }
 
   async refresh(refreshToken: string) {
@@ -188,6 +235,10 @@ export class AuthService {
   }
 
   private generateOTP(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return randomInt(100000, 999999).toString();
+  }
+
+  private hashOTP(otp: string): string {
+    return createHash('sha256').update(otp).digest('hex');
   }
 }

@@ -50,6 +50,6 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Request() req) {
-    return req.user;
+    return this.authService.validateUser(req.user.id);
   }
 }

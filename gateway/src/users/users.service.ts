@@ -80,6 +80,14 @@ export class UsersService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
+  async updatePassword(userId: string, newPassword: string) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+  }
+
   async updateMonoApiKey(userId: string, monoApiKey: string, monoPublicKey: string) {
     return this.prisma.user.update({
       where: { id: userId },
