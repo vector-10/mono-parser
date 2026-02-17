@@ -22,7 +22,7 @@ export default function DashboardHeader() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0055ba] text-white hover:bg-[#004494] transition"
             >
               <Key className="h-4 w-4" />
-             {user?.monoApiKey ? "Update API Key" : "Add API Key"}
+             {user?.hasMonoApiKey ? "Update API Key" : "Add API Key"}
             </button>
             
             <button className="p-2 rounded-lg hover:bg-gray-100">

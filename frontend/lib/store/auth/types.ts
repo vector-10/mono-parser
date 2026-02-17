@@ -3,6 +3,7 @@ export interface User {
   email: string;
   name: string;
   companyName: string;
+  hasMonoApiKey?: boolean;
 }
 
 export interface AuthState {

@@ -6,7 +6,7 @@ export interface User {
   email: string
   name: string
   companyName: string
-  monoApiKey?: string | null
+  hasMonoApiKey?: boolean
 }
 
 export const usersApi = {

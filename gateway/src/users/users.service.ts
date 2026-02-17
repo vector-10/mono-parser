@@ -26,8 +26,6 @@ export class UsersService {
         email: true,
         name: true,
         companyName: true,
-        apiKey: true,
-        monoApiKey: true,
         isVerified: true,
         otp: true,
         otpExpiry: true,
@@ -42,17 +40,21 @@ export class UsersService {
   }
 
   async findById(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         email: true,
         name: true,
         companyName: true,
-        apiKey: true,
         monoApiKey: true,
       },
     });
+
+    if (!user) return null;
+
+    const { monoApiKey, ...rest } = user;
+    return { ...rest, hasMonoApiKey: !!monoApiKey };
   }
 
   async updateOTP(userId: string, otp: string | null, expiresAt: Date | null) {
@@ -89,7 +91,7 @@ export class UsersService {
   }
 
   async updateMonoApiKey(userId: string, monoApiKey: string, monoPublicKey: string) {
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id: userId },
       data: { monoApiKey, monoPublicKey },
       select: {
@@ -97,10 +99,9 @@ export class UsersService {
         email: true,
         name: true,
         companyName: true,
-        apiKey: true,
-        monoApiKey: true,
-        monoPublicKey: true,
       },
     });
+
+    return { ...user, hasMonoApiKey: true };
   }
 }

@@ -146,9 +146,11 @@ export default function ApplicationChat({
   useEffect(() => {
     if(flow.step === "creating") {
       hasExplainedRef.current = false;
-      setShouldExplain(false);
+      setTimeout(() => {
+        setShouldExplain(false);
+      }, 0);
     }
-  }, [flow.step ])
+  }, [flow.step])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
