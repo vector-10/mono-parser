@@ -14,23 +14,19 @@ import { MonoService } from './mono.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { MonoApiKeyGuard } from 'src/auth/guards/mono-api-key.guard';
 
 @Controller('mono')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, MonoApiKeyGuard)
 export class MonoController {
   constructor(
     private readonly monoService: MonoService,
     private readonly prisma: PrismaService,
   ) {}
 
-
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @Post('initiate/:applicantId')
   async initiate(@Request() req, @Param('applicantId') applicantId: string) {
-    if (!req.user.monoApiKey) {
-      throw new BadRequestException('Mono API key not configured.');
-    }
-
     const applicant = await this.prisma.applicant.findFirst({
       where: {
         id: applicantId,
@@ -46,7 +42,7 @@ export class MonoController {
       applicant.id,
       `${applicant.firstName} ${applicant.lastName}`,
       applicant.email,
-      req.user.monoApiKey,
+      req.monoApiKey,
     );
   }
 
@@ -72,30 +68,27 @@ export class MonoController {
 
   @Get('account/:accountId')
   async getDetails(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getAccountDetails(accountId, req.user.monoApiKey);
+    return this.monoService.getAccountDetails(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/balance')
   async getBalance(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getAccountBalance(accountId, req.user.monoApiKey);
+    return this.monoService.getAccountBalance(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/income')
   async getIncome(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getIncome(accountId, req.user.monoApiKey);
+    return this.monoService.getIncome(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/insights')
   async getInsights(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getStatementInsights(
-      accountId,
-      req.user.monoApiKey,
-    );
+    return this.monoService.getStatementInsights(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/transactions')
   async getTransactions(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getTransactions(accountId, req.user.monoApiKey);
+    return this.monoService.getTransactions(accountId, req.monoApiKey);
   }
 
   @Throttle({ default: { ttl: 60000, limit: 20 } })
@@ -107,20 +100,20 @@ export class MonoController {
   ) {
     return this.monoService.getCreditWorthiness(
       accountId,
-      req.user.monoApiKey,
+      req.monoApiKey,
       loanData,
     );
   }
 
   @Get('account/:accountId/identity')
   async getIdentity(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getIdentity(accountId, req.user.monoApiKey);
+    return this.monoService.getIdentity(accountId, req.monoApiKey);
   }
 
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @Post('lookup/credit-history')
   async getHistory(@Request() req, @Body('bvn') bvn: string) {
-    return this.monoService.getCreditHistory(bvn, req.user.monoApiKey);
+    return this.monoService.getCreditHistory(bvn, req.monoApiKey);
   }
 
   @Get('account/:accountId/income-records')
@@ -128,39 +121,39 @@ export class MonoController {
     @Request() req,
     @Param('accountId') accountId: string,
   ) {
-    return this.monoService.getIncomeRecords(accountId, req.user.monoApiKey);
+    return this.monoService.getIncomeRecords(accountId, req.monoApiKey);
   }
 
   @Get('accounts')
   async getAllAccounts(@Request() req, @Query('page') page?: string) {
     return this.monoService.getAllAccounts(
-      req.user.monoApiKey,
+      req.monoApiKey,
       page ? parseInt(page) : 1,
     );
   }
 
   @Get('account/:accountId/assets')
   async getAssets(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getAssets(accountId, req.user.monoApiKey);
+    return this.monoService.getAssets(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/earnings')
   async getEarnings(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getEarnings(accountId, req.user.monoApiKey);
+    return this.monoService.getEarnings(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/credits')
   async getCredits(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getCredits(accountId, req.user.monoApiKey);
+    return this.monoService.getCredits(accountId, req.monoApiKey);
   }
 
   @Get('account/:accountId/debits')
   async getDebits(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.getDebits(accountId, req.user.monoApiKey);
+    return this.monoService.getDebits(accountId, req.monoApiKey);
   }
 
   @Post('account/:accountId/unlink')
   async unlink(@Request() req, @Param('accountId') accountId: string) {
-    return this.monoService.unlinkAccount(accountId, req.user.monoApiKey);
+    return this.monoService.unlinkAccount(accountId, req.monoApiKey);
   }
 }
