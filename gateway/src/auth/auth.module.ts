@@ -5,10 +5,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { EmailModule } from '../email/email.module';
 import { TokenService } from './token.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
+import { QueueModule } from '../queues/queue.module';
 
 @Module({
   imports: [
@@ -23,12 +23,14 @@ import { UsersModule } from '../users/users.module';
         }
         return {
           secret,
-          signOptions: { expiresIn: '15m' },
+          signOptions: {
+            expiresIn: configService.get<string>('ACCESS_TOKEN_EXPIRY', '15m') as any,
+          },
         };
       },
       inject: [ConfigService],
     }),
-    EmailModule,
+    QueueModule,
     UsersModule,
   ],
   controllers: [AuthController],

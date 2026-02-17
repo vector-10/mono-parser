@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { Logger } from 'nestjs-pino';
@@ -21,6 +22,12 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
   app.flushLogs();
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
 
   app.enableCors({
     origin: configService.get('CORS_ORIGIN') || 'http://localhost:3000',

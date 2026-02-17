@@ -3,8 +3,9 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { createHash, randomInt } from 'crypto';
-import { EmailService } from 'src/email/email.service';
 import { UsersService } from 'src/users/users.service';
 import { TokenService } from 'src/auth/token.service';
 import { SignupDto } from './dto/signup.dto';
@@ -18,8 +19,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 export class AuthService {
   constructor(
     private tokenService: TokenService,
-    private emailService: EmailService,
     private usersService: UsersService,
+    @InjectQueue('emails') private readonly emailQueue: Queue,
   ) {}
 
   async signup(signupDto: SignupDto) {
@@ -35,7 +36,11 @@ export class AuthService {
       expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
       await this.usersService.updateOTP(existingUser.id, this.hashOTP(otp), expiresAt);
-      await this.emailService.sendOTP(signupDto.email, otp, signupDto.name);
+      await this.emailQueue.add('send-otp', {
+        email: signupDto.email,
+        otp,
+        name: signupDto.name,
+      });
 
       return {
         message: 'Verification email resent. Please check your email.',
@@ -55,7 +60,11 @@ export class AuthService {
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.usersService.updateOTP(user.id, this.hashOTP(otp), expiresAt);
-    await this.emailService.sendOTP(signupDto.email, otp, signupDto.name);
+    await this.emailQueue.add('send-otp', {
+      email: signupDto.email,
+      otp,
+      name: signupDto.name,
+    });
 
     return {
       message: 'Registration successful. Please verify your email.',
@@ -115,7 +124,11 @@ export class AuthService {
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.usersService.updateOTP(user.id, this.hashOTP(otp), expiresAt);
-    await this.emailService.sendOTP(user.email, otp, user.name);
+    await this.emailQueue.add('resend-otp', {
+      email: user.email,
+      otp,
+      name: user.name,
+    });
 
     return {
       message: 'OTP resent successfully',
@@ -164,7 +177,6 @@ export class AuthService {
     const user = await this.usersService.findByEmail(requestResetDto.email);
 
     if (!user) {
-      // Don't reveal whether the email exists
       return { message: 'If this email is registered, a reset code has been sent.' };
     }
 
@@ -177,7 +189,11 @@ export class AuthService {
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.usersService.updateOTP(user.id, this.hashOTP(otp), expiresAt);
-    await this.emailService.sendPasswordResetOTP(user.email, otp, user.name);
+    await this.emailQueue.add('send-password-reset', {
+      email: user.email,
+      otp,
+      name: user.name,
+    });
 
     return { message: 'If this email is registered, a reset code has been sent.' };
   }
@@ -199,7 +215,6 @@ export class AuthService {
 
     await this.usersService.updatePassword(user.id, resetPasswordDto.newPassword);
 
-    // Clear the OTP and revoke all refresh tokens (force re-login everywhere)
     await this.usersService.updateOTP(user.id, null, null);
     await this.tokenService.revokeAllUserTokens(user.id);
 
@@ -210,10 +225,8 @@ export class AuthService {
     const storedToken =
       await this.tokenService.validateRefreshToken(refreshToken);
 
-    // Revoke the old refresh token (rotation)
     await this.tokenService.revokeRefreshToken(refreshToken);
 
-    // Issue new pair
     const access_token = this.tokenService.generateAccessToken(
       storedToken.user.id,
       storedToken.user.email,

@@ -55,7 +55,7 @@ export class UsersService {
     });
   }
 
-  async updateOTP(userId: string, otp: string, expiresAt: Date) {
+  async updateOTP(userId: string, otp: string | null, expiresAt: Date | null) {
     return this.prisma.user.update({
       where: { id: userId },
       data: {

@@ -2,7 +2,9 @@ import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { ApplicationsModule } from 'src/applications/applications.module';
+import { EmailModule } from 'src/email/email.module';
 import { ApplicationProcessor } from './queue.application-processor.service';
+import { EmailProcessor } from './queue.email-processor.service';
 import { QueueController } from './queue.controller';
 
 @Module({
@@ -47,9 +49,22 @@ import { QueueController } from './queue.controller';
         removeOnFail: 200,
       },
     }),
+    BullModule.registerQueue({
+      name: 'emails',
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 3000,
+        },
+        removeOnComplete: 50,
+        removeOnFail: 100,
+      },
+    }),
     forwardRef(() => ApplicationsModule),
+    EmailModule,
   ],
-  providers: [ApplicationProcessor],
+  providers: [ApplicationProcessor, EmailProcessor],
   controllers:[QueueController],
   exports: [BullModule],
 })

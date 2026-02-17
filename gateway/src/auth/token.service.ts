@@ -1,19 +1,27 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes, createHash } from 'crypto';
 
 @Injectable()
 export class TokenService {
+  private readonly accessTokenExpiry: string;
+  private readonly refreshTokenExpiryDays: number;
+
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.accessTokenExpiry = this.configService.get<string>('ACCESS_TOKEN_EXPIRY', '15m');
+    this.refreshTokenExpiryDays = this.configService.get<number>('REFRESH_TOKEN_EXPIRY_DAYS', 7);
+  }
 
   generateAccessToken(userId: string, email: string) {
     return this.jwtService.sign(
       { sub: userId, email },
-      { expiresIn: '15m' },
+      { expiresIn: this.accessTokenExpiry as any },
     );
   }
 
@@ -22,7 +30,7 @@ export class TokenService {
     const tokenHash = this.hashToken(rawToken);
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + this.refreshTokenExpiryDays);
 
     await this.prisma.refreshToken.create({
       data: {
@@ -48,7 +56,6 @@ export class TokenService {
     }
 
     if (storedToken.revoked) {
-      // Token reuse detected — revoke ALL tokens for this user
       await this.revokeAllUserTokens(storedToken.userId);
       throw new UnauthorizedException('Refresh token has been revoked');
     }
