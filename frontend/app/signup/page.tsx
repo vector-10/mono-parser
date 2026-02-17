@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -16,10 +16,13 @@ import {
 } from "@/lib/validations/auth";
 import { useAuthStore } from "@/lib/store/auth";
 
+const RESEND_COOLDOWN = 60;
+
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<"signup" | "verify">("signup");
   const [userEmail, setUserEmail] = useState("");
+  const [resendCountdown, setResendCountdown] = useState(0);
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.actions.setAuth);
 
@@ -39,12 +42,25 @@ export default function SignupPage() {
     resolver: zodResolver(verifyOtpSchema),
   });
 
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
+
+  const startCooldown = useCallback(() => {
+    setResendCountdown(RESEND_COOLDOWN);
+  }, []);
+
   const onSignup = async (data: SignupFormData) => {
     try {
       const response = await authApi.signup(data);
 
       setUserEmail(data.email);
       setStep("verify");
+      startCooldown();
       toast.success(response.message);
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -61,21 +77,23 @@ export default function SignupPage() {
         otp: data.otp,
       });
 
-      setAuth(response.user, response.access_token);
+      setAuth(response.user, response.access_token, response.refresh_token);
 
       toast.success("Email verified successfully!");
       router.push("/dashboard");
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
       const errorMessage =
-        axiosError.response?.data?.message || "invalid OTP. Please try again.";
+        axiosError.response?.data?.message || "Invalid OTP. Please try again.";
       toast.error(errorMessage);
     }
   };
 
   const handleResendOtp = async () => {
+    if (resendCountdown > 0) return;
     try {
       const response = await authApi.resendOtp(userEmail);
+      startCooldown();
       toast.success(response.message);
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -373,14 +391,21 @@ export default function SignupPage() {
                     )}
                   </div>
 
-                  {/* Resend OTP */}
+                  {/* Resend OTP with countdown */}
                   <div className="text-center">
                     <button
                       type="button"
                       onClick={handleResendOtp}
-                      className="text-sm text-[#0055ba] hover:underline"
+                      disabled={resendCountdown > 0}
+                      className={`text-sm ${
+                        resendCountdown > 0
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-[#0055ba] hover:underline"
+                      }`}
                     >
-                      Didn't receive the code? Resend
+                      {resendCountdown > 0
+                        ? `Resend code in ${resendCountdown}s`
+                        : "Didn't receive the code? Resend"}
                     </button>
                   </div>
 

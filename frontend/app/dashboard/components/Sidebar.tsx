@@ -7,6 +7,7 @@ import { useApplicants } from "@/lib/hooks/queries/use-applicants";
 import { useAuthStore } from "@/lib/store/auth";
 import { useRouter } from "next/navigation";
 import { useApplicantsStore } from "@/lib/store/applicants";
+import { authApi } from "@/lib/api/auth";
 import CreateApplicantModal from "./CreateApplicantModal";
 import ApplicantMenu from "./ApplicantMenu";
 
@@ -15,11 +16,19 @@ export default function Sidebar() {
   const [operationsOpen, setOperationsOpen] = useState(true);
   const router = useRouter();
   const logout = useAuthStore((state) => state.actions.logout);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
   const [applicantsOpen, setApplicantsOpen] = useState(true);
   const { data: applicants, isLoading } = useApplicants();
   const { isCreateModalOpen, actions } = useApplicantsStore();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (refreshToken) {
+      try {
+        await authApi.logout(refreshToken);
+      } catch {
+        // Still logout locally even if API call fails
+      }
+    }
     logout();
     router.push("/login");
   };

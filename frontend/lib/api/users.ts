@@ -6,7 +6,6 @@ export interface User {
   email: string
   name: string
   companyName: string
-  apiKey: string
   monoApiKey?: string | null
 }
 

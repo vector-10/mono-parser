@@ -29,7 +29,7 @@ export default function LoginPage() {
       const response = await authApi.login(data)
       
       // Store in Zustand (auto-persists to localStorage)
-      setAuth(response.user, response.access_token)
+      setAuth(response.user, response.access_token, response.refresh_token)
       
       toast.success('Login successful!')
       router.push('/dashboard')
