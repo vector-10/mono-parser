@@ -1,7 +1,19 @@
+import { IsString, IsNumber, IsOptional } from 'class-validator';
+
 export class CreateApplicationDto {
-    applicantId: string;
-    amount: number;
-    tenor: number;
-    interestRate: number;
-    purpose?: string;
+  @IsString()
+  applicantId: string;
+
+  @IsNumber()
+  amount: number;
+
+  @IsNumber()
+  tenor: number;
+
+  @IsNumber()
+  interestRate: number;
+
+  @IsOptional()
+  @IsString()
+  purpose?: string;
 }
