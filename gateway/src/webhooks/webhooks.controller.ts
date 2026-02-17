@@ -5,16 +5,26 @@ import {
   Headers,
   BadRequestException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { MonoWebhookService } from './webhook.service';
 
 @Controller('webhooks/mono')
 export class WebhooksController {
+  private readonly webhookSecret: string;
+
   constructor(
     private readonly webhookService: MonoWebhookService,
     private readonly logger: PinoLogger,
+    configService: ConfigService,
   ) {
     this.logger.setContext(WebhooksController.name);
+
+    const secret = configService.get<string>('MONO_WEBHOOK_SECRET');
+    if (!secret) {
+      throw new Error('MONO_WEBHOOK_SECRET environment variable is not set');
+    }
+    this.webhookSecret = secret;
   }
 
   private get eventHandlers() {
@@ -29,6 +39,8 @@ export class WebhooksController {
         this.webhookService.handleAccountLinked.bind(this.webhookService),
       'mono.events.account_reauthorised':
         this.webhookService.handleAccountReauthorised.bind(this.webhookService),
+      'mono.events.account_income':
+        this.webhookService.handleAccountIncome.bind(this.webhookService),
     };
   }
 
@@ -36,24 +48,11 @@ export class WebhooksController {
   async handleMonoWebhook(
     @Body() payload: any,
     @Headers('mono-webhook-secret') webhookSecret: string,
-    @Headers() allHeaders: any,
   ) {
-    this.logger.info(
-      {
-        payload,
-        webhookSecret,
-        allHeaders,
-        timestamp: new Date().toISOString(),
-      },
-      ' RAW WEBHOOK RECEIVED FROM MONO',
-    );
-    this.logger.info({ event: payload.event }, `Webhook received:`);
+    this.logger.info({ event: payload.event }, 'Webhook received');
 
-    if (!this.verifyWebhookSignature(payload, webhookSecret)) {
-      this.logger.error(
-        { webhookSecret, event: payload.event },
-        'Invalid webhook signature',
-      );
+    if (!webhookSecret || webhookSecret !== this.webhookSecret) {
+      this.logger.error({ event: payload.event }, 'Invalid webhook signature');
       throw new BadRequestException('Invalid webhook signature');
     }
 
@@ -70,19 +69,5 @@ export class WebhooksController {
       this.logger.error({ err: error, event: payload.event }, 'Handler failed');
       return { status: 'error', message: error.message };
     }
-  }
-
-  private verifyWebhookSignature(
-    payload: any,
-    receivedSecret: string,
-  ): boolean {
-    const expectedSecret = process.env.MONO_WEBHOOK_SECRET;
-    if (!expectedSecret) {
-      this.logger.warn(
-        'MONO_WEBHOOK_SECRET not configured - skipping verification',
-      );
-      return true;
-    }
-    return receivedSecret === expectedSecret;
   }
 }

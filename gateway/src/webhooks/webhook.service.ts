@@ -105,6 +105,10 @@ export class MonoWebhookService {
     }
   }
 
+  async handleAccountIncome(data: any) {
+    this.logger.info({ payload: data }, 'Received account income event');
+  }
+
   async handleAccountReauthorised(data: any) {
     const monoAccountId = data.account?._id;  
     await this.prisma.bankAccount.update({
