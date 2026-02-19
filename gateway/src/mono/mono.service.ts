@@ -31,6 +31,7 @@ export class MonoService {
     applicantEmail: string,
     monoApiKey: string,
     redirectUrl?: string,
+    applicationId?: string,
   ) {
     try {
       const response = await axios.post(
@@ -39,7 +40,8 @@ export class MonoService {
           customer: { name: applicantName, email: applicantEmail },
           meta: {
             user_id: applicantId,
-            ref: `applicant_${applicantId}_${Date.now()}`,
+            ref: applicationId ?? `applicant_${applicantId}_${Date.now()}`,
+            ...(applicationId && { application_id: applicationId }),
           },
           scope: 'auth',
           redirect_url:
