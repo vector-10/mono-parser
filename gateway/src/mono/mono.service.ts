@@ -238,24 +238,6 @@ export class MonoService {
     }
   }
 
-  async getIncomeRecords(accountId: string, monoApiKey: string) {
-    try {
-      const response = await axios.get(
-        `${this.monoBaseUrl}/accounts/${accountId}/income-records`,
-        {
-          headers: this.getHeaders(monoApiKey),
-        },
-      );
-      return response.data;
-    } catch (error: any) {
-      this.logger.error(
-        { err: error.response?.data },
-        'Income records fetch failed',
-      );
-      throw error;
-    }
-  }
-
   async getAllAccounts(monoApiKey: string, page: number = 1) {
     try {
       const response = await axios.get(`${this.monoBaseUrl}/accounts`, {
@@ -268,66 +250,6 @@ export class MonoService {
         { err: error.response?.data },
         'Accounts list fetch failed',
       );
-      throw error;
-    }
-  }
-
-  async getAssets(accountId: string, monoApiKey: string) {
-    try {
-      const response = await axios.get(
-        `${this.monoBaseUrl}/accounts/${accountId}/assets`,
-        {
-          headers: this.getHeaders(monoApiKey),
-        },
-      );
-      return response.data;
-    } catch (error: any) {
-      this.logger.error({ err: error.response?.data }, 'Assets fetch failed');
-      throw error;
-    }
-  }
-
-  async getEarnings(accountId: string, monoApiKey: string) {
-    try {
-      const response = await axios.get(
-        `${this.monoBaseUrl}/accounts/${accountId}/earnings`,
-        {
-          headers: this.getHeaders(monoApiKey),
-        },
-      );
-      return response.data;
-    } catch (error: any) {
-      this.logger.error({ err: error.response?.data }, 'Earnings fetch failed');
-      throw error;
-    }
-  }
-
-  async getCredits(accountId: string, monoApiKey: string) {
-    try {
-      const response = await axios.get(
-        `${this.monoBaseUrl}/accounts/${accountId}/credits`,
-        {
-          headers: this.getHeaders(monoApiKey),
-        },
-      );
-      return response.data;
-    } catch (error: any) {
-      this.logger.error({ err: error.response?.data }, 'Credits fetch failed');
-      throw error;
-    }
-  }
-
-  async getDebits(accountId: string, monoApiKey: string) {
-    try {
-      const response = await axios.get(
-        `${this.monoBaseUrl}/accounts/${accountId}/debits`,
-        {
-          headers: this.getHeaders(monoApiKey),
-        },
-      );
-      return response.data;
-    } catch (error: any) {
-      this.logger.error({ err: error.response?.data }, 'Debits fetch failed');
       throw error;
     }
   }

@@ -13,10 +13,7 @@ export class DataAggregationService {
     this.logger.setContext(DataAggregationService.name);
   }
 
-  async gatherApplicantData(
-    accountId: string,
-    monoApiKey: string,
-  ) {
+  async gatherApplicantData(accountId: string, monoApiKey: string) {
     this.logger.info({ accountId }, 'Starting data aggregation for account');
 
     const results: any = {
@@ -42,18 +39,7 @@ export class DataAggregationService {
         () => this.monoService.getIncome(accountId, monoApiKey),
         'income',
       ),
-      incomeRecords: this.fetchSafely(
-        () => this.monoService.getIncomeRecords(accountId, monoApiKey),
-        'incomeRecords',
-      ),
-      credits: this.fetchSafely(
-        () => this.monoService.getCredits(accountId, monoApiKey),
-        'credits',
-      ),
-      debits: this.fetchSafely(
-        () => this.monoService.getDebits(accountId, monoApiKey),
-        'debits',
-      ),
+
       identity: this.fetchSafely(
         () => this.monoService.getIdentity(accountId, monoApiKey),
         'identity',
@@ -62,16 +48,7 @@ export class DataAggregationService {
         () => this.monoService.getStatementInsights(accountId, monoApiKey),
         'insights',
       ),
-      assets: this.fetchSafely(
-        () => this.monoService.getAssets(accountId, monoApiKey),
-        'assets',
-      ),
-      earnings: this.fetchSafely(
-        () => this.monoService.getEarnings(accountId, monoApiKey),
-        'earnings',
-      ),
     };
-
 
     const settled = await Promise.allSettled(Object.values(dataPromises));
 
@@ -112,10 +89,7 @@ export class DataAggregationService {
     return results;
   }
 
-  async gatherMultiAccountData(
-    accountIds: string[],
-    monoApiKey: string,
-  ) {
+  async gatherMultiAccountData(accountIds: string[], monoApiKey: string) {
     this.logger.info(
       { accountIds, count: accountIds.length },
       'Starting multi-account data aggregation',
@@ -202,10 +176,7 @@ export class DataAggregationService {
       'Gathering data for test',
     );
 
-    return this.gatherMultiAccountData(
-      accountIds,
-      monoApiKey,
-    );
+    return this.gatherMultiAccountData(accountIds, monoApiKey);
   }
 
   private async fetchSafely<T>(
