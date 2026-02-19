@@ -4,11 +4,49 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { MonoService } from 'src/mono/mono.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
+import { InitiateApplicationDto } from './dto/initiate-application.dto';
 
 @Injectable()
 export class ApplicationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private monoService: MonoService,
+  ) {}
+
+  async initiateApplication(fintechId: string, data: InitiateApplicationDto) {
+    const { firstName, lastName, email, phone, bvn, amount, tenor, interestRate, purpose } = data;
+
+    const applicant = await this.prisma.applicant.create({
+      data: { firstName, lastName, email, phone, bvn, fintechId },
+    });
+
+    const application = await this.prisma.application.create({
+      data: { applicantId: applicant.id, amount, tenor, interestRate, purpose, status: 'PENDING_LINKING' },
+    });
+
+    const monoApiKey = (await this.prisma.user.findUnique({
+      where: { id: fintechId },
+      select: { monoApiKey: true },
+    }))?.monoApiKey;
+
+    const { widgetUrl } = await this.monoService.initiateAccountLinking(
+      applicant.id,
+      `${firstName} ${lastName}`,
+      email,
+      monoApiKey,
+      undefined,
+      application.id,
+    );
+
+    return {
+      applicationId: application.id,
+      applicantId: applicant.id,
+      widgetUrl,
+      status: 'PENDING_LINKING',
+    };
+  }
 
   async createApplication(fintechId: string, data: CreateApplicationDto) {
     const { applicantId, amount, tenor, interestRate, purpose } = data;

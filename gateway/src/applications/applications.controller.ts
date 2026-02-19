@@ -14,8 +14,10 @@ import { Queue } from 'bullmq';
 import { ApplicationsService } from './applications.service';
 import { GeminiService } from 'src/gemini/gemini.service';
 import { CreateApplicationDto } from 'src/applications/dto/create-application.dto';
+import { InitiateApplicationDto } from 'src/applications/dto/initiate-application.dto';
 import { DataAggregationService } from './data-aggregation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
 
 @Controller('applications')
 @UseGuards(JwtAuthGuard)
@@ -26,6 +28,12 @@ export class ApplicationsController {
     private readonly geminiService: GeminiService,
     @InjectQueue('applications') private readonly applicationsQueue: Queue,
   ) {}
+
+  @Post('initiate')
+  @UseGuards(ApiKeyGuard)
+  async initiateApplication(@Request() req, @Body() body: InitiateApplicationDto) {
+    return this.applicationsService.initiateApplication(req.user.id, body);
+  }
 
   @Post()
   async create(@Request() req, @Body() body: CreateApplicationDto) {

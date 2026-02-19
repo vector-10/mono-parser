@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PinoLogger } from 'nestjs-pino';
 import { EventsGateway } from 'src/events/events.gateway';
@@ -8,7 +10,8 @@ export class MonoWebhookService {
   constructor(
     private prisma: PrismaService,
     private readonly logger: PinoLogger,
-     private readonly eventsGateway: EventsGateway,
+    private readonly eventsGateway: EventsGateway,
+    @InjectQueue('applications') private readonly applicationsQueue: Queue,
   ) {
     this.logger.setContext(MonoWebhookService.name);
   }
@@ -17,8 +20,9 @@ export class MonoWebhookService {
     this.logger.info({ payload: data }, 'Full payload received');
 
     const accountData = data.account;
-    const monoAccountId = accountData?._id ;
+    const monoAccountId = accountData?._id;
     const applicantId = data.meta?.user_id;
+    const applicationId = data.meta?.application_id;
 
      if (!monoAccountId) {
       this.logger.error({ payload: data }, `Missing account ID in webhook`);
@@ -66,10 +70,20 @@ export class MonoWebhookService {
           institution: updated.institution,
           accountNumber: updated.accountNumber,
         });
-        return { status: 'success', accountId: updated.id, linked:false };
+
+        if (applicationId) {
+          await this.prisma.application.update({
+            where: { id: applicationId },
+            data: { status: 'LINKED' },
+          });
+          await this.applicationsQueue.add('process-application', { applicationId });
+          this.logger.info({ applicationId }, 'Application queued for processing after re-link');
+        }
+
+        return { status: 'success', accountId: updated.id, linked: false };
       }
 
-       const bankAccount = await this.prisma.bankAccount.create({
+      const bankAccount = await this.prisma.bankAccount.create({
         data: {
           monoAccountId,
           applicantId,
@@ -86,7 +100,7 @@ export class MonoWebhookService {
         'New bank account linked successfully',
       );
 
-     this.eventsGateway.emitToUser(
+      this.eventsGateway.emitToUser(
         bankAccount.applicant.fintechId,
         'account_linked',
         {
@@ -95,7 +109,18 @@ export class MonoWebhookService {
           institution: bankAccount.institution,
           accountNumber: bankAccount.accountNumber,
         },
-      );return { status: 'success', accountId: bankAccount.id, linked: true };
+      );
+
+      if (applicationId) {
+        await this.prisma.application.update({
+          where: { id: applicationId },
+          data: { status: 'LINKED' },
+        });
+        await this.applicationsQueue.add('process-application', { applicationId });
+        this.logger.info({ applicationId }, 'Application queued for processing');
+      }
+
+      return { status: 'success', accountId: bankAccount.id, linked: true };
     } catch (error) {
       this.logger.error(
         { err: error, monoAccountId, applicantId },
