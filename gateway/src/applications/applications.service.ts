@@ -32,7 +32,7 @@ export class ApplicationsService {
       select: { monoApiKey: true },
     });
 
-    if (!fintech?.monoApiKey) {
+    if (!fintech || !fintech.monoApiKey) {
       throw new InternalServerErrorException('Mono API key not configured for this account');
     }
 
@@ -74,7 +74,7 @@ export class ApplicationsService {
       select: { monoApiKey: true },
     });
 
-    if (!fintech?.monoApiKey) {
+    if (!fintech || !fintech.monoApiKey) {
       throw new InternalServerErrorException('Mono API key not configured for this account');
     }
 

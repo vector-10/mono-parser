@@ -1,98 +1,172 @@
 import logging
-from typing import Dict
 from datetime import datetime
 
+from app.models import (
+    AnalyzeRequest, AnalyzeResponse, ScoreBreakdown, RiskFactor,
+    Explainability, RegulatoryCompliance,
+)
+from app.knockout import KnockoutEngine
 from app.features import FeatureExtractor
 from app.scoring import CreditScorer
 from app.decision import DecisionEngine
-from app.models import AnalyzeRequest, AnalyzeResponse, ScoreBreakdown, DecisionResult, EligibleTenor
-
 
 logger = logging.getLogger(__name__)
 
 
 class AnalysisEngine:
-    
-    @staticmethod
-    def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
-        logger.info(f"Starting analysis for applicant: {request.applicant_id}")
-        logger.info(f"Loan amount: {request.loan_amount}, Tenor: {request.tenor_months} months, Interest rate: {request.interest_rate}%")
-        logger.info(f"Analyzing {len(request.accounts)} bank account(s)")
+    """
+    Top-level orchestrator: runs the 5-stage credit analysis pipeline.
 
-        accounts_data = []
-        for account in request.accounts:
-            accounts_data.append({
-                'account_id': account.account_id,
-                'account_details': account.account_details,
-                'balance': account.balance,
-                'transactions': account.transactions,
-                'income_records': account.income_records,
-                'credits': account.credits,
-                'debits': account.debits, 
-                'identity': account.identity           
-                  })
-        
-        logger.info("Step 1: Extracting features from Mono data...")
-        extractor = FeatureExtractor(accounts_data)
-        features = extractor.extract_all_features()
-        
-        logger.info(f"Features extracted: {list(features.keys())}")
-        logger.info(f"Safe monthly income: {features.get('net_monthly_surplus', 0):,.2f}")
-        logger.info(f"Average monthly credits: {features.get('avg_monthly_credits', 0):,.2f}")
-        logger.info(f"Net flow: {features.get('net_flow', 0):,.2f}")
-        
-        logger.info("Step 2: Calculating credit score...")
-        scorer = CreditScorer(features, request.loan_amount, request.tenor_months)
-        score_breakdown = scorer.calculate_score()
-        
-        logger.info(f"Score calculated: {score_breakdown['total']}/1000")
-        logger.info(f"Breakdown - Income: {score_breakdown['income_stability']}, "
-                   f"Cashflow: {score_breakdown['cash_flow_health']}, "
-                   f"DSC: {score_breakdown['debt_service_capacity']}, "
-                   f"Spending: {score_breakdown['spending_behavior']}, "
-                   f"Account: {score_breakdown['account_health']}")
-        
-        logger.info("Step 3: Running decision engine...")
-        decision_engine = DecisionEngine(
-            score_breakdown['total'],
+    Stage 1 — Knockout:   Hard-stop rules checked before any scoring.
+    Stage 2 — Features:   Extract ~30 normalised signals from all Mono data.
+    Stage 3 — Scoring:    Compute a 350–850 score across 5 weighted components.
+    Stage 4 — Decision:   Affordability check, thin-file caps, approve/reject/counter.
+    Stage 5 — Review:     Flag borderline cases and conflicting signals for humans.
+
+    Stages 4 and 5 are co-located inside DecisionEngine.decide() — they share the
+    same data and are executed atomically so the review triggers can see the
+    tentative decision before it is finalised.
+
+    All four sub-engines are instantiated once at class level so they are shared
+    across requests (stateless singletons). This avoids per-request construction
+    overhead and makes dependency injection straightforward for testing.
+    """
+
+    _knockout  = KnockoutEngine()
+    _extractor = FeatureExtractor()
+    _scorer    = CreditScorer()
+    _decision  = DecisionEngine()
+
+    @classmethod
+    def analyze(cls, request: AnalyzeRequest) -> AnalyzeResponse:
+        """
+        Run the full pipeline for one applicant.
+
+        Parameters
+        ----------
+        request : AnalyzeRequest
+            The full data bundle sent by the NestJS gateway — applicant identity,
+            loan parameters, all linked bank accounts (with sync and async enrichments),
+            and the credit bureau history.
+
+        Returns
+        -------
+        AnalyzeResponse
+            A complete decision including score, breakdown, risk factors,
+            approval/counter-offer details, eligible tenor table, explainability,
+            and regulatory compliance flags.
+        """
+        logger.info(
+            f"[PIPELINE START] applicant={request.applicant_id} "
+            f"loan=₦{request.loan_amount:,.0f} tenor={request.tenor_months}m "
+            f"rate={request.interest_rate}% accounts={len(request.accounts)}"
+        )
+
+        # ── Stage 1: Knockout rules ───────────────────────────────────────────
+        # Cheap, order-sensitive hard stops. If any fires we reject immediately
+        # and skip all expensive computation below.
+        ko_result = cls._knockout.run(request)
+        if ko_result.knocked_out:
+            logger.warning(
+                f"[KNOCKOUT] applicant={request.applicant_id} "
+                f"reason={ko_result.reason}"
+            )
+            return cls._build_knockout_response(request, ko_result.reason, ko_result.detail)
+
+        # ── Stage 2: Feature extraction ───────────────────────────────────────
+        # Pulls signals from every available data source: transactions, income
+        # webhook, creditworthiness webhook, statement insights job, and credit
+        # bureau history. Fallbacks ensure we never crash on missing data.
+        features = cls._extractor.extract(request)
+        logger.info(
+            f"[FEATURES] applicant={request.applicant_id} "
+            f"income=₦{features.get('total_monthly_income', 0):,.0f} "
+            f"thin_file={features.get('is_thin_file')} "
+            f"source={features.get('income_source', 'unknown')}"
+        )
+
+        # ── Stage 3: Scoring ──────────────────────────────────────────────────
+        # 350–850 FICO-aligned score. Weights differ for thin-file applicants —
+        # credit history is zeroed and the 30% is redistributed to the other four
+        # components that CAN be computed from bank statement data alone.
+        score, score_breakdown = cls._scorer.calculate(
             features,
             request.loan_amount,
             request.tenor_months,
-            request.interest_rate
+            request.interest_rate,
         )
-        decision_result = decision_engine.make_decision()
-        
-        logger.info(f"Decision: {decision_result['decision']}")
-        logger.info(f"Requested status: {decision_result['requested_status']}")
-        logger.info(f"Max monthly repayment: {decision_result['max_monthly_repayment']:,.2f}")
-        
-        if decision_result['recommended_amount']:
-            logger.info(f"Recommended amount: {decision_result['recommended_amount']:,.2f}")
-        if decision_result['recommended_tenor']:
-            logger.info(f"Recommended tenor: {decision_result['recommended_tenor']} months")
-        
-        logger.info(f"Reasons: {decision_result['reasons']}")
-        
-        response = AnalyzeResponse(
-            applicant_id=request.applicant_id,
-            score=score_breakdown['total'],
-            score_breakdown=ScoreBreakdown(**score_breakdown),
-            decision=DecisionResult(
-                decision=decision_result['decision'],
-                max_monthly_repayment=decision_result['max_monthly_repayment'],
-                safe_monthly_income=decision_result['safe_monthly_income'],
-                eligible_tenors=[
-                    EligibleTenor(**tenor) for tenor in decision_result['eligible_tenors']
-                ],
-                requested_status=decision_result['requested_status'],
-                recommended_amount=decision_result.get('recommended_amount'),
-                recommended_tenor=decision_result.get('recommended_tenor'),
-                reasons=decision_result['reasons']
-            ),
-            timestamp=datetime.utcnow().isoformat()
+        logger.info(
+            f"[SCORE] applicant={request.applicant_id} score={score} "
+            f"breakdown={score_breakdown}"
         )
-        
-        logger.info(f"Analysis completed successfully for applicant: {request.applicant_id}")
-        logger.info(f"Final decision: {response.decision.decision}")
-        
+
+        # ── Stages 4 & 5: Decision + manual review ────────────────────────────
+        # DecisionEngine applies affordability caps, thin-file limits, and
+        # manual-review triggers, then assembles the final AnalyzeResponse.
+        response = cls._decision.decide(request, features, score, score_breakdown)
+        logger.info(
+            f"[DECISION] applicant={request.applicant_id} "
+            f"decision={response.decision} score_band={response.score_band} "
+            f"manual_triggers={len(response.manual_review_reasons)}"
+        )
+
         return response
+
+    # ─── Internal helpers ─────────────────────────────────────────────────────
+
+    @classmethod
+    def _build_knockout_response(
+        cls,
+        request: AnalyzeRequest,
+        reason: str,
+        detail: str,
+    ) -> AnalyzeResponse:
+        """
+        Build a minimal AnalyzeResponse when Stage 1 fires.
+
+        Score is set to the baseline (350) because no meaningful scoring has
+        been performed. The breakdown is all zeros for the same reason.
+
+        We still populate regulatory_compliance from the request so the caller
+        can see which checks were possible before the knock-out fired.
+        """
+        return AnalyzeResponse(
+            applicant_id=request.applicant_id,
+            decision="REJECTED",
+            score=350,
+            score_band="VERY_HIGH_RISK",
+            score_breakdown=ScoreBreakdown(
+                credit_history=0.0,
+                income_stability=0.0,
+                cash_flow_health=0.0,
+                debt_service_capacity=0.0,
+                account_behavior=0.0,
+                total=350,
+            ),
+            risk_factors=[
+                RiskFactor(
+                    factor=reason,
+                    severity="HIGH",
+                    detail=detail or reason,
+                )
+            ],
+            approval_details=None,
+            counter_offer=None,
+            eligible_tenors=[],
+            manual_review_reasons=[],
+            regulatory_compliance=RegulatoryCompliance(
+                # Identity is considered verified only if at least one account
+                # provided Mono identity data (even if the name/BVN check failed —
+                # that failure is what triggered the knockout).
+                identity_verified=any(a.identity is not None for a in request.accounts),
+                credit_bureau_checked=request.credit_history is not None,
+                affordability_assessed=False,   # Never reached scoring
+                thin_file=False,                # Never reached feature extraction
+            ),
+            explainability=Explainability(
+                primary_reason=detail or reason,
+                key_strengths=[],
+                key_weaknesses=[detail or reason],
+            ),
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
