@@ -3,189 +3,103 @@ import { PinoLogger } from 'nestjs-pino';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MonoService } from 'src/mono/mono.service';
 
+// ─── What this service does ────────────────────────────────────────────────────
+//
+// Builds the per-account data bundle that the brain service expects.
+//
+// Enrichments (income, statement insights) are STORED on BankAccount when they
+// arrive asynchronously after account linking. At analysis time we simply READ
+// them from the database — no live Mono calls for those two.
+//
+// We do still call Mono live for three things that change frequently and are
+// cheap to fetch:
+//   - transactions  (always latest)
+//   - balance       (always latest)
+//   - identity      (cached by Mono; cheap)
+//
+// Credit history (BVN-level) is fetched separately in ApplicationProcessorService
+// because it belongs to the applicant, not to any individual bank account.
+
 @Injectable()
 export class DataAggregationService {
   constructor(
-    private monoService: MonoService,
-    private prisma: PrismaService,
+    private readonly monoService: MonoService,
+    private readonly prisma: PrismaService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(DataAggregationService.name);
   }
 
-  async gatherApplicantData(accountId: string, monoApiKey: string) {
-    this.logger.info({ accountId }, 'Starting data aggregation for account');
+  // Gather data for a single Mono account.
+  // monoAccountId is Mono's account _id (stored as BankAccount.monoAccountId).
+  async gatherAccountData(monoAccountId: string, monoApiKey: string) {
+    this.logger.info({ monoAccountId }, 'Gathering account data');
 
-    const results: any = {
-      accountId,
-      success: true,
-      errors: [],
-    };
+    // ── Read stored enrichments from DB ─────────────────────────────────────
+    // These were saved when Mono sent the income webhook and when the
+    // statement insights polling job completed. If they are null it means
+    // enrichment has not finished yet — the processor should have checked
+    // enrichmentStatus before calling us.
+    const stored = await this.prisma.bankAccount.findUnique({
+      where: { monoAccountId },
+      select: { incomeData: true, statementInsightsData: true },
+    });
 
-    const dataPromises = {
-      accountDetails: this.fetchSafely(
-        () => this.monoService.getAccountDetails(accountId, monoApiKey),
-        'accountDetails',
-      ),
-      balance: this.fetchSafely(
-        () => this.monoService.getAccountBalance(accountId, monoApiKey),
-        'balance',
-      ),
-      transactions: this.fetchSafely(
-        () => this.monoService.getTransactions(accountId, monoApiKey),
-        'transactions',
-      ),
-      income: this.fetchSafely(
-        () => this.monoService.getIncome(accountId, monoApiKey),
-        'income',
-      ),
+    // ── Call Mono live for frequently-changing data ──────────────────────────
+    const [accountDetails, balance, transactions, identity] = await Promise.allSettled([
+      this.monoService.getAccountDetails(monoAccountId, monoApiKey),
+      this.monoService.getAccountBalance(monoAccountId, monoApiKey),
+      this.monoService.getTransactions(monoAccountId, monoApiKey),
+      this.monoService.getIdentity(monoAccountId, monoApiKey),
+    ]);
 
-      identity: this.fetchSafely(
-        () => this.monoService.getIdentity(accountId, monoApiKey),
-        'identity',
-      ),
-      insights: this.fetchSafely(
-        () => this.monoService.getStatementInsights(accountId, monoApiKey),
-        'insights',
-      ),
-    };
-
-    const settled = await Promise.allSettled(Object.values(dataPromises));
-
-    const keys = Object.keys(dataPromises);
-    settled.forEach((result, index) => {
-      const key = keys[index];
-      if (result.status === 'fulfilled') {
-        results[key] = result.value;
-      } else {
-        results.errors.push({
-          endpoint: key,
-          error: result.reason?.message || 'Unknown error',
-        });
-        this.logger.error(
-          { err: result.reason, endpoint: key },
-          `Failed to fetch ${key}`,
+    // Log any live-fetch failures — they are non-fatal; the brain handles nulls
+    (
+      [
+        ['accountDetails', accountDetails],
+        ['balance', balance],
+        ['transactions', transactions],
+        ['identity', identity],
+      ] as [string, PromiseSettledResult<any>][]
+    ).forEach(([name, result]) => {
+      if (result.status === 'rejected') {
+        this.logger.warn(
+          { err: result.reason, monoAccountId, endpoint: name },
+          `Live fetch failed for ${name}`,
         );
       }
     });
 
-    if (results.errors.length > 0) {
-      results.success = false;
-      this.logger.warn(
-        {
-          errorCount: results.errors.length,
-          errors: results.errors,
-          accountId,
-        },
-        'Data aggregation completed with errors',
-      );
-    } else {
-      this.logger.info(
-        { accountId },
-        'Data aggregation completed successfully',
-      );
-    }
-
-    return results;
-  }
-
-  async gatherMultiAccountData(accountIds: string[], monoApiKey: string) {
-    this.logger.info(
-      { accountIds, count: accountIds.length },
-      'Starting multi-account data aggregation',
-    );
-
-    if (!accountIds.length) {
-      throw new Error('No account IDs provided');
-    }
-
-    const accountsDataPromises = accountIds.map((accountId) =>
-      this.gatherApplicantData(accountId, monoApiKey),
-    );
-
-    const accountsData = await Promise.all(accountsDataPromises);
-
-    const accountsWithErrors = accountsData.filter((data) => !data.success);
-    if (accountsWithErrors.length > 0) {
-      this.logger.warn(
-        {
-          totalAccounts: accountIds.length,
-          accountsWithErrors: accountsWithErrors.length,
-        },
-        'Some accounts had errors during data aggregation',
-      );
-    }
-
-    const formattedAccounts = accountsData.map((data, index) => ({
-      account_id: accountIds[index],
-      account_details: data.accountDetails || {},
-      balance: data.balance || 0,
-      transactions: data.transactions || [],
-      income: data.income || {},
-      identity: data.identity || null,
-    }));
-
-    this.logger.info(
-      {
-        totalAccounts: accountIds.length,
-        successfulAccounts: accountsData.filter((d) => d.success).length,
-      },
-      'Multi-account data aggregation completed',
-    );
-
     return {
-      accounts: formattedAccounts,
-      totalAccounts: accountIds.length,
-      successfulAccounts: accountsData.filter((d) => d.success).length,
+      account_id:         monoAccountId,
+      account_details:    accountDetails.status === 'fulfilled' ? accountDetails.value : {},
+      balance:            balance.status      === 'fulfilled'   ? balance.value        : 0,
+      transactions:       transactions.status === 'fulfilled'   ? transactions.value   : [],
+      identity:           identity.status     === 'fulfilled'   ? identity.value       : null,
+      // Stored enrichments — null if enrichment is incomplete
+      income:             stored?.incomeData            ?? null,
+      statement_insights: stored?.statementInsightsData ?? null,
     };
   }
 
-  async testMultiAccountAggregation(applicantId: string, fintechId: string) {
+  // Gather data for every Mono account linked to an applicant.
+  // monoAccountIds is an array of Mono account _ids (BankAccount.monoAccountId values).
+  async gatherMultiAccountData(monoAccountIds: string[], monoApiKey: string) {
     this.logger.info(
-      { applicantId, fintechId },
-      'Testing multi-account aggregation',
+      { count: monoAccountIds.length },
+      'Starting multi-account data aggregation',
     );
 
-    const applicant = await this.prisma.applicant.findFirst({
-      where: { id: applicantId, fintechId },
-      include: {
-        bankAccounts: true,
-        fintech: true,
-      },
-    });
-
-    if (!applicant) {
-      throw new Error('Applicant not found or unauthorized');
+    if (!monoAccountIds.length) {
+      throw new Error('No account IDs provided');
     }
 
-    if (!applicant.bankAccounts.length) {
-      throw new Error('Applicant has no linked bank accounts');
-    }
-
-    const accountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
-    const monoApiKey = applicant.fintech.monoApiKey;
-
-    if (!monoApiKey) {
-      throw new Error('Fintech has no Mono API key configured');
-    }
-
-    this.logger.info(
-      { applicantId, accountCount: accountIds.length },
-      'Gathering data for test',
+    const results = await Promise.all(
+      monoAccountIds.map((id) => this.gatherAccountData(id, monoApiKey)),
     );
 
-    return this.gatherMultiAccountData(accountIds, monoApiKey);
-  }
+    this.logger.info({ count: results.length }, 'Multi-account aggregation complete');
 
-  private async fetchSafely<T>(
-    fetchFn: () => Promise<T>,
-    name: string,
-  ): Promise<T> {
-    try {
-      return await fetchFn();
-    } catch (error) {
-      this.logger.error({ err: error, name }, `Error fetching`);
-      throw error;
-    }
+    return results;
   }
 }

@@ -4,9 +4,11 @@ import { BullModule } from '@nestjs/bullmq';
 import { ApplicationsModule } from 'src/applications/applications.module';
 import { EmailModule } from 'src/email/email.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { MonoModule } from 'src/mono/mono.module';
 import { ApplicationProcessor } from './queue.application-processor.service';
 import { EmailProcessor } from './queue.email-processor.service';
 import { WebhookDeliveryProcessor } from './queue.webhook-processor.service';
+import { EnrichmentPollerProcessor } from './queue.enrichment-poller.service';
 import { OutboundWebhookService } from './outbound-webhook.service';
 import { QueueController } from './queue.controller';
 
@@ -76,11 +78,30 @@ import { QueueController } from './queue.controller';
         removeOnFail: 500,
       },
     }),
+    BullModule.registerQueue({
+      name: 'enrichments',
+      defaultJobOptions: {
+        // Enrichment polling jobs manage their own retry/re-queue logic.
+        // We set attempts to 1 so BullMQ does not auto-retry on throw —
+        // the poller explicitly re-adds a new delayed job when the Mono
+        // job is still pending, and marks FAILED after 30 rounds (15 min).
+        attempts: 1,
+        removeOnComplete: 50,
+        removeOnFail: 100,
+      },
+    }),
     forwardRef(() => ApplicationsModule),
     EmailModule,
     PrismaModule,
+    MonoModule,
   ],
-  providers: [ApplicationProcessor, EmailProcessor, WebhookDeliveryProcessor, OutboundWebhookService],
+  providers: [
+    ApplicationProcessor,
+    EmailProcessor,
+    WebhookDeliveryProcessor,
+    EnrichmentPollerProcessor,
+    OutboundWebhookService,
+  ],
   controllers: [QueueController],
   exports: [BullModule, OutboundWebhookService],
 })

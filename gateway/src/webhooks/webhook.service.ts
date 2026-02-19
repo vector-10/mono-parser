@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PinoLogger } from 'nestjs-pino';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
@@ -50,6 +51,9 @@ export class MonoWebhookService {
       });
 
       if (existingAccount) {
+        // existingAccount already has applicant.fintech from the findUnique above.
+        // We don't need to re-include relations on the update — use existingAccount
+        // for fintechId / monoApiKey since those never change between the two calls.
         const updated = await this.prisma.bankAccount.update({
           where: { monoAccountId },
           data: {
@@ -58,23 +62,23 @@ export class MonoWebhookService {
             accountNumber: accountData?.accountNumber,
             balance: accountData?.balance,
             institution: accountData?.institution?.name,
-            // Reset enrichment so fresh data is fetched when account is re-linked
+            // Reset enrichment so fresh data is fetched when account is re-linked.
+            // Prisma requires Prisma.DbNull (not JS null) to null-out a Json? field.
             enrichmentStatus: 'PENDING',
-            incomeData: null,
-            statementInsightsData: null,
+            incomeData: Prisma.DbNull,
+            statementInsightsData: Prisma.DbNull,
             insightsJobId: null,
           },
-          include: { applicant: { include: { fintech: true } } },
         });
 
         this.logger.info({ monoAccountId, applicantId }, 'Bank account refreshed');
 
         // Kick off enrichment in the background
-        if (updated.applicant.fintech.monoApiKey) {
+        if (existingAccount.applicant.fintech.monoApiKey) {
           this._triggerEnrichments(
             updated.id,
             monoAccountId,
-            updated.applicant.fintech.monoApiKey,
+            existingAccount.applicant.fintech.monoApiKey,
           ).catch((err) =>
             this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after re-link'),
           );
@@ -87,7 +91,7 @@ export class MonoWebhookService {
           });
 
           await this.outboundWebhookService.dispatch(
-            updated.applicant.fintechId,
+            existingAccount.applicant.fintechId,
             'account.linked',
             {
               applicationId,
@@ -287,8 +291,9 @@ export class MonoWebhookService {
       where: {
         monoAccountId,
         enrichmentStatus: { not: 'READY' },
-        incomeData: { not: null },
-        statementInsightsData: { not: null },
+        // Prisma.AnyNull matches either DbNull or JsonNull — i.e. "is not null"
+        incomeData: { not: Prisma.AnyNull },
+        statementInsightsData: { not: Prisma.AnyNull },
       },
       data: { enrichmentStatus: 'READY' },
     });

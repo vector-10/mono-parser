@@ -5,9 +5,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MonoWebhookService } from './webhook.service';
 import { EventsModule } from 'src/events/events.module';
 import { QueueModule } from 'src/queues/queue.module';
+import { MonoModule } from 'src/mono/mono.module';
 
 @Module({
-  imports: [ConfigModule, EventsModule, QueueModule],
+  // QueueModule gives us OutboundWebhookService + the BullModule exports
+  // (so @InjectQueue('enrichments') works in MonoWebhookService).
+  // MonoModule gives us MonoService for triggering income and insights jobs.
+  imports: [ConfigModule, EventsModule, QueueModule, MonoModule],
   controllers: [WebhooksController],
   providers: [PrismaService, MonoWebhookService],
 })

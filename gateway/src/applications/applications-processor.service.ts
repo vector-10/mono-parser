@@ -6,6 +6,7 @@ import { DataAggregationService } from './data-aggregation.service';
 import { EventsGateway } from 'src/events/events.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
+import { MonoService } from 'src/mono/mono.service';
 
 @Injectable()
 export class ApplicationProcessorService {
@@ -19,29 +20,22 @@ export class ApplicationProcessorService {
     private configService: ConfigService,
     private readonly logger: PinoLogger,
     private readonly outboundWebhookService: OutboundWebhookService,
+    private readonly monoService: MonoService,
   ) {
     this.logger.setContext(ApplicationProcessorService.name);
-    this.brainUrl = this.configService.get<string>(
-      'BRAIN_API_URL',
-      'http://brain:8000',
-    );
-    this.logger.info(
-      { brainUrl: this.brainUrl },
-      'Brain service URL configured',
-    );
+    this.brainUrl = this.configService.get<string>('BRAIN_API_URL', 'http://brain:8000');
+    this.logger.info({ brainUrl: this.brainUrl }, 'Brain service URL configured');
   }
 
   async processApplication(applicationId: string, clientId?: string) {
-    this.logger.info({ applicationId }, 'Starting processing for application');
+    this.logger.info({ applicationId }, 'Starting application processing');
 
     try {
       if (clientId) {
-        this.eventsGateway.emitApplicationProgress(
-          clientId,
-          'Fetching applicant data...',
-        );
+        this.eventsGateway.emitApplicationProgress(clientId, 'Fetching applicant data...');
       }
 
+      // ── Load application with all related data ────────────────────────────
       const application = await this.prisma.application.findUnique({
         where: { id: applicationId },
         include: {
@@ -58,70 +52,97 @@ export class ApplicationProcessorService {
         throw new Error('Application not found');
       }
 
-      const accountIds = application.applicant.bankAccounts.map(
-        (acc) => acc.monoAccountId,
+      const { applicant } = application;
+      const monoApiKey   = applicant.fintech.monoApiKey;
+
+      if (!monoApiKey) {
+        throw new Error('Fintech Mono API key not configured');
+      }
+
+      if (!applicant.bankAccounts.length) {
+        throw new Error('Applicant has no linked bank accounts');
+      }
+
+      // ── Enrichment readiness check ────────────────────────────────────────
+      // All linked accounts must have their enrichments complete before we
+      // run the brain. If any account is still PENDING or FAILED we stop here
+      // so we never score on incomplete data.
+      const notReady = applicant.bankAccounts.filter(
+        (acc) => acc.enrichmentStatus !== 'READY',
       );
-      const monoApiKey = application.applicant.fintech.monoApiKey;
-
-      if (!accountIds.length || !monoApiKey) {
-        throw new Error('Missing bank accounts or API key');
+      if (notReady.length > 0) {
+        const statuses = notReady
+          .map((a) => `${a.monoAccountId}:${a.enrichmentStatus}`)
+          .join(', ');
+        throw new Error(
+          `Enrichment not complete for ${notReady.length} account(s): ${statuses}. ` +
+          'Wait for the account.enrichment_ready event before submitting for analysis.',
+        );
       }
 
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,
-          `Applicant verified. Analyzing ${accountIds.length} bank account${accountIds.length > 1 ? 's' : ''}.`,
+          `Analysing ${applicant.bankAccounts.length} bank account(s)...`,
         );
       }
 
-      this.logger.info(
-        { accountIds, count: accountIds.length },
-        'Fetching data for multiple accounts',
+      // ── Gather live + stored data for all accounts ────────────────────────
+      const monoAccountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
+      const accountsData   = await this.dataAggregationService.gatherMultiAccountData(
+        monoAccountIds,
+        monoApiKey,
       );
 
-      const financialData =
-        await this.dataAggregationService.gatherMultiAccountData(
-          accountIds,
-          monoApiKey,
-        );
-
       if (clientId) {
-        this.eventsGateway.emitApplicationProgress(
-          clientId,
-          'Analyzing transactions and income...',
+        this.eventsGateway.emitApplicationProgress(clientId, 'Looking up credit history...');
+      }
+
+      // ── Credit history — BVN-level, one per applicant ─────────────────────
+      // Non-fatal: if the lookup fails (BVN missing, bureau unavailable) the
+      // brain treats the applicant as thin-file, which is the safe default.
+      let creditHistory: any = null;
+      if (applicant.bvn) {
+        try {
+          creditHistory = await this.monoService.getCreditHistory(applicant.bvn, monoApiKey);
+          this.logger.info({ applicantId: applicant.id }, 'Credit history fetched');
+        } catch (err) {
+          this.logger.warn(
+            { err, applicantId: applicant.id },
+            'Credit history lookup failed — proceeding as thin-file',
+          );
+        }
+      } else {
+        this.logger.info(
+          { applicantId: applicant.id },
+          'No BVN on record — skipping credit history lookup',
         );
       }
 
       if (clientId) {
-        this.eventsGateway.emitApplicationProgress(
-          clientId,
-          'Running creditworthiness analysis...',
-        );
+        this.eventsGateway.emitApplicationProgress(clientId, 'Running credit analysis...');
       }
 
+      // ── Call the brain service ────────────────────────────────────────────
       const brainResponse = await this.callBrainService({
-        applicant_id: application.applicantId,
-        loan_amount: application.amount,
-        tenor_months: application.tenor,
-        interest_rate: application.interestRate,
-        purpose: application.purpose,
-        accounts: financialData.accounts,
+        applicant_id:   application.applicantId,
+        applicant_name: `${applicant.firstName} ${applicant.lastName}`,
+        applicant_bvn:  applicant.bvn ?? '',
+        loan_amount:    application.amount,
+        tenor_months:   application.tenor,
+        interest_rate:  application.interestRate,
+        purpose:        application.purpose,
+        accounts:       accountsData,
+        credit_history: creditHistory,
       });
 
       this.logger.info(
-        {
-          applicationId,
-          decision: brainResponse.decision.decision,
-          score: brainResponse.score,
-          accountsAnalyzed: financialData.totalAccounts,
-        },
+        { applicationId, decision: brainResponse.decision, score: brainResponse.score },
         'Brain analysis complete',
       );
 
-      const bankAccountIds = application.applicant.bankAccounts.map(
-        (acc) => acc.id,
-      );
-
+      // ── Persist decision ──────────────────────────────────────────────────
+      const bankAccountIds = applicant.bankAccounts.map((acc) => acc.id);
       const updatedApp = await this.applicationsService.updateStatus(
         applicationId,
         'COMPLETED',
@@ -130,51 +151,36 @@ export class ApplicationProcessorService {
         bankAccountIds,
       );
 
-      this.logger.info(
-        { applicationId },
-        'Loan application processed successfully',
-      );
-
-      this.logger.info(
-        { applicationId, clientId, hasClientId: !!clientId },
-        'About to emit application complete',
-      );
-
       if (clientId) {
         this.eventsGateway.emitApplicationComplete(clientId, {
           applicationId: updatedApp.id,
-          status: updatedApp.status,
-          score: updatedApp.score,
-          decision: updatedApp.decision,
-          message: 'Analysis complete!',
+          status:        updatedApp.status,
+          score:         updatedApp.score,
+          decision:      updatedApp.decision,
+          message:       'Analysis complete!',
         });
       }
 
+      // ── Dispatch outbound webhook to fintech ──────────────────────────────
       await this.outboundWebhookService.dispatch(
-        application.applicant.fintechId,
+        applicant.fintechId,
         'application.decision',
         {
           applicationId: updatedApp.id,
-          applicantId: application.applicantId,
-          status: updatedApp.status,
-          score: updatedApp.score,
-          decision: updatedApp.decision,
+          applicantId:   application.applicantId,
+          status:        updatedApp.status,
+          score:         updatedApp.score,
+          decision:      updatedApp.decision,
         },
       );
 
       return { success: true, applicationId };
     } catch (error) {
-      this.logger.error(
-        { err: error, applicationId },
-        'Failed to process application',
-      );
+      this.logger.error({ err: error, applicationId }, 'Failed to process application');
 
-      await this.applicationsService.updateStatus(
-        applicationId,
-        'FAILED',
-        undefined,
-        { error: error.message },
-      );
+      await this.applicationsService.updateStatus(applicationId, 'FAILED', undefined, {
+        error: error.message,
+      });
 
       if (clientId) {
         this.eventsGateway.emitApplicationError(
@@ -195,8 +201,8 @@ export class ApplicationProcessorService {
           {
             applicationId,
             applicantId: failedApp.applicantId,
-            status: 'FAILED',
-            reason: error.message,
+            status:      'FAILED',
+            reason:      error.message,
           },
         );
       }
@@ -205,52 +211,36 @@ export class ApplicationProcessorService {
     }
   }
 
-  private async callBrainService(payload: any) {
-    this.logger.info(`Calling Brain service at ${this.brainUrl}/analyze`);
+  // ─── Brain HTTP call ───────────────────────────────────────────────────────
 
-    const brainPayload = {
-      applicant_id: payload.applicant_id,
-      loan_amount: payload.loan_amount,
-      tenor_months: payload.tenor_months,
-      interest_rate: payload.interest_rate,
-      accounts: payload.accounts,
-    };
-
-    this.logger.info(
-      { brainPayload: JSON.stringify(brainPayload, null, 2) },
-      'Sending payload to brain',
-    );
+  private async callBrainService(payload: {
+    applicant_id:   string;
+    applicant_name: string;
+    applicant_bvn:  string;
+    loan_amount:    number;
+    tenor_months:   number;
+    interest_rate:  number;
+    purpose?:       string | null;
+    accounts:       any[];
+    credit_history: any;
+  }) {
+    this.logger.info(`Calling brain at ${this.brainUrl}/analyze`);
 
     const response = await fetch(`${this.brainUrl}/analyze`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(brainPayload),
+      body:    JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       this.logger.error(
-        {
-          status: response.status,
-          errorText,
-          applicantId: payload.applicant_id,
-          brainUrl: this.brainUrl,
-        },
-        'Brain service error',
+        { status: response.status, errorText },
+        'Brain service returned an error',
       );
-      throw new Error(`Brain service failed: ${response.statusText}`);
+      throw new Error(`Brain service failed (${response.status}): ${errorText}`);
     }
 
-    const result = await response.json();
-    this.logger.info(
-      {
-        applicantId: payload.applicant_id,
-        score: result.score,
-        decision: result.decision?.decision,
-      },
-      'Brain service response received',
-    );
-
-    return result;
+    return response.json();
   }
 }
