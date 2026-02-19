@@ -121,9 +121,7 @@ export class DataAggregationService {
       account_details: data.accountDetails || {},
       balance: data.balance || 0,
       transactions: data.transactions || [],
-      income_records: data.incomeRecords || {},
-      credits: data.credits || {},
-      debits: data.debits || {},
+      income: data.income || {},
       identity: data.identity || null,
     }));
 
