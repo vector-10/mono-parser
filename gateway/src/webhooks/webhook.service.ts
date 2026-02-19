@@ -1,19 +1,29 @@
 import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PinoLogger } from 'nestjs-pino';
-import { EventsGateway } from 'src/events/events.gateway';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
+import { MonoService } from 'src/mono/mono.service';
 
 @Injectable()
 export class MonoWebhookService {
   constructor(
     private prisma: PrismaService,
     private readonly logger: PinoLogger,
-    private readonly eventsGateway: EventsGateway,
     private readonly outboundWebhookService: OutboundWebhookService,
+    private readonly monoService: MonoService,
+    @InjectQueue('enrichments') private readonly enrichmentsQueue: Queue,
   ) {
     this.logger.setContext(MonoWebhookService.name);
   }
+
+  // ─── Account linked / updated ──────────────────────────────────────────────
+  //
+  // Called for both mono.events.account_connected and mono.events.account_updated.
+  // Saves (or refreshes) the BankAccount record, then kicks off enrichment.
+  // Enrichment is triggered in the background — we don't wait for it here so
+  // Mono gets our 200 response quickly.
 
   async handleAccountLinked(data: any) {
     this.logger.info({ payload: data }, 'Full payload received');
@@ -33,11 +43,10 @@ export class MonoWebhookService {
       return { status: 'acknowledged', message: 'Waiting for account_updated event' };
     }
 
-    this.logger.info({ monoAccountId, applicantId }, 'Parsed webhook data');
-
     try {
       const existingAccount = await this.prisma.bankAccount.findUnique({
         where: { monoAccountId },
+        include: { applicant: { include: { fintech: true } } },
       });
 
       if (existingAccount) {
@@ -49,11 +58,27 @@ export class MonoWebhookService {
             accountNumber: accountData?.accountNumber,
             balance: accountData?.balance,
             institution: accountData?.institution?.name,
+            // Reset enrichment so fresh data is fetched when account is re-linked
+            enrichmentStatus: 'PENDING',
+            incomeData: null,
+            statementInsightsData: null,
+            insightsJobId: null,
           },
-          include: { applicant: true },
+          include: { applicant: { include: { fintech: true } } },
         });
 
         this.logger.info({ monoAccountId, applicantId }, 'Bank account refreshed');
+
+        // Kick off enrichment in the background
+        if (updated.applicant.fintech.monoApiKey) {
+          this._triggerEnrichments(
+            updated.id,
+            monoAccountId,
+            updated.applicant.fintech.monoApiKey,
+          ).catch((err) =>
+            this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after re-link'),
+          );
+        }
 
         if (applicationId) {
           await this.prisma.application.update({
@@ -77,6 +102,7 @@ export class MonoWebhookService {
         return { status: 'success', accountId: updated.id, linked: false };
       }
 
+      // ── New account ───────────────────────────────────────────────────────
       const bankAccount = await this.prisma.bankAccount.create({
         data: {
           monoAccountId,
@@ -86,10 +112,21 @@ export class MonoWebhookService {
           balance: accountData?.balance,
           institution: accountData?.institution?.name,
         },
-        include: { applicant: true },
+        include: { applicant: { include: { fintech: true } } },
       });
 
-      this.logger.info({ monoAccountId, applicantId }, 'New bank account linked successfully');
+      this.logger.info({ monoAccountId, applicantId }, 'New bank account linked');
+
+      // Kick off enrichment in the background
+      if (bankAccount.applicant.fintech.monoApiKey) {
+        this._triggerEnrichments(
+          bankAccount.id,
+          monoAccountId,
+          bankAccount.applicant.fintech.monoApiKey,
+        ).catch((err) =>
+          this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after new link'),
+        );
+      }
 
       if (applicationId) {
         await this.prisma.application.update({
@@ -120,9 +157,57 @@ export class MonoWebhookService {
     }
   }
 
+  // ─── Income webhook ────────────────────────────────────────────────────────
+  //
+  // Mono sends mono.events.account_income after we call GET /accounts/{id}/income.
+  // The payload contains the full income analysis results we need for scoring.
+  // We store it and then check whether the other enrichment (insights) is also ready.
+
   async handleAccountIncome(data: any) {
-    this.logger.info({ payload: data }, 'Received account income event');
+    this.logger.info({ accountId: data.account?._id }, 'Income webhook received');
+
+    const monoAccountId = data.account?._id;
+
+    // The income payload lives at data.income (from the webhook body)
+    const incomeData = data.income ?? data;
+
+    if (!monoAccountId) {
+      this.logger.warn({ payload: data }, 'Income webhook missing account ID');
+      return;
+    }
+
+    try {
+      await this.prisma.bankAccount.update({
+        where: { monoAccountId },
+        data: { incomeData },
+      });
+
+      this.logger.info({ monoAccountId }, 'Income data stored');
+
+      // Now check if we have both enrichments and can fire account.enrichment_ready
+      await this._checkAndFireEnrichmentReady(monoAccountId);
+    } catch (error) {
+      this.logger.error(
+        { err: error, monoAccountId },
+        'Failed to store income data from webhook',
+      );
+    }
   }
+
+  // ─── Creditworthiness webhook ──────────────────────────────────────────────
+  //
+  // We don't block account.enrichment_ready on creditworthiness because it needs
+  // actual loan terms (amount, rate, tenor) which we only have at application time.
+  // We acknowledge it here so Mono doesn't see unhandled events.
+
+  async handleAccountCreditWorthiness(data: any) {
+    this.logger.info(
+      { accountId: data.account?._id },
+      'Creditworthiness webhook received (acknowledged)',
+    );
+  }
+
+  // ─── Reauthorisation webhook ───────────────────────────────────────────────
 
   async handleAccountReauthorised(data: any) {
     const monoAccountId = data.account?._id;
@@ -132,5 +217,107 @@ export class MonoWebhookService {
     });
     this.logger.info({ monoAccountId }, 'Bank account reauthorised');
     return { status: 'success' };
+  }
+
+  // ─── Private: trigger both enrichments after account link ─────────────────
+  //
+  // Called in the background (fire-and-forget from handleAccountLinked).
+  // 1. Call GET /income  — this signals Mono to run income analysis.
+  //    The results arrive later via the mono.events.account_income webhook.
+  // 2. POST to trigger the statement insights job — Mono returns a jobId.
+  //    We store the jobId and schedule a BullMQ job to poll for the result.
+
+  private async _triggerEnrichments(
+    bankAccountId: string,
+    monoAccountId: string,
+    monoApiKey: string,
+  ): Promise<void> {
+    this.logger.info({ monoAccountId }, 'Triggering enrichments');
+
+    // Trigger income analysis — result comes back as a webhook
+    try {
+      await this.monoService.getIncome(monoAccountId, monoApiKey);
+      this.logger.info({ monoAccountId }, 'Income analysis triggered');
+    } catch (err) {
+      this.logger.warn({ err, monoAccountId }, 'Income trigger failed — will rely on webhook');
+    }
+
+    // Trigger statement insights job — result comes back via polling
+    try {
+      const jobId = await this.monoService.triggerStatementInsightsJob(
+        monoAccountId,
+        monoApiKey,
+      );
+
+      await this.prisma.bankAccount.update({
+        where: { id: bankAccountId },
+        data: { insightsJobId: jobId },
+      });
+
+      // Schedule the first poll after 30 seconds.
+      // The poller will keep re-scheduling itself until the job completes or times out.
+      await this.enrichmentsQueue.add(
+        'poll-insights',
+        {
+          bankAccountId,
+          monoAccountId,
+          jobId,
+          monoApiKey,
+          pollAttempt: 0,
+        },
+        { delay: 30_000 },
+      );
+
+      this.logger.info({ monoAccountId, jobId }, 'Statement insights job started, poll scheduled');
+    } catch (err) {
+      this.logger.error({ err, monoAccountId }, 'Failed to trigger statement insights job');
+    }
+  }
+
+  // ─── Private: check if both enrichments are stored, fire webhook if so ─────
+  //
+  // Both the income webhook handler and the insights poller call this after
+  // storing their data. The updateMany WHERE clause makes this atomic — only
+  // one caller will get count=1, so the outbound webhook fires exactly once.
+
+  async _checkAndFireEnrichmentReady(monoAccountId: string): Promise<void> {
+    // Atomically transition PENDING → READY only when both fields are present.
+    // If another concurrent call already set it to READY, count will be 0.
+    const result = await this.prisma.bankAccount.updateMany({
+      where: {
+        monoAccountId,
+        enrichmentStatus: { not: 'READY' },
+        incomeData: { not: null },
+        statementInsightsData: { not: null },
+      },
+      data: { enrichmentStatus: 'READY' },
+    });
+
+    if (result.count === 0) {
+      // Either not ready yet (one enrichment still missing) or already fired
+      return;
+    }
+
+    // We were the call that transitioned it to READY — now fire the webhook
+    const account = await this.prisma.bankAccount.findUnique({
+      where: { monoAccountId },
+      include: { applicant: true },
+    });
+
+    if (!account) return;
+
+    this.logger.info({ monoAccountId, accountId: account.id }, 'Both enrichments ready');
+
+    await this.outboundWebhookService.dispatch(
+      account.applicant.fintechId,
+      'account.enrichment_ready',
+      {
+        accountId: account.id,
+        monoAccountId,
+        applicantId: account.applicantId,
+        message:
+          'Account enrichment complete. You may now submit this applicant for loan analysis.',
+      },
+    );
   }
 }

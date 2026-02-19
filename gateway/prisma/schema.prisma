@@ -71,20 +71,27 @@ model Applicant {
 
 model BankAccount {
   id             String   @id @default(uuid())
-  monoAccountId  String   @unique 
+  monoAccountId  String   @unique
   institution    String?
   accountName    String?
   accountNumber  String?
-  balance        Int?     
+  balance        Int?
+
+  // Async enrichment data stored as Mono webhooks/jobs complete
+  incomeData            Json?    // from mono.events.account_income webhook
+  statementInsightsData Json?    // from Mono enrichments job (polled via insightsJobId)
+  insightsJobId         String?  // jobId returned when we trigger the insights job
+  enrichmentStatus      String   @default("PENDING") // PENDING | READY | FAILED
 
   applicantId    String
   applicant      Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt 
+  updatedAt      DateTime  @updatedAt
 
   transactions   Transaction[]
   @@index([applicantId])
+  @@index([enrichmentStatus])
 }
 
 

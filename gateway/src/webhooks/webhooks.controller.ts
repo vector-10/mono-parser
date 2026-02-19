@@ -29,7 +29,7 @@ export class WebhooksController {
 
   private get eventHandlers() {
     return {
-      'mono.events.webhook_test': (data) => ({
+      'mono.events.webhook_test': (_data: any) => ({
         status: 'success',
         message: 'Test received',
       }),
@@ -41,6 +41,8 @@ export class WebhooksController {
         this.webhookService.handleAccountReauthorised.bind(this.webhookService),
       'mono.events.account_income':
         this.webhookService.handleAccountIncome.bind(this.webhookService),
+      'mono.events.account_credit_worthiness':
+        this.webhookService.handleAccountCreditWorthiness.bind(this.webhookService),
     };
   }
 
