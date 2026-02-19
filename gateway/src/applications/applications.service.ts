@@ -48,6 +48,40 @@ export class ApplicationsService {
     };
   }
 
+  async linkAccount(applicationId: string, fintechId: string) {
+    const application = await this.prisma.application.findFirst({
+      where: { id: applicationId, applicant: { fintechId } },
+      include: {
+        applicant: true,
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found or unauthorized');
+    }
+
+    if (['COMPLETED', 'FAILED'].includes(application.status)) {
+      throw new BadRequestException(`Cannot link accounts to an application with status: ${application.status}`);
+    }
+
+    const monoApiKey = (await this.prisma.user.findUnique({
+      where: { id: fintechId },
+      select: { monoApiKey: true },
+    }))?.monoApiKey;
+
+    const { applicant } = application;
+    const { widgetUrl } = await this.monoService.initiateAccountLinking(
+      applicant.id,
+      `${applicant.firstName} ${applicant.lastName}`,
+      applicant.email,
+      monoApiKey,
+      undefined,
+      applicationId,
+    );
+
+    return { widgetUrl };
+  }
+
   async createApplication(fintechId: string, data: CreateApplicationDto) {
     const { applicantId, amount, tenor, interestRate, purpose } = data;
 
