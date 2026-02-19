@@ -14,11 +14,12 @@ model User {
   name        String
   companyName String
   
-  apiKey      String   @unique @default(uuid())  
-  monoApiKey  String?   
-  monoPublicKey  String?  
+  apiKey         String   @unique @default(uuid())
+  monoApiKey     String?
+  monoPublicKey  String?
+  webhookUrl     String?
 
-  monoCustomerId String? 
+  monoCustomerId String?
 
   isVerified  Boolean  @default(false)
   otp         String?
@@ -114,6 +115,25 @@ model Application {
   applicant         Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   
   @@index([applicantId])
+  @@index([status])
+}
+
+
+model WebhookDelivery {
+  id            String    @id @default(uuid())
+  fintechId     String
+  event         String
+  payload       Json
+  webhookUrl    String
+  status        String    @default("PENDING")
+  attempts      Int       @default(0)
+  statusCode    Int?
+  errorMessage  String?
+  lastAttemptAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([fintechId])
   @@index([status])
 }
 

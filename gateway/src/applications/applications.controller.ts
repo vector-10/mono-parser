@@ -35,6 +35,26 @@ export class ApplicationsController {
     return this.applicationsService.initiateApplication(req.user.id, body);
   }
 
+  @Post(':id/link-account')
+  @UseGuards(ApiKeyGuard)
+  async linkAccount(@Request() req, @Param('id') id: string) {
+    return this.applicationsService.linkAccount(id, req.user.id);
+  }
+
+  @Post(':id/analyze')
+  @UseGuards(ApiKeyGuard)
+  async analyze(@Request() req, @Param('id') id: string) {
+    const application = await this.applicationsService.findOne(id, req.user.id);
+
+    if (!application.applicant.bankAccounts.length) {
+      throw new Error('No bank accounts linked to this application');
+    }
+
+    await this.applicationsQueue.add('process-application', { applicationId: id });
+
+    return { applicationId: id, status: 'PROCESSING', message: 'Analysis queued.' };
+  }
+
   @Post()
   async create(@Request() req, @Body() body: CreateApplicationDto) {
 

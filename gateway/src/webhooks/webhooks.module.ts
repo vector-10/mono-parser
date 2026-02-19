@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { WebhooksController } from './webhooks.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,7 +7,7 @@ import { EventsModule } from 'src/events/events.module';
 import { QueueModule } from 'src/queues/queue.module';
 
 @Module({
-  imports: [ConfigModule, EventsModule, forwardRef(() => QueueModule)],
+  imports: [ConfigModule, EventsModule, QueueModule],
   controllers: [WebhooksController],
   providers: [PrismaService, MonoWebhookService],
 })

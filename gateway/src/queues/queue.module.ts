@@ -3,8 +3,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { ApplicationsModule } from 'src/applications/applications.module';
 import { EmailModule } from 'src/email/email.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 import { ApplicationProcessor } from './queue.application-processor.service';
 import { EmailProcessor } from './queue.email-processor.service';
+import { WebhookDeliveryProcessor } from './queue.webhook-processor.service';
+import { OutboundWebhookService } from './outbound-webhook.service';
 import { QueueController } from './queue.controller';
 
 @Module({
@@ -61,11 +64,24 @@ import { QueueController } from './queue.controller';
         removeOnFail: 100,
       },
     }),
+    BullModule.registerQueue({
+      name: 'webhooks',
+      defaultJobOptions: {
+        attempts: 5,
+        backoff: {
+          type: 'exponential',
+          delay: 10000,
+        },
+        removeOnComplete: 200,
+        removeOnFail: 500,
+      },
+    }),
     forwardRef(() => ApplicationsModule),
     EmailModule,
+    PrismaModule,
   ],
-  providers: [ApplicationProcessor, EmailProcessor],
-  controllers:[QueueController],
-  exports: [BullModule],
+  providers: [ApplicationProcessor, EmailProcessor, WebhookDeliveryProcessor, OutboundWebhookService],
+  controllers: [QueueController],
+  exports: [BullModule, OutboundWebhookService],
 })
 export class QueueModule {}

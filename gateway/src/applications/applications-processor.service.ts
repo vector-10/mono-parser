@@ -5,6 +5,7 @@ import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
 import { EventsGateway } from 'src/events/events.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
 
 @Injectable()
 export class ApplicationProcessorService {
@@ -17,6 +18,7 @@ export class ApplicationProcessorService {
     private prisma: PrismaService,
     private configService: ConfigService,
     private readonly logger: PinoLogger,
+    private readonly outboundWebhookService: OutboundWebhookService,
   ) {
     this.logger.setContext(ApplicationProcessorService.name);
     this.brainUrl = this.configService.get<string>(
@@ -147,6 +149,18 @@ export class ApplicationProcessorService {
           message: 'Analysis complete!',
         });
       }
+
+      await this.outboundWebhookService.dispatch(
+        application.applicant.fintechId,
+        'application.decision',
+        {
+          applicationId: updatedApp.id,
+          applicantId: application.applicantId,
+          status: updatedApp.status,
+          score: updatedApp.score,
+          decision: updatedApp.decision,
+        },
+      );
 
       return { success: true, applicationId };
     } catch (error) {
