@@ -183,6 +183,24 @@ export class ApplicationProcessorService {
         );
       }
 
+      const failedApp = await this.prisma.application.findUnique({
+        where: { id: applicationId },
+        include: { applicant: true },
+      });
+
+      if (failedApp) {
+        await this.outboundWebhookService.dispatch(
+          failedApp.applicant.fintechId,
+          'application.failed',
+          {
+            applicationId,
+            applicantId: failedApp.applicantId,
+            status: 'FAILED',
+            reason: error.message,
+          },
+        );
+      }
+
       return { success: false, error: error.message };
     }
   }

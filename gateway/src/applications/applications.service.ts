@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MonoService } from 'src/mono/mono.service';
@@ -26,16 +27,20 @@ export class ApplicationsService {
       data: { applicantId: applicant.id, amount, tenor, interestRate, purpose, status: 'PENDING_LINKING' },
     });
 
-    const monoApiKey = (await this.prisma.user.findUnique({
+    const fintech = await this.prisma.user.findUnique({
       where: { id: fintechId },
       select: { monoApiKey: true },
-    }))?.monoApiKey;
+    });
+
+    if (!fintech?.monoApiKey) {
+      throw new InternalServerErrorException('Mono API key not configured for this account');
+    }
 
     const { widgetUrl } = await this.monoService.initiateAccountLinking(
       applicant.id,
       `${firstName} ${lastName}`,
       email,
-      monoApiKey,
+      fintech.monoApiKey,
       undefined,
       application.id,
     );
@@ -64,17 +69,21 @@ export class ApplicationsService {
       throw new BadRequestException(`Cannot link accounts to an application with status: ${application.status}`);
     }
 
-    const monoApiKey = (await this.prisma.user.findUnique({
+    const fintech = await this.prisma.user.findUnique({
       where: { id: fintechId },
       select: { monoApiKey: true },
-    }))?.monoApiKey;
+    });
+
+    if (!fintech?.monoApiKey) {
+      throw new InternalServerErrorException('Mono API key not configured for this account');
+    }
 
     const { applicant } = application;
     const { widgetUrl } = await this.monoService.initiateAccountLinking(
       applicant.id,
       `${applicant.firstName} ${applicant.lastName}`,
       applicant.email,
-      monoApiKey,
+      fintech.monoApiKey,
       undefined,
       applicationId,
     );
