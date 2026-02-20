@@ -200,14 +200,6 @@ class DecisionEngine:
                     f"high-value threshold of ₦{HIGH_VALUE_THRESHOLD:,.0f}"
                 )
 
-            # Conflicting signal: our model approves but Mono says unaffordable
-            mono_verdict = features.get("mono_can_afford")
-            if mono_verdict is False and decision == "APPROVED":
-                manual_review_reasons.append(
-                    "Conflicting signal: model approves but Mono's creditworthiness "
-                    "check indicates this loan is unaffordable"
-                )
-
             # Limited transaction data
             total_txns = sum(len(a.transactions) for a in request.accounts)
             if total_txns < 20:

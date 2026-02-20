@@ -69,8 +69,7 @@ class AccountData(BaseModel):
       - identity:        from GET /accounts/{id}/identity
 
     Async enrichments (stored on BankAccount as Mono webhooks/jobs arrive):
-      - income:           from mono.events.account_income
-      - creditworthiness: from mono.events.account_credit_worthiness
+      - income:             from mono.events.account_income
       - statement_insights: from GET /enrichments/record/{jobId} (statement insights job)
 
     NestJS waits for all enrichments before allowing /analyze to be called.
@@ -84,7 +83,6 @@ class AccountData(BaseModel):
 
     # Async enrichments
     income: Optional[MonoIncomeData] = None
-    creditworthiness: Optional[MonoCreditWorthiness] = None
     statement_insights: Optional[MonoStatementInsights] = None
 
 

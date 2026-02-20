@@ -86,7 +86,6 @@ model BankAccount {
   // Async enrichment data stored as Mono webhooks/jobs complete
   incomeData            Json?    // from mono.events.account_income webhook
   statementInsightsData Json?    // from Mono enrichments job (polled via insightsJobId)
-  creditWorthinessData  Json?    // from mono.events.account_credit_worthiness webhook
   insightsJobId         String?  // jobId returned when we trigger the insights job
   enrichmentStatus      String   @default("PENDING") // PENDING | READY | FAILED
 

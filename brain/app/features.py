@@ -37,7 +37,7 @@ class FeatureExtractor:
                       spending_volatility
       Credit history: payment_success_rate, open_loan_count, closed_loan_count,
                       total_loan_count, credit_age_months, has_credit_history
-      Debt:           total_existing_debt, mono_can_afford, recurring_debt_monthly
+      Debt:           total_existing_debt, recurring_debt_monthly
       Behaviour:      overdraft_count, bounced_payment_count, high_risk_transaction_count,
                       account_age_months, min_balance_maintained, days_below_1000_ngn
       Insights:       balance_after_expense, average_balance_from_insights,
@@ -341,31 +341,17 @@ class FeatureExtractor:
         Total outstanding debt and monthly recurring debt obligations.
 
         total_existing_debt:
-          Primary — creditworthiness webhook (debt.total_debt).
-          Fallback — sum of opening_balance for open loans in credit_history.
+          Sum of opening_balance for open loans in credit_history.
 
         recurring_debt_monthly:
           From statement insights recurring_transactions. Recurring debits
           with loan-related narrations = existing monthly repayment burden.
           This is the key input for DTI calculation alongside the new loan payment.
-
-        mono_can_afford:
-          Mono's boolean verdict stored as a signal only. Used to trigger
-          manual review when our model approves but Mono disagrees.
         """
-        total_debt      = 0.0
-        mono_can_afford: Optional[bool] = None
+        total_debt = 0.0
 
-        for account in accounts:
-            cw = account.creditworthiness
-            if cw and cw.debt:
-                td = float(cw.debt.get("total_debt", 0))
-                if td > total_debt:
-                    total_debt      = td
-                    mono_can_afford = cw.can_afford
-
-        # Fallback: open loans from credit history
-        if total_debt == 0.0 and credit_history:
+        # Open loans from credit history
+        if credit_history:
             for entry in credit_history.get("credit_history", []):
                 for loan in entry.get("history", []):
                     if loan.get("loan_status", "").lower() == "open":
@@ -392,7 +378,6 @@ class FeatureExtractor:
 
         return {
             "total_existing_debt":    total_debt,
-            "mono_can_afford":        mono_can_afford,
             "recurring_debt_monthly": recurring_debt_monthly,
         }
 

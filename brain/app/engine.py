@@ -75,8 +75,8 @@ class AnalysisEngine:
 
         # ── Stage 2: Feature extraction ───────────────────────────────────────
         # Pulls signals from every available data source: transactions, income
-        # webhook, creditworthiness webhook, statement insights job, and credit
-        # bureau history. Fallbacks ensure we never crash on missing data.
+        # webhook, statement insights job, and credit bureau history.
+        # Fallbacks ensure we never crash on missing data.
         features = cls._extractor.extract(request)
         logger.info(
             f"[FEATURES] applicant={request.applicant_id} "
