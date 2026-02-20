@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+
+function generateApiKey(): string {
+  return `mp_live_${randomBytes(32).toString('base64url')}`;
+}
 
 @Injectable()
 export class UsersService {
@@ -20,6 +25,7 @@ export class UsersService {
         password: hashedPassword,
         name,
         companyName,
+        apiKey: generateApiKey(),
       },
       select: {
         id: true,
@@ -47,7 +53,9 @@ export class UsersService {
         email: true,
         name: true,
         companyName: true,
+        apiKey: true,
         monoApiKey: true,
+        webhookUrl: true,
       },
     });
 
@@ -87,6 +95,14 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
+    });
+  }
+
+  async updateWebhookUrl(userId: string, webhookUrl: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { webhookUrl },
+      select: { id: true, webhookUrl: true },
     });
   }
 

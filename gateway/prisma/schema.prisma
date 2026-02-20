@@ -14,7 +14,7 @@ model User {
   name        String
   companyName String
   
-  apiKey         String   @unique @default(uuid())
+  apiKey         String   @unique
   monoApiKey     String?
   monoPublicKey  String?
   webhookUrl     String?

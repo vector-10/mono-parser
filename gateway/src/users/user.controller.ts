@@ -15,4 +15,12 @@ export class UsersController {
   ) {
     return this.usersService.updateMonoApiKey(req.user.id, monoApiKey, monoPublicKey);
   }
+
+  @Put('webhook-url')
+  async updateWebhookUrl(
+    @Request() req,
+    @Body('webhookUrl') webhookUrl: string,
+  ) {
+    return this.usersService.updateWebhookUrl(req.user.id, webhookUrl);
+  }
 }

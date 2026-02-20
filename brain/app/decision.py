@@ -278,7 +278,7 @@ class DecisionEngine:
         self, max_monthly_payment: float, rate: float, is_thin_file: bool
     ) -> List[EligibleTenor]:
         """Show the maximum borrowable amount at each standard tenor given income."""
-        max_tenor = THIN_FILE_MAX_TENOR if is_thin_file else 12
+        max_tenor = THIN_FILE_MAX_TENOR if is_thin_file else 24
         results   = []
         for tenor in STANDARD_TENORS:
             if tenor > max_tenor:
