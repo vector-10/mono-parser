@@ -2,25 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-// ─── What this service does ────────────────────────────────────────────────────
-//
-// Builds the per-account data bundle that the brain service expects.
-//
-// ALL data is read from the database — nothing is fetched live from Mono here.
-//
-// How each field gets into the DB:
-//   accountDetails, balance, transactions, identity
-//       → fetched synchronously in _triggerEnrichments immediately after account link
-//   income
-//       → stored when mono.events.account_income webhook arrives
-//   statementInsights
-//       → stored when the BullMQ enrichment poller job completes
-//   creditWorthiness
-//       → stored when mono.events.account_credit_worthiness webhook arrives
-//
-// By the time the fintech calls /analyze, all of this should already be in the DB.
-// The enrichmentStatus === 'READY' gate in ApplicationProcessorService ensures we
-// never score on incomplete data.
 
 @Injectable()
 export class DataAggregationService {

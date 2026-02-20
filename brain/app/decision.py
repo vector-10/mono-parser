@@ -26,7 +26,7 @@ MIN_VIABLE_OFFER_RATIO   = 0.30  # Counter-offer must be ≥ 30% of requested am
 THIN_FILE_INCOME_MULTIPLE = 2    # Max loan = 2× monthly income
 THIN_FILE_MAX_TENOR       = 6    # Max tenor = 6 months
 
-STANDARD_TENORS = [3, 6, 9, 12]
+STANDARD_TENORS = [3, 6, 9, 12, 15, 18, 21, 24]
 
 
 class DecisionEngine:
