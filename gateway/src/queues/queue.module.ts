@@ -9,6 +9,7 @@ import { ApplicationProcessor } from './queue.application-processor.service';
 import { EmailProcessor } from './queue.email-processor.service';
 import { WebhookDeliveryProcessor } from './queue.webhook-processor.service';
 import { EnrichmentPollerProcessor } from './queue.enrichment-poller.service';
+import { EnrichmentCleanupProcessor } from './queue.enrichment-cleanup.service';
 import { OutboundWebhookService } from './outbound-webhook.service';
 import { QueueController } from './queue.controller';
 
@@ -90,6 +91,14 @@ import { QueueController } from './queue.controller';
         removeOnFail: 100,
       },
     }),
+    BullModule.registerQueue({
+      name: 'enrichment-cleanup',
+      defaultJobOptions: {
+        attempts: 1,
+        removeOnComplete: 10,
+        removeOnFail: 20,
+      },
+    }),
     forwardRef(() => ApplicationsModule),
     EmailModule,
     PrismaModule,
@@ -100,6 +109,7 @@ import { QueueController } from './queue.controller';
     EmailProcessor,
     WebhookDeliveryProcessor,
     EnrichmentPollerProcessor,
+    EnrichmentCleanupProcessor,
     OutboundWebhookService,
   ],
   controllers: [QueueController],

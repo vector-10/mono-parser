@@ -51,6 +51,22 @@ export class MonoWebhookService {
       });
 
       if (existingAccount) {
+        // ── Duplicate webhook guard ───────────────────────────────────────────
+        // Mono can deliver the same event more than once (retry on timeout/error).
+        // If enrichmentStatus is PENDING and the account was updated in the last
+        // 60 seconds, this is almost certainly a duplicate delivery — not a genuine
+        // re-link. Skip the reset so we don't wipe an in-flight enrichment pipeline.
+        const secondsSinceUpdate =
+          (Date.now() - existingAccount.updatedAt.getTime()) / 1000;
+
+        if (existingAccount.enrichmentStatus === 'PENDING' && secondsSinceUpdate < 60) {
+          this.logger.warn(
+            { monoAccountId, secondsSinceUpdate },
+            'Duplicate account_connected webhook detected — skipping reset',
+          );
+          return { status: 'success', accountId: existingAccount.id, linked: false, duplicate: true };
+        }
+
         // existingAccount already has applicant.fintech from the findUnique above.
         // We don't need to re-include relations on the update — use existingAccount
         // for fintechId / monoApiKey since those never change between the two calls.
@@ -62,23 +78,29 @@ export class MonoWebhookService {
             accountNumber: accountData?.accountNumber,
             balance: accountData?.balance,
             institution: accountData?.institution?.name,
-            // Reset enrichment so fresh data is fetched when account is re-linked.
+            // Reset all stored data so fresh data is fetched when account is re-linked.
             // Prisma requires Prisma.DbNull (not JS null) to null-out a Json? field.
             enrichmentStatus: 'PENDING',
-            incomeData: Prisma.DbNull,
+            accountDetailsData:   Prisma.DbNull,
+            balanceData:          Prisma.DbNull,
+            transactionsData:     Prisma.DbNull,
+            identityData:         Prisma.DbNull,
+            incomeData:           Prisma.DbNull,
             statementInsightsData: Prisma.DbNull,
+            creditWorthinessData: Prisma.DbNull,
             insightsJobId: null,
           },
         });
 
         this.logger.info({ monoAccountId, applicantId }, 'Bank account refreshed');
 
-        // Kick off enrichment in the background
+        // Kick off enrichment + pre-fetch in the background
         if (existingAccount.applicant.fintech.monoApiKey) {
           this._triggerEnrichments(
             updated.id,
             monoAccountId,
             existingAccount.applicant.fintech.monoApiKey,
+            applicationId ?? undefined,
           ).catch((err) =>
             this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after re-link'),
           );
@@ -121,12 +143,13 @@ export class MonoWebhookService {
 
       this.logger.info({ monoAccountId, applicantId }, 'New bank account linked');
 
-      // Kick off enrichment in the background
+      // Kick off enrichment + pre-fetch in the background
       if (bankAccount.applicant.fintech.monoApiKey) {
         this._triggerEnrichments(
           bankAccount.id,
           monoAccountId,
           bankAccount.applicant.fintech.monoApiKey,
+          applicationId ?? undefined,
         ).catch((err) =>
           this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after new link'),
         );
@@ -200,15 +223,34 @@ export class MonoWebhookService {
 
   // ─── Creditworthiness webhook ──────────────────────────────────────────────
   //
-  // We don't block account.enrichment_ready on creditworthiness because it needs
-  // actual loan terms (amount, rate, tenor) which we only have at application time.
-  // We acknowledge it here so Mono doesn't see unhandled events.
+  // Triggered at application-creation time with loan terms (amount, tenor, rate).
+  // Result arrives here as a webhook. We store it on BankAccount so the processor
+  // can read it from DB at analyze time — no live Mono call needed.
+  // Does NOT affect enrichmentStatus (that gate is income + insights only).
 
   async handleAccountCreditWorthiness(data: any) {
-    this.logger.info(
-      { accountId: data.account?._id },
-      'Creditworthiness webhook received (acknowledged)',
-    );
+    const monoAccountId = data.account?._id;
+    const creditWorthinessData = data.creditworthiness ?? data;
+
+    this.logger.info({ monoAccountId }, 'Creditworthiness webhook received');
+
+    if (!monoAccountId) {
+      this.logger.warn({ payload: data }, 'Creditworthiness webhook missing account ID');
+      return;
+    }
+
+    try {
+      await this.prisma.bankAccount.update({
+        where: { monoAccountId },
+        data: { creditWorthinessData },
+      });
+      this.logger.info({ monoAccountId }, 'Creditworthiness data stored');
+    } catch (error) {
+      this.logger.error(
+        { err: error, monoAccountId },
+        'Failed to store creditworthiness data from webhook',
+      );
+    }
   }
 
   // ─── Reauthorisation webhook ───────────────────────────────────────────────
@@ -223,22 +265,67 @@ export class MonoWebhookService {
     return { status: 'success' };
   }
 
-  // ─── Private: trigger both enrichments after account link ─────────────────
+  // ─── Private: pre-fetch + trigger all enrichments after account link ─────────
   //
   // Called in the background (fire-and-forget from handleAccountLinked).
-  // 1. Call GET /income  — this signals Mono to run income analysis.
-  //    The results arrive later via the mono.events.account_income webhook.
-  // 2. POST to trigger the statement insights job — Mono returns a jobId.
-  //    We store the jobId and schedule a BullMQ job to poll for the result.
+  //
+  // Sync fetches (run in parallel, stored immediately):
+  //   - accountDetails, balance, transactions, identity
+  //
+  // Async enrichments (results arrive later via webhook / poller):
+  //   1. GET /income  — triggers Mono income analysis; result arrives via
+  //      mono.events.account_income webhook → stored in incomeData.
+  //   2. POST /statement/insights — triggers Mono insights job; result polled
+  //      via BullMQ every 30s → stored in statementInsightsData.
+  //   3. POST /creditworthiness — triggers credit check using loan terms from the
+  //      application; result arrives via mono.events.account_credit_worthiness
+  //      webhook → stored in creditWorthinessData. Only triggered when applicationId
+  //      is provided (i.e. when initiated via POST /applications/initiate).
 
   private async _triggerEnrichments(
     bankAccountId: string,
     monoAccountId: string,
     monoApiKey: string,
+    applicationId?: string,
   ): Promise<void> {
-    this.logger.info({ monoAccountId }, 'Triggering enrichments');
+    this.logger.info({ monoAccountId, applicationId }, 'Triggering enrichments and pre-fetch');
 
-    // Trigger income analysis — result comes back as a webhook
+    // ── Run all sync fetches + async triggers in parallel ───────────────────
+    const [accountDetails, balance, transactions, identity] = await Promise.allSettled([
+      this.monoService.getAccountDetails(monoAccountId, monoApiKey),
+      this.monoService.getAccountBalance(monoAccountId, monoApiKey),
+      this.monoService.getTransactions(monoAccountId, monoApiKey),
+      this.monoService.getIdentity(monoAccountId, monoApiKey),
+    ]);
+
+    // Log any sync fetch failures — non-fatal, will be null at analyze time
+    (
+      [
+        ['accountDetails', accountDetails],
+        ['balance',        balance],
+        ['transactions',   transactions],
+        ['identity',       identity],
+      ] as [string, PromiseSettledResult<any>][]
+    ).forEach(([name, result]) => {
+      if (result.status === 'rejected') {
+        this.logger.warn({ err: result.reason, monoAccountId, endpoint: name }, `Pre-fetch failed for ${name}`);
+      }
+    });
+
+    // Store all sync data in one DB write
+    await this.prisma.bankAccount.update({
+      where: { id: bankAccountId },
+      data: {
+        accountDetailsData: accountDetails.status === 'fulfilled' ? accountDetails.value : Prisma.DbNull,
+        balanceData:        balance.status      === 'fulfilled'   ? balance.value        : Prisma.DbNull,
+        transactionsData:   transactions.status === 'fulfilled'   ? transactions.value   : Prisma.DbNull,
+        identityData:       identity.status     === 'fulfilled'   ? identity.value       : Prisma.DbNull,
+      },
+    });
+
+    this.logger.info({ monoAccountId }, 'Sync pre-fetch complete');
+
+    // ── Trigger income analysis (async — result comes back as webhook) ───────
     try {
       await this.monoService.getIncome(monoAccountId, monoApiKey);
       this.logger.info({ monoAccountId }, 'Income analysis triggered');
@@ -246,7 +333,7 @@ export class MonoWebhookService {
       this.logger.warn({ err, monoAccountId }, 'Income trigger failed — will rely on webhook');
     }
 
-    // Trigger statement insights job — result comes back via polling
+    // ── Trigger statement insights job (async — result polled by BullMQ) ────
     try {
       const jobId = await this.monoService.triggerStatementInsightsJob(
         monoAccountId,
@@ -262,19 +349,35 @@ export class MonoWebhookService {
       // The poller will keep re-scheduling itself until the job completes or times out.
       await this.enrichmentsQueue.add(
         'poll-insights',
-        {
-          bankAccountId,
-          monoAccountId,
-          jobId,
-          monoApiKey,
-          pollAttempt: 0,
-        },
+        { bankAccountId, monoAccountId, jobId, monoApiKey, pollAttempt: 0 },
         { delay: 30_000 },
       );
 
       this.logger.info({ monoAccountId, jobId }, 'Statement insights job started, poll scheduled');
     } catch (err) {
       this.logger.error({ err, monoAccountId }, 'Failed to trigger statement insights job');
+    }
+
+    // ── Trigger creditworthiness (async — result comes back as webhook) ──────
+    // Only possible when we have an applicationId to look up the loan terms.
+    if (applicationId) {
+      try {
+        const application = await this.prisma.application.findUnique({
+          where: { id: applicationId },
+          select: { amount: true, tenor: true, interestRate: true },
+        });
+
+        if (application) {
+          await this.monoService.getCreditWorthiness(monoAccountId, monoApiKey, {
+            amount:        application.amount,
+            tenor_months:  application.tenor,
+            interest_rate: application.interestRate,
+          });
+          this.logger.info({ monoAccountId, applicationId }, 'Creditworthiness check triggered');
+        }
+      } catch (err) {
+        this.logger.warn({ err, monoAccountId, applicationId }, 'Creditworthiness trigger failed — will be null at analyze time');
+      }
     }
   }
 

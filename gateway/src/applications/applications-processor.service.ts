@@ -87,11 +87,12 @@ export class ApplicationProcessorService {
         );
       }
 
-      // ── Gather live + stored data for all accounts ────────────────────────
+      // ── Read all stored data for all accounts from DB, All fields were pre-fetched and stored at
+      // account-link time ────────────────────
+      
       const monoAccountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
       const accountsData   = await this.dataAggregationService.gatherMultiAccountData(
         monoAccountIds,
-        monoApiKey,
       );
 
       if (clientId) {
@@ -99,8 +100,6 @@ export class ApplicationProcessorService {
       }
 
       // ── Credit history — BVN-level, one per applicant ─────────────────────
-      // Non-fatal: if the lookup fails (BVN missing, bureau unavailable) the
-      // brain treats the applicant as thin-file, which is the safe default.
       let creditHistory: any = null;
       if (applicant.bvn) {
         try {
@@ -123,7 +122,7 @@ export class ApplicationProcessorService {
         this.eventsGateway.emitApplicationProgress(clientId, 'Running credit analysis...');
       }
 
-      // ── Call the brain service ────────────────────────────────────────────
+      // ── Call the brain service ────────────────────────────────────
       const brainResponse = await this.callBrainService({
         applicant_id:   application.applicantId,
         applicant_name: `${applicant.firstName} ${applicant.lastName}`,
@@ -161,7 +160,7 @@ export class ApplicationProcessorService {
         });
       }
 
-      // ── Dispatch outbound webhook to fintech ──────────────────────────────
+      // ── Dispatch outbound webhook to fintech ────────────────
       await this.outboundWebhookService.dispatch(
         applicant.fintechId,
         'application.decision',
@@ -211,8 +210,7 @@ export class ApplicationProcessorService {
     }
   }
 
-  // ─── Brain HTTP call ───────────────────────────────────────────────────────
-
+  // ─── Brain HTTP call ─────────────────────
   private async callBrainService(payload: {
     applicant_id:   string;
     applicant_name: string;
