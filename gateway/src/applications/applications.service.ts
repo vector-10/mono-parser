@@ -137,6 +137,8 @@ export class ApplicationsService {
   async createApplication(fintechId: string, data: CreateApplicationDto) {
     const { applicantId, amount, tenor, interestRate, purpose } = data;
 
+    this.logger.info({ fintechId, applicantId }, 'Creating
+
     console.log('Service destructured:', {
       applicantId,
       amount,

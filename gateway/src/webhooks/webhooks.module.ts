@@ -8,9 +8,6 @@ import { QueueModule } from 'src/queues/queue.module';
 import { MonoModule } from 'src/mono/mono.module';
 
 @Module({
-  // QueueModule gives us OutboundWebhookService + the BullModule exports
-  // (so @InjectQueue('enrichments') works in MonoWebhookService).
-  // MonoModule gives us MonoService for triggering income and insights jobs.
   imports: [ConfigModule, EventsModule, QueueModule, MonoModule],
   controllers: [WebhooksController],
   providers: [PrismaService, MonoWebhookService],
