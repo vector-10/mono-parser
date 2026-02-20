@@ -7,16 +7,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MonoService } from 'src/mono/mono.service';
 import { OutboundWebhookService } from './outbound-webhook.service';
 
-// How many 30-second polls before we give up. 30 × 30s = 15 minutes.
+
 const MAX_POLL_ATTEMPTS = 30;
 const POLL_INTERVAL_MS  = 30_000;
 
 interface PollInsightsJobData {
-  bankAccountId: string;   // our internal BankAccount.id
-  monoAccountId: string;   // Mono's account _id (used in DB lookups and logging)
-  jobId:         string;   // Mono enrichment job ID to poll
-  monoApiKey:    string;   // fintech's Mono secret key
-  pollAttempt:   number;   // how many times we have polled so far (starts at 0)
+  bankAccountId: string;   
+  monoAccountId: string;   
+  jobId:         string;   
+  monoApiKey:    string;   
+  pollAttempt:   number;   
 }
 
 @Processor('enrichments')
@@ -33,7 +33,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
   }
 
   // ─── BullMQ entry point ───────────────────────────────────────────────────
-
   async process(job: Job<PollInsightsJobData>): Promise<void> {
     const { bankAccountId, monoAccountId, jobId, monoApiKey, pollAttempt } = job.data;
 
@@ -42,7 +41,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
       'Polling Mono for statement insights result',
     );
 
-    // Guard: give up after 15 minutes of polling
     if (pollAttempt >= MAX_POLL_ATTEMPTS) {
       await this._markFailed(bankAccountId, monoAccountId, jobId);
       return;
@@ -52,7 +50,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
     try {
       record = await this.monoService.pollEnrichmentRecord(jobId, monoApiKey);
     } catch (err) {
-      // Network / Mono error — re-schedule and try again next round
       this.logger.warn({ err, jobId, pollAttempt }, 'Poll request failed, will retry');
       await this._reschedule(job.data);
       return;
@@ -62,7 +59,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
     if (status === 'successful' || status === 'success') {
       // ── Job complete ────────────────────────────────────────────────────────
-      // Mono puts the actual insights payload in record.jobData.
       const insightsPayload = record.jobData ?? record;
 
       await this.prisma.bankAccount.update({
@@ -72,7 +68,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
       this.logger.info({ monoAccountId, jobId }, 'Statement insights stored successfully');
 
-      // Check if income data is also present — if so, fire account.enrichment_ready
       await this._checkAndFireEnrichmentReady(monoAccountId);
 
     } else if (status === 'failed' || status === 'error') {
@@ -95,7 +90,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  // Re-add a new delayed poll job with the attempt counter incremented.
   private async _reschedule(data: PollInsightsJobData): Promise<void> {
     await this.enrichmentsQueue.add(
       'poll-insights',
@@ -104,8 +98,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
     );
   }
 
-  // Mark the account enrichment as FAILED and log — the fintech will need
-  // to handle this case (e.g. retry via a support flow or manual upload).
   private async _markFailed(
     bankAccountId: string,
     monoAccountId: string,
@@ -122,10 +114,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
     });
   }
 
-  // Mirror of the same check in MonoWebhookService.
-  // Uses updateMany with a conditional WHERE so that even if the income webhook
-  // and the poller finish at nearly the same time, the outbound webhook fires
-  // exactly once — only the call whose updateMany returns count=1 dispatches it.
+ 
   private async _checkAndFireEnrichmentReady(monoAccountId: string): Promise<void> {
     const result = await this.prisma.bankAccount.updateMany({
       where: {
@@ -138,7 +127,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
     });
 
     if (result.count === 0) {
-      // Income not stored yet — income webhook handler will fire the event
       this.logger.info({ monoAccountId }, 'Insights stored, waiting for income webhook');
       return;
     }

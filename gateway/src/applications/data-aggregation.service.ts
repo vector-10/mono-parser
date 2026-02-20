@@ -31,8 +31,6 @@ export class DataAggregationService {
     this.logger.setContext(DataAggregationService.name);
   }
 
-  // Gather all stored data for a single Mono account.
-  // monoAccountId is Mono's account _id (stored as BankAccount.monoAccountId).
   async gatherAccountData(monoAccountId: string) {
     this.logger.info({ monoAccountId }, 'Reading account data from DB');
 
@@ -65,8 +63,7 @@ export class DataAggregationService {
     };
   }
 
-  // Gather stored data for every Mono account linked to an applicant.
-  // monoAccountIds is an array of Mono account _ids (BankAccount.monoAccountId values).
+  
   async gatherMultiAccountData(monoAccountIds: string[]) {
     this.logger.info(
       { count: monoAccountIds.length },

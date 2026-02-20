@@ -82,10 +82,6 @@ import { QueueController } from './queue.controller';
     BullModule.registerQueue({
       name: 'enrichments',
       defaultJobOptions: {
-        // Enrichment polling jobs manage their own retry/re-queue logic.
-        // We set attempts to 1 so BullMQ does not auto-retry on throw —
-        // the poller explicitly re-adds a new delayed job when the Mono
-        // job is still pending, and marks FAILED after 30 rounds (15 min).
         attempts: 1,
         removeOnComplete: 50,
         removeOnFail: 100,

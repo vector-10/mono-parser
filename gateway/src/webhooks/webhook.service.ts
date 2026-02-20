@@ -19,13 +19,7 @@ export class MonoWebhookService {
     this.logger.setContext(MonoWebhookService.name);
   }
 
-  // ─── Account linked / updated ──────────────────────────────────────────────
-  //
-  // Called for both mono.events.account_connected and mono.events.account_updated.
-  // Saves (or refreshes) the BankAccount record, then kicks off enrichment.
-  // Enrichment is triggered in the background — we don't wait for it here so
-  // Mono gets our 200 response quickly.
-
+  
   async handleAccountLinked(data: any) {
     this.logger.info({ payload: data }, 'Full payload received');
 

@@ -64,9 +64,6 @@ export class ApplicationProcessorService {
       }
 
       // ── Enrichment readiness check ────────────────────────────────────────
-      // All linked accounts must have their enrichments complete before we
-      // run the brain. If any account is still PENDING or FAILED we stop here
-      // so we never score on incomplete data.
       const notReady = applicant.bankAccounts.filter(
         (acc) => acc.enrichmentStatus !== 'READY',
       );

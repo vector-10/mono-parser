@@ -165,9 +165,6 @@ export class MonoService {
     }
   }
 
-  // Triggers the statement insights job on Mono.
-  // Mono processes it asynchronously — this returns a jobId we poll separately.
-  // The poll endpoint is GET /enrichments/record/{jobId}.
   async triggerStatementInsightsJob(
     accountId: string,
     monoApiKey: string,
@@ -178,7 +175,7 @@ export class MonoService {
         {},
         { headers: this.getHeaders(monoApiKey) },
       );
-      // Mono returns { status: "successful", data: { id: "jobId", ... } }
+    
       const jobId: string = response.data?.data?.id ?? response.data?.data?.jobId;
       if (!jobId) {
         throw new Error('Mono did not return a jobId for statement insights');
@@ -193,9 +190,7 @@ export class MonoService {
     }
   }
 
-  // Polls a Mono enrichment job by its jobId.
-  // Returns the full job record — check record.status for "successful" | "pending" | "failed".
-  // When status is "successful", record.jobData contains the statement insights payload.
+
   async pollEnrichmentRecord(jobId: string, monoApiKey: string) {
     try {
       const response = await axios.get(
