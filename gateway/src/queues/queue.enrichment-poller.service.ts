@@ -12,11 +12,12 @@ const MAX_POLL_ATTEMPTS = 30;
 const POLL_INTERVAL_MS  = 30_000;
 
 interface PollInsightsJobData {
-  bankAccountId: string;   
-  monoAccountId: string;   
-  jobId:         string;   
-  monoApiKey:    string;   
-  pollAttempt:   number;   
+  bankAccountId:  string;
+  monoAccountId:  string;
+  jobId:          string;
+  monoApiKey:     string;
+  pollAttempt:    number;
+  applicationId?: string;
 }
 
 @Processor('enrichments')
@@ -59,7 +60,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
     if (status === 'successful' || status === 'success') {
       // ── Job complete ────────────────────────────────────────────────────────
-      const insightsPayload = record.jobData ?? record;
+      const insightsPayload = record.data ?? record.jobData ?? record;
 
       await this.prisma.bankAccount.update({
         where: { id: bankAccountId },
@@ -68,7 +69,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
       this.logger.info({ monoAccountId, jobId }, 'Statement insights stored successfully');
 
-      await this._checkAndFireEnrichmentReady(monoAccountId);
+      await this._checkAndFireEnrichmentReady(monoAccountId, applicationId);
 
     } else if (status === 'failed' || status === 'error') {
       // ── Mono-side failure ───────────────────────────────────────────────────
@@ -115,7 +116,10 @@ export class EnrichmentPollerProcessor extends WorkerHost {
   }
 
  
-  private async _checkAndFireEnrichmentReady(monoAccountId: string): Promise<void> {
+  private async _checkAndFireEnrichmentReady(
+    monoAccountId: string,
+    applicationId?: string,
+  ): Promise<void> {
     const result = await this.prisma.bankAccount.updateMany({
       where: {
         monoAccountId,
@@ -133,12 +137,28 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
     const account = await this.prisma.bankAccount.findUnique({
       where: { monoAccountId },
-      include: { applicant: true },
+      include: {
+        applicant: {
+          include: {
+            applications: {
+              where: { status: 'LINKED' },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     if (!account) return;
 
-    this.logger.info({ monoAccountId }, 'Both enrichments ready (poller completed last)');
+    const resolvedApplicationId =
+      applicationId ?? account.applicant.applications[0]?.id ?? null;
+
+    this.logger.info(
+      { monoAccountId, applicationId: resolvedApplicationId },
+      'Both enrichments ready (poller completed last)',
+    );
 
     await this.outboundWebhookService.dispatch(
       account.applicant.fintechId,
@@ -147,6 +167,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
         accountId: account.id,
         monoAccountId,
         applicantId: account.applicantId,
+        applicationId: resolvedApplicationId,
         message:
           'Account enrichment complete. You may now submit this applicant for loan analysis.',
       },

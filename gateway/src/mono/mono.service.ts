@@ -170,20 +170,19 @@ export class MonoService {
     monoApiKey: string,
   ): Promise<string> {
     try {
-      const response = await axios.post(
+      const response = await axios.get(
         `${this.monoBaseUrl}/accounts/${accountId}/statement/insights`,
-        {},
         { headers: this.getHeaders(monoApiKey) },
       );
     
-      const jobId: string = response.data?.data?.id ?? response.data?.data?.jobId;
+      const jobId: string = response.data?.data?.job_id ?? response.data?.data?.jobId;
       if (!jobId) {
         throw new Error('Mono did not return a jobId for statement insights');
       }
       return jobId;
     } catch (error: any) {
       this.logger.error(
-        { err: error.response?.data },
+        { err: error.response?.data ?? error.message },
         'Failed to trigger statement insights job',
       );
       throw error;
@@ -197,7 +196,7 @@ export class MonoService {
         `https://api.withmono.com/v2/enrichments/record/${jobId}`,
         { headers: this.getHeaders(monoApiKey) },
       );
-      return response.data?.data ?? response.data;
+      return response.data ?? null;
     } catch (error: any) {
       this.logger.error(
         { err: error.response?.data, jobId },

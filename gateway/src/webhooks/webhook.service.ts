@@ -170,9 +170,10 @@ export class MonoWebhookService {
   // ─── Income webhook ────────────────────────────────────────────────────────
   
   async handleAccountIncome(data: any) {
-    this.logger.info({ accountId: data.account?._id }, 'Income webhook received');
+    // Mono sends account as a plain string ID in income webhooks, not as an object
+    const monoAccountId = data.account?._id ?? data.account;
 
-    const monoAccountId = data.account?._id;
+    this.logger.info({ monoAccountId }, 'Income webhook received');
 
     const incomeData = data.income ?? data;
 
@@ -277,7 +278,7 @@ export class MonoWebhookService {
       // The poller will keep re-scheduling itself until the job completes or times out.
       await this.enrichmentsQueue.add(
         'poll-insights',
-        { bankAccountId, monoAccountId, jobId, monoApiKey, pollAttempt: 0 },
+        { bankAccountId, monoAccountId, jobId, monoApiKey, pollAttempt: 0, applicationId },
         { delay: 30_000 },
       );
 
@@ -307,12 +308,24 @@ export class MonoWebhookService {
 
     const account = await this.prisma.bankAccount.findUnique({
       where: { monoAccountId },
-      include: { applicant: true },
+      include: {
+        applicant: {
+          include: {
+            applications: {
+              where: { status: 'LINKED' },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     if (!account) return;
 
-    this.logger.info({ monoAccountId, accountId: account.id }, 'Both enrichments ready');
+    const applicationId = account.applicant.applications[0]?.id ?? null;
+
+    this.logger.info({ monoAccountId, accountId: account.id, applicationId }, 'Both enrichments ready');
 
     await this.outboundWebhookService.dispatch(
       account.applicant.fintechId,
@@ -321,6 +334,7 @@ export class MonoWebhookService {
         accountId: account.id,
         monoAccountId,
         applicantId: account.applicantId,
+        applicationId,
         message:
           'Account enrichment complete. You may now submit this applicant for loan analysis.',
       },
