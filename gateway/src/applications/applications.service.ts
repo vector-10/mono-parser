@@ -9,49 +9,6 @@ import { MonoService } from 'src/mono/mono.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { InitiateApplicationDto } from './dto/initiate-application.dto';
 
-// ─── ApplicationsService ───────────────────────────────────────────────────────
-//
-// Manages the full lifecycle of a loan application from creation to completion.
-//
-// initiateApplication
-//   The canonical entry point for a new loan journey. In a single call it:
-//   creates the applicant record, creates the application with loan terms,
-//   and calls Mono to open a Connect session so the applicant can link their
-//   bank account. Returns the widgetUrl the fintech opens in a webview, the
-//   applicationId, and the applicantId. Application status starts as PENDING_LINKING.
-//   This is the preferred flow because the applicationId is embedded in Mono's
-//   meta, which means the account_connected webhook can tie the bank account
-//   back to this specific application automatically.
-//
-// linkAccount
-//   Used when an applicant needs to link an additional bank account to an
-//   existing application, or when the original Mono Connect session has expired
-//   and the fintech needs to give the applicant a fresh widgetUrl to try again.
-//   Validates that the application belongs to the requesting fintech and has not
-//   already been completed or failed, then generates a new Mono Connect URL.
-//
-// createApplication
-//   An alternative path for fintechs that have already created their applicant
-//   and linked a bank account separately (e.g. via POST /applicants/create and
-//   POST /mono/initiate). Creates an application record for an existing applicant
-//   who already has at least one bank account linked. Requires the bank account
-//   to be present before calling this — it will throw if none are linked.
-//
-// findOne
-//   Fetches a single application by ID, scoped to the requesting fintech.
-//   Includes the applicant and all their linked bank accounts. Used by the
-//   fintech to poll for application status or retrieve the final decision.
-//
-// findAll
-//   Fetches all applications belonging to the requesting fintech, ordered by
-//   most recently created. Accepts an optional status filter so the fintech can
-//   query e.g. only COMPLETED or only PENDING applications.
-//
-// updateStatus
-//   Internal method called by the application processor after the brain service
-//   returns a decision. Updates the application status, score, decision payload,
-//   and the list of bank account IDs that were analysed. Not exposed via HTTP.
-
 @Injectable()
 export class ApplicationsService {
   constructor(
