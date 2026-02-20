@@ -3,6 +3,8 @@ export interface User {
   email: string;
   name: string;
   companyName: string;
+  apiKey?: string;
+  webhookUrl?: string | null;
   hasMonoApiKey?: boolean;
 }
 

@@ -18,6 +18,7 @@ import { InitiateApplicationDto } from 'src/applications/dto/initiate-applicatio
 import { DataAggregationService } from './data-aggregation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('applications')
 @UseGuards(JwtAuthGuard)
@@ -30,18 +31,21 @@ export class ApplicationsController {
   ) {}
 
   @Post('initiate')
+  @Public()
   @UseGuards(ApiKeyGuard)
   async initiateApplication(@Request() req, @Body() body: InitiateApplicationDto) {
     return this.applicationsService.initiateApplication(req.user.id, body);
   }
 
   @Post(':id/link-account')
+  @Public()
   @UseGuards(ApiKeyGuard)
   async linkAccount(@Request() req, @Param('id') id: string) {
     return this.applicationsService.linkAccount(id, req.user.id);
   }
 
   @Post(':id/analyze')
+  @Public()
   @UseGuards(ApiKeyGuard)
   async analyze(@Request() req, @Param('id') id: string) {
     const application = await this.applicationsService.findOne(id, req.user.id);
