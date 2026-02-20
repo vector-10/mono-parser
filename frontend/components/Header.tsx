@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from "next/link";
-import { ArrowRight, Menu, X, Shield } from "lucide-react";
+import { ArrowRight, Menu, X, Shield, BookOpen } from "lucide-react";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -41,6 +41,10 @@ const Header = () => {
             <a href="#api" className="hover:text-[#0055ba] transition-colors whitespace-nowrap">
               API
             </a>
+            <Link href="/docs" className="flex items-center gap-1.5 hover:text-[#0055ba] transition-colors whitespace-nowrap">
+              <BookOpen className="h-3.5 w-3.5" />
+              Docs
+            </Link>
           </nav>
 
           <Link
@@ -98,13 +102,21 @@ const Header = () => {
             >
               Why Us
             </a>
-            <a 
-              href="#api" 
-              onClick={() => setMobileMenuOpen(false)} 
+            <a
+              href="#api"
+              onClick={() => setMobileMenuOpen(false)}
               className="block py-2.5 sm:py-3 text-sm sm:text-base text-gray-600 hover:text-[#0055ba] border-b border-gray-100 transition-colors font-medium"
             >
               API
             </a>
+            <Link
+              href="/docs"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-2.5 sm:py-3 text-sm sm:text-base text-gray-600 hover:text-[#0055ba] border-b border-gray-100 transition-colors font-medium"
+            >
+              <BookOpen className="h-4 w-4" />
+              Docs
+            </Link>
           </div>
 
           <div className="mt-auto pt-4 sm:pt-6 border-t border-gray-100 space-y-3 sm:space-y-4">
