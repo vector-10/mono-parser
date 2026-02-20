@@ -314,26 +314,6 @@ export class MonoWebhookService {
       this.logger.error({ err, monoAccountId }, 'Failed to trigger statement insights job');
     }
 
-    // ── Trigger creditworthiness (async — result comes back as webhook) ──────
-    if (applicationId) {
-      try {
-        const application = await this.prisma.application.findUnique({
-          where: { id: applicationId },
-          select: { amount: true, tenor: true, interestRate: true },
-        });
-
-        if (application) {
-          await this.monoService.getCreditWorthiness(monoAccountId, monoApiKey, {
-            amount:        application.amount,
-            tenor_months:  application.tenor,
-            interest_rate: application.interestRate,
-          });
-          this.logger.info({ monoAccountId, applicationId }, 'Creditworthiness check triggered');
-        }
-      } catch (err) {
-        this.logger.warn({ err, monoAccountId, applicationId }, 'Creditworthiness trigger failed — will be null at analyze time');
-      }
-    }
   }
 
   // ─── Private: check if both enrichments are stored, fire webhook if so ─────
