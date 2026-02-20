@@ -11,42 +11,6 @@ import { InitiateApplicationDto } from './dto/initiate-application.dto';
 import { PinoLogger } from 'nestjs-pino';
 
 // ─── ApplicationsService ───────────────────────────────────────────────────────
-//
-// Owns the core application lifecycle — from the moment a fintech submits
-// an applicant all the way through to the application record existing in the DB.
-//
-// Method overview:
-//
-//  initiateApplication(fintechId, data)
-//    The canonical entry point for new loan applications. Creates the Applicant
-//    and Application records together, then immediately calls Mono to generate
-//    a Connect widget URL so the applicant can link their bank account.
-//    The applicationId is passed as meta into Mono so it flows back through
-//    the account_connected webhook, closing the loop for enrichment + scoring.
-//
-//  linkAccount(applicationId, fintechId)
-//    Re-triggers Mono Connect for an existing application. Used when an applicant
-//    needs to re-link (e.g. session expired, wrong account). Guards against
-//    re-linking on completed or failed applications.
-//
-//  createApplication(fintechId, data)
-//    Standalone application creation for applicants who have already linked
-//    a bank account via a prior flow. Validates that the applicant exists,
-//    belongs to the fintech, and has at least one linked bank account before
-//    creating the application record.
-//
-//  findOne(applicationId, fintechId)
-//    Retrieves a single application with full applicant and bank account data.
-//    Scoped to the calling fintech — cannot see another fintech's records.
-//
-//  findAll(fintechId, status?)
-//    Lists all applications for a fintech, newest first. Optionally filtered
-//    by status (e.g. 'PENDING', 'LINKED', 'COMPLETED').
-//
-//  updateStatus(applicationId, status, score?, decision?, bankAccountIds?)
-//    Internal method called by the ApplicationProcessor after the brain service
-//    returns a scoring decision. Updates the application record with the final
-//    status, score, decision payload, and the account IDs that were analysed.
 
 @Injectable()
 export class ApplicationsService {
