@@ -86,20 +86,6 @@ export class MonoController {
     return this.monoService.getTransactions(accountId, req.monoApiKey);
   }
 
-  @Throttle({ default: { ttl: 60000, limit: 20 } })
-  @Post('account/:accountId/creditworthiness')
-  async checkCredit(
-    @Request() req,
-    @Param('accountId') accountId: string,
-    @Body() loanData: any,
-  ) {
-    return this.monoService.getCreditWorthiness(
-      accountId,
-      req.monoApiKey,
-      loanData,
-    );
-  }
-
   @Get('account/:accountId/identity')
   async getIdentity(@Request() req, @Param('accountId') accountId: string) {
     return this.monoService.getIdentity(accountId, req.monoApiKey);

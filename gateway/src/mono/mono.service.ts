@@ -207,27 +207,6 @@ export class MonoService {
     }
   }
 
-  async getCreditWorthiness(
-    accountId: string,
-    monoApiKey: string,
-    loanData: any,
-  ) {
-    try {
-      const response = await axios.post(
-        `${this.monoBaseUrl}/accounts/${accountId}/creditworthiness`,
-        { ...loanData, run_credit_check: true },
-        { headers: this.getHeaders(monoApiKey) },
-      );
-      return response.data;
-    } catch (error: any) {
-      this.logger.error(
-        { err: error.response?.data },
-        'Creditworthiness failed',
-      );
-      throw error;
-    }
-  }
-
   async getIdentity(accountId: string, monoApiKey: string) {
     try {
       const response = await axios.get(

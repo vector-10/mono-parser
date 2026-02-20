@@ -72,7 +72,6 @@ export class MonoWebhookService {
             identityData:         Prisma.DbNull,
             incomeData:           Prisma.DbNull,
             statementInsightsData: Prisma.DbNull,
-            creditWorthinessData: Prisma.DbNull,
             insightsJobId: null,
           },
         });
@@ -195,33 +194,6 @@ export class MonoWebhookService {
       this.logger.error(
         { err: error, monoAccountId },
         'Failed to store income data from webhook',
-      );
-    }
-  }
-
-  // ─── Creditworthiness webhook ──────────────────────────────────────────────
-
-  async handleAccountCreditWorthiness(data: any) {
-    const monoAccountId = data.account?._id;
-    const creditWorthinessData = data.creditworthiness ?? data;
-
-    this.logger.info({ monoAccountId }, 'Creditworthiness webhook received');
-
-    if (!monoAccountId) {
-      this.logger.warn({ payload: data }, 'Creditworthiness webhook missing account ID');
-      return;
-    }
-
-    try {
-      await this.prisma.bankAccount.update({
-        where: { monoAccountId },
-        data: { creditWorthinessData },
-      });
-      this.logger.info({ monoAccountId }, 'Creditworthiness data stored');
-    } catch (error) {
-      this.logger.error(
-        { err: error, monoAccountId },
-        'Failed to store creditworthiness data from webhook',
       );
     }
   }

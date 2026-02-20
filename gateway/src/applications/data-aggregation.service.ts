@@ -24,7 +24,6 @@ export class DataAggregationService {
         identityData:          true,
         incomeData:            true,
         statementInsightsData: true,
-        creditWorthinessData:  true,
       },
     });
 
@@ -40,7 +39,6 @@ export class DataAggregationService {
       identity:           stored?.identityData           ?? null,
       income:             stored?.incomeData             ?? null,
       statement_insights: stored?.statementInsightsData  ?? null,
-      credit_worthiness:  stored?.creditWorthinessData   ?? null,
     };
   }
 

@@ -39,17 +39,6 @@ class MonoIncomeData(BaseModel):
     period: Optional[str] = None
 
 
-class MonoCreditWorthiness(BaseModel):
-    """
-    Payload from mono.events.account_credit_worthiness webhook.
-    The 'debt' field is nested in the webhook — NestJS stores it as-is.
-    """
-    can_afford: bool = False
-    monthly_payment: float = 0
-    # debt.total_debt and debt.debt_by_institution are accessed in feature extractor
-    debt: Optional[Dict[str, Any]] = None
-
-
 class MonoStatementInsights(BaseModel):
     """
     The jobData portion of GET /enrichments/record/{jobId}.
