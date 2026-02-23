@@ -376,7 +376,7 @@ export default function DocsPage() {
               <h3 className="font-semibold text-gray-800 mb-2 text-sm">
                 Base URL
               </h3>
-              <CodeBlock code="https://api.mono-parser.com/api" lang="http" />
+              <CodeBlock code="https://api.mono-parser.shop/api" lang="http" />
               <p className="text-xs text-gray-500 mt-2">
                 All endpoints are prefixed with{" "}
                 <code className="bg-gray-200 px-1 py-0.5 rounded text-xs">
