@@ -628,7 +628,7 @@ export default function DocsPage() {
               </h4>
               <CodeBlock
                 lang="bash"
-                code={`curl -X POST https://api.mono-parser.com/api/applications/initiate \\
+                code={`curl -X POST https://api.mono-parser.shop/api/applications/initiate \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: mp_live_your_secret_key" \\
   -d '{
@@ -702,7 +702,7 @@ export default function DocsPage() {
               </h4>
               <CodeBlock
                 lang="bash"
-                code={`curl -X POST https://api.mono-parser.com/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/link-account \\
+                code={`curl -X POST https://api.mono-parser.shop/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/link-account \\
   -H "x-api-key: mp_live_your_secret_key"`}
               />
 
@@ -761,7 +761,7 @@ export default function DocsPage() {
               </h4>
               <CodeBlock
                 lang="bash"
-                code={`curl -X POST https://api.mono-parser.com/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/analyze \\
+                code={`curl -X POST https://api.mono-parser.shop/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/analyze \\
   -H "x-api-key: mp_live_your_secret_key"`}
               />
 
@@ -1332,7 +1332,7 @@ export default function DocsPage() {
             <p className="text-gray-500 text-sm mb-4">
               Need help? Reach out to{" "}
               <a
-                href="mailto:support@mono-parser.com"
+                href="mailto:support@firstsoftware-systems.com"
                 className="text-[#0055ba] hover:underline"
               >
                 support@firstsoftware-systems.com
