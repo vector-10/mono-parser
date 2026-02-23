@@ -35,7 +35,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
 
   // ─── BullMQ entry point ───────────────────────────────────────────────────
   async process(job: Job<PollInsightsJobData>): Promise<void> {
-    const { bankAccountId, monoAccountId, jobId, monoApiKey, pollAttempt } = job.data;
+    const { bankAccountId, monoAccountId, jobId, monoApiKey, pollAttempt, applicationId } = job.data;
 
     this.logger.info(
       { monoAccountId, jobId, pollAttempt },
