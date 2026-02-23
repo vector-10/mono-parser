@@ -6,7 +6,6 @@ import {
   Shield,
   Copy,
   Check,
-  ChevronRight,
   Zap,
   Webhook,
   Key,
@@ -459,21 +458,21 @@ export default function DocsPage() {
                   title: "Open the widget URL",
                   desc: "Redirect or embed the widgetUrl so your applicant can link their bank account through Mono Connect.",
                   tag: "User action",
-                  colour: "bg-purple-500",
+                  colour: "bg-[#0055ba]",
                 },
                 {
                   step: "3",
                   title: "account.linked webhook",
                   desc: "We notify your webhook URL that the bank account is linked. Enrichment begins automatically.",
                   tag: "We send",
-                  colour: "bg-gray-400",
+                  colour: "bg-[#0055ba]",
                 },
                 {
                   step: "4",
                   title: "account.enrichment_ready webhook",
                   desc: "Both income analysis and statement insights are ready. The applicationId is included — trigger analysis now.",
                   tag: "We send",
-                  colour: "bg-gray-400",
+                  colour: "bg-[#0055ba]",
                 },
                 {
                   step: "5",
@@ -487,7 +486,7 @@ export default function DocsPage() {
                   title: "application.decision webhook",
                   desc: "The full scored decision object is delivered to your webhook URL.",
                   tag: "We send",
-                  colour: "bg-gray-400",
+                  colour: "bg-[#0055ba]",
                 },
               ].map((item, i) => (
                 <div
@@ -520,16 +519,14 @@ export default function DocsPage() {
                       {item.desc}
                     </p>
                   </div>
-                  {i < 5 && (
-                    <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 mt-1.5 hidden sm:block rotate-90" />
-                  )}
+                
                 </div>
               ))}
             </div>
 
             <Callout type="success">
               <strong>Wait for enrichment_ready before calling analyze.</strong>{" "}
-              Calling <code>/analyze</code> before enrichment is complete will
+              Calling <code>/analyze</code> endpoint before enrichment is complete will
               result in a lower-quality decision. The{" "}
               <code>account.enrichment_ready</code> webhook is your reliable
               signal to proceed.
@@ -725,7 +722,7 @@ export default function DocsPage() {
                 This endpoint will return an error if the application is already
                 in a terminal state (<code>COMPLETED</code> or{" "}
                 <code>FAILED</code>). You cannot re-link accounts after a final
-                decision has been issued.
+                decision has been issued. You can just start the loan process again by calling the initiate endpoint to create a new application.
               </Callout>
             </div>
 
@@ -743,8 +740,7 @@ export default function DocsPage() {
               <p className="text-gray-600 text-sm leading-relaxed mb-6">
                 Queues the loan analysis job. The scoring engine reads all
                 enriched bank data from our database and sends the decision to
-                your webhook URL. This call returns immediately — the result is
-                async.
+                your webhook URL. 
               </p>
 
               <h4 className="font-semibold text-gray-800 text-sm mb-2">
@@ -983,7 +979,7 @@ export default function DocsPage() {
                 {
                   name: "score",
                   type: "number",
-                  desc: "Overall credit score (0–1000). Higher is better.",
+                  desc: "Overall credit score (350-850). Higher is better.",
                 },
                 {
                   name: "decision",
@@ -1339,7 +1335,7 @@ export default function DocsPage() {
                 href="mailto:support@mono-parser.com"
                 className="text-[#0055ba] hover:underline"
               >
-                support@mono-parser.com
+                support@firstsoftware-systems.com
               </a>
             </p>
             <Link

@@ -88,7 +88,7 @@ export default function MonoParserLanding() {
             </div>
             <div className="flex items-center justify-center gap-2 font-semibold text-white">
               <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />{" "}
-              100% uptime
+              99.9% uptime
             </div>
           </div>
         </div>
