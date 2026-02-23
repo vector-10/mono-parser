@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 
-// ─── Code Block Component ─────────────────────────────────────────────────────
+
 function CodeBlock({ code, lang = "json" }: { code: string; lang?: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -51,7 +51,9 @@ function CodeBlock({ code, lang = "json" }: { code: string; lang?: string }) {
   );
 }
 
-// ─── Method Badge ─────────────────────────────────────────────────────────────
+
+
+
 function MethodBadge({ method }: { method: "POST" | "GET" | "DELETE" }) {
   const colours = {
     POST: "bg-[#0055ba]/10 text-[#0055ba]",
@@ -67,14 +69,8 @@ function MethodBadge({ method }: { method: "POST" | "GET" | "DELETE" }) {
   );
 }
 
-// ─── Section Anchor ───────────────────────────────────────────────────────────
-function Section({
-  id,
-  children,
-}: {
-  id: string;
-  children: React.ReactNode;
-}) {
+
+function Section({ id, children }: { id: string; children: React.ReactNode }) {
   return (
     <section id={id} className="scroll-mt-28 mb-16">
       {children}
@@ -82,7 +78,7 @@ function Section({
   );
 }
 
-// ─── Note / Warning / Info Callouts ──────────────────────────────────────────
+
 function Callout({
   type,
   children,
@@ -110,7 +106,7 @@ function Callout({
   );
 }
 
-// ─── Field Table ──────────────────────────────────────────────────────────────
+
 function FieldTable({
   fields,
 }: {
@@ -162,7 +158,7 @@ function FieldTable({
   );
 }
 
-// ─── Navigation Items ─────────────────────────────────────────────────────────
+
 const navItems = [
   { id: "overview", label: "Overview" },
   { id: "authentication", label: "Authentication" },
@@ -191,7 +187,7 @@ const navItems = [
   { id: "fintech-notes", label: "Notes for Fintechs" },
 ];
 
-// ─── Main Docs Page ───────────────────────────────────────────────────────────
+
 export default function DocsPage() {
   const [activeSection, setActiveSection] = useState("overview");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -211,7 +207,7 @@ export default function DocsPage() {
           }
         }
       },
-      { rootMargin: "-20% 0px -70% 0px" }
+      { rootMargin: "-20% 0px -70% 0px" },
     );
 
     allIds.forEach((id) => {
@@ -304,8 +300,13 @@ export default function DocsPage() {
         }`}
       >
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-          <span className="text-sm font-semibold text-gray-700">Table of Contents</span>
-          <button onClick={() => setMobileNavOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+          <span className="text-sm font-semibold text-gray-700">
+            Table of Contents
+          </span>
+          <button
+            onClick={() => setMobileNavOpen(false)}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition"
+          >
             <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
@@ -324,15 +325,15 @@ export default function DocsPage() {
           <Section id="overview">
             <div className="mb-8">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#0055ba]/20 bg-[#0055ba]/5 px-3 py-1.5 text-xs font-medium text-[#0055ba] mb-4">
-                <Shield className="h-3.5 w-3.5" /> Powered by Mono Open Banking
+                <BookOpen className="h-3.5 w-3.5" /> Mono Parser API Documentation
               </span>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
-                API Documentation
+                Introduction
               </h1>
               <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-                Mono-Parser is a credit scoring API built for Nigerian fintechs.
+                Our suite of APIs enable Loan Officers make data-driven lending decisions and underwrite loans at scale.
                 Connect your applicants&apos; bank accounts via Mono, and
-                receive a detailed loan decision backed by real cashflow data —
+                receive a detailed loan decision backed by reliable finance metrics —
                 all through a simple webhook-driven flow.
               </p>
             </div>
@@ -393,8 +394,7 @@ export default function DocsPage() {
               Authentication
             </h2>
             <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-              All fintech-facing endpoints require your secret API key, passed
-              as a request header. You can generate your API key from the{" "}
+                TO make API calls, you would need an API key, login and copy yours from your {" "}
               <Link
                 href="/dashboard"
                 className="text-[#0055ba] hover:underline"
@@ -421,7 +421,7 @@ export default function DocsPage() {
               access to all your applicants and applications.
             </Callout>
 
-            <Callout type="info">
+            {/* <Callout type="info">
               All API keys begin with the prefix{" "}
               <code className="bg-[#0055ba]/10 px-1 py-0.5 rounded text-xs font-mono">
                 mp_live_
@@ -431,7 +431,7 @@ export default function DocsPage() {
                 mp_test_
               </code>
               .
-            </Callout>
+            </Callout> */}
           </Section>
 
           {/* ── INTEGRATION FLOW ── */}
@@ -509,8 +509,8 @@ export default function DocsPage() {
                           item.tag === "Your call"
                             ? "bg-[#0055ba]/10 text-[#0055ba]"
                             : item.tag === "User action"
-                            ? "bg-purple-50 text-purple-700"
-                            : "bg-gray-100 text-gray-600"
+                              ? "bg-purple-50 text-purple-700"
+                              : "bg-gray-100 text-gray-600"
                         }`}
                       >
                         {item.tag}
@@ -661,12 +661,11 @@ export default function DocsPage() {
               />
 
               <Callout type="info">
-                <strong>Store both IDs.</strong> The{" "}
-                <code>applicationId</code> is used in all subsequent calls. The{" "}
-                <code>widgetUrl</code> should be opened in a browser for the
-                applicant — either as a redirect or inside an iframe/modal.
-                Mono Connect will close automatically after the user links their
-                account.
+                <strong>Store both IDs.</strong> The <code>applicationId</code>{" "}
+                is used in all subsequent calls. The <code>widgetUrl</code>{" "}
+                should be opened in a browser for the applicant — either as a
+                redirect or inside an iframe/modal. Mono Connect will close
+                automatically after the user links their account.
               </Callout>
             </div>
 
@@ -783,7 +782,10 @@ export default function DocsPage() {
               />
 
               <Callout type="warning">
-                <strong>Call this only after receiving{" "}<code>account.enrichment_ready</code>.</strong>{" "}
+                <strong>
+                  Call this only after receiving{" "}
+                  <code>account.enrichment_ready</code>.
+                </strong>{" "}
                 If the bank account has no linked accounts yet, this endpoint
                 will return a 400 error.
               </Callout>
@@ -809,9 +811,9 @@ export default function DocsPage() {
 
             <Callout type="info">
               Register your webhook URL in the dashboard under Settings →
-              Webhook URL. Your endpoint must respond with HTTP{" "}
-              <code>2xx</code> within 10 seconds. Failed deliveries are retried
-              with exponential backoff.
+              Webhook URL. Your endpoint must respond with HTTP <code>2xx</code>{" "}
+              within 10 seconds. Failed deliveries are retried with exponential
+              backoff.
             </Callout>
 
             {/* ── account.linked ── */}
@@ -850,10 +852,7 @@ export default function DocsPage() {
             </div>
 
             {/* ── account.enrichment_ready ── */}
-            <div
-              id="wh-enrichment-ready"
-              className="scroll-mt-28 mb-10"
-            >
+            <div id="wh-enrichment-ready" className="scroll-mt-28 mb-10">
               <div className="flex items-center gap-3 mb-3">
                 <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold rounded-full">
                   EVENT
@@ -868,9 +867,9 @@ export default function DocsPage() {
               <p className="text-gray-600 text-sm leading-relaxed mb-4">
                 Fired when all enrichment data (income analysis + statement
                 insights) has been collected and stored. This is your signal to
-                call <code>/analyze</code>. The{" "}
-                <code>applicationId</code> is included for convenience — pass it
-                directly to the analyze endpoint.
+                call <code>/analyze</code>. The <code>applicationId</code> is
+                included for convenience — pass it directly to the analyze
+                endpoint.
               </p>
               <CodeBlock
                 lang="json"
@@ -1102,7 +1101,7 @@ export default function DocsPage() {
                         >
                           {h}
                         </th>
-                      )
+                      ),
                     )}
                   </tr>
                 </thead>
@@ -1141,7 +1140,9 @@ export default function DocsPage() {
                       <td className="px-4 py-3 font-mono text-xs font-semibold text-gray-900">
                         {row.range}
                       </td>
-                      <td className={`px-4 py-3 font-mono text-xs font-bold ${row.colour}`}>
+                      <td
+                        className={`px-4 py-3 font-mono text-xs font-bold ${row.colour}`}
+                      >
                         {row.band}
                       </td>
                       <td className="px-4 py-3 text-xs font-medium text-gray-700">
