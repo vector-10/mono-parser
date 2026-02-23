@@ -38,7 +38,7 @@ export default function Sidebar() {
         </div>
 
         <nav className="px-4 space-y-2">
-          <Link
+          {/* <Link
             href="/dashboard"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
               pathname === "/dashboard"
@@ -48,7 +48,7 @@ export default function Sidebar() {
           >
             <Home className="h-5 w-5" />
             Dashboard
-          </Link>
+          </Link> */}
 
           {/* Operations - Expandable */}
           <div>
