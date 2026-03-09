@@ -24,7 +24,7 @@ export default function DeleteApplicantModal({
   const handleDelete = () => {
     deleteApplicant(applicant.id, {
       onSuccess: () => {
-        router.push("/dashboard");
+        router.push("/dashboard/operations");
         onClose();
       },
     });

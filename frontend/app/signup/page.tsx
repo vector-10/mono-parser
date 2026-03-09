@@ -80,7 +80,7 @@ export default function SignupPage() {
       setAuth(response.user, response.access_token);
 
       toast.success("Email verified successfully!");
-      router.push("/dashboard");
+      router.push("/dashboard/operations");
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
       const errorMessage =
