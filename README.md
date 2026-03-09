@@ -203,28 +203,18 @@ Results are returned to the gateway as JSON, which then delivers a webhook to th
 
 ## API Overview
 
+All three endpoints require an `x-api-key` header. Your API key is generated automatically when you sign up on the dashboard.
+
 Full documentation: [mono-parser.shop/docs](https://mono-parser.shop/docs)
 
-**Authentication**
-- `POST /api/auth/signup` — Register a fintech account
-- `POST /api/auth/verify-otp` — Verify email OTP
-- `POST /api/auth/login` — Login
-- `POST /api/auth/refresh` — Refresh access token
-- `POST /api/auth/logout` — Logout
+**`POST /api/applications/initiate`**
+Creates an applicant record and a loan application in one call. Returns a Mono Connect `widgetUrl` to present to your user so they can link their bank account.
 
-**Applicants** _(JWT required)_
-- `POST /api/applicants` — Create an applicant
-- `GET /api/applicants` — List applicants
-- `GET /api/applicants/:id` — Get applicant
-- `PATCH /api/applicants/:id` — Update applicant
-- `DELETE /api/applicants/:id` — Delete applicant
+**`POST /api/applications/:id/link-account`**
+Re-generates a fresh Mono Connect widget URL for an existing application. Use this when an applicant needs to re-link (e.g. session expired, widget closed before completion). Returns an error if the application is already in a terminal state.
 
-**Applications** _(API key required)_
-- `POST /api/applications/initiate` — Start a loan application (returns Mono widget URL)
-- `GET /api/applications/:id` — Get application status and decision
-
-**Webhooks (inbound from Mono)**
-- `POST /api/webhooks/mono` — Receives bank account events from Mono
+**`POST /api/applications/:id/analyze`**
+Queues the loan analysis job. The scoring engine reads all enriched bank data and sends the decision to your registered webhook URL. Call this only after receiving the `account.enrichment_ready` webhook event.
 
 ---
 
