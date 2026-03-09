@@ -2,7 +2,8 @@
 
 A B2B API-first credit scoring and decisioning engine. Mono Parser helps loan officers and fintech companies make better-informed lending decisions by processing bank data through a rule-based scoring engine and returning clear, actionable results via webhooks.
 
-Live: [mono-parser.shop](https://mono-parser.shop) · API Docs: [mono-parser.shop/docs](https://mono-parser.shop/docs)
+Live: [mono-parser.shop](https://mono-parser.shop) 
+API Docs: [mono-parser.shop/docs](https://mono-parser.shop/docs)
 
 ---
 
@@ -26,19 +27,19 @@ The goal is to give loan officers more data-backed reasons to say yes or no — 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                     Frontend                        │
-│              Next.js Dashboard (port 3000)          │
+│              Next.js Dashboard                      │
 └────────────────────┬────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────┐
 │                    Gateway                          │
-│            NestJS REST API (port 5000)              │
-│  Auth · Applicants · Applications · Queues · WS    │
+│            NestJS REST API                          │
+│  Auth · Applicants · Applications · Queues · WS     │
 └──────┬───────────────────────┬──────────────────────┘
        │                       │
 ┌──────▼──────┐     ┌──────────▼──────────┐
-│    Brain    │     │   Mono Banking API  │
+│    Brain    │     │   Mono Account API  │
 │  FastAPI    │     │   (external)        │
-│  (port 8000)│     └─────────────────────┘
+│             │     └─────────────────────┘
 │  Rule-based │
 │  Scoring    │
 └─────────────┘
@@ -91,38 +92,37 @@ cp gateway/.env.example gateway/.env
 **`gateway/.env` — required variables:**
 
 ```env
-# App
 NODE_ENV=development
 PORT=5000
 CORS_ORIGIN=http://localhost:3000
 
-# Database (matches docker-compose defaults)
+
 DATABASE_URL=postgresql://postgres:password@db:5432/mono_parser
 
-# Auth
+
 JWT_SECRET=your_jwt_secret_here
 ACCESS_TOKEN_EXPIRY=15m
 REFRESH_TOKEN_EXPIRY_DAYS=7
 
-# Redis (matches docker-compose defaults)
+
 REDIS_URL=redis://redis:6379
 
-# Mono Banking API
+
 MONO_BASE_URL=https://api.withmono.com/v2
 MONO_WEBHOOK_SECRET=your_mono_webhook_secret
 
-# Brain service (internal — matches docker-compose)
+
 BRAIN_URL=http://brain:8000
 
-# App public URL (used for webhook callbacks)
+
 APP_URL=http://localhost:5000
 
-# Email — Brevo
+
 BREVO_API_KEY=your_brevo_api_key
 BREVO_SENDER_EMAIL=noreply@yourdomain.com
 BREVO_SENDER_NAME=Mono Parser
 
-# AI — Google Gemini
+
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
