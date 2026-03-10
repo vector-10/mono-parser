@@ -25,15 +25,13 @@ export class EnrichmentCleanupProcessor extends WorkerHost implements OnApplicat
       'scan-stuck-enrichments',
       {},
       {
-        repeat: { every: 15 * 60 * 1000 }, // every 15 minutes
-        jobId: 'enrichment-cleanup-repeatable', // stable ID prevents duplicates on restart
-      },
+        repeat: { every: 15 * 60 * 1000 }, 
+        jobId: 'enrichment-cleanup-repeatable', }
     );
     this.logger.info('Enrichment cleanup job scheduled (every 15 minutes)');
   }
 
-  // ─── BullMQ entry point ───────────────────────────────────────────────────
-
+ 
   async process(_job: Job): Promise<void> {
     const cutoff = new Date(Date.now() - STUCK_THRESHOLD_MS);
 
