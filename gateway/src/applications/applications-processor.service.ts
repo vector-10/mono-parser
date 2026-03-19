@@ -8,6 +8,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
 import { MonoService } from 'src/mono/mono.service';
 
+const SYNC_DATA_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
 export class BrainUnavailableError extends Error {
   constructor(message: string) {
     super(message);
@@ -89,6 +91,8 @@ export class ApplicationProcessorService {
           `Analysing ${applicant.bankAccounts.length} bank account(s)...`,
         );
       }
+
+      await this.refreshStaleAccounts(applicant.bankAccounts, monoApiKey);
 
       const monoAccountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
       const accountsData = await this.dataAggregationService.gatherMultiAccountData(monoAccountIds);
@@ -208,6 +212,55 @@ export class ApplicationProcessorService {
         },
       );
     }
+  }
+
+  private async refreshStaleAccounts(
+    accounts: Array<{ id: string; monoAccountId: string; syncDataFetchedAt: Date | null }>,
+    monoApiKey: string,
+  ): Promise<void> {
+    const now = Date.now();
+
+    const stale = accounts.filter(
+      (acc) => !acc.syncDataFetchedAt || now - acc.syncDataFetchedAt.getTime() > SYNC_DATA_MAX_AGE_MS,
+    );
+
+    if (!stale.length) {
+      this.logger.info({ count: accounts.length }, 'All accounts have fresh sync data');
+      return;
+    }
+
+    this.logger.info({ count: stale.length }, 'Refreshing stale sync data before analysis');
+
+    await Promise.all(
+      stale.map(async (acc) => {
+        const [balance, transactions] = await Promise.allSettled([
+          this.monoService.getAccountBalance(acc.monoAccountId, monoApiKey),
+          this.monoService.getTransactions(acc.monoAccountId, monoApiKey),
+        ]);
+
+        const bothFailed =
+          balance.status === 'rejected' && transactions.status === 'rejected';
+
+        if (bothFailed) {
+          this.logger.warn(
+            { monoAccountId: acc.monoAccountId },
+            'Sync refresh failed for account — proceeding with stale data',
+          );
+          return;
+        }
+
+        await this.prisma.bankAccount.update({
+          where: { id: acc.id },
+          data: {
+            ...(balance.status === 'fulfilled' && { balanceData: balance.value }),
+            ...(transactions.status === 'fulfilled' && { transactionsData: transactions.value }),
+            syncDataFetchedAt: new Date(),
+          },
+        });
+
+        this.logger.info({ monoAccountId: acc.monoAccountId }, 'Sync data refreshed');
+      }),
+    );
   }
 
   private async callBrainService(payload: {

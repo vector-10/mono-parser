@@ -85,8 +85,9 @@ model BankAccount {
 
   incomeData            Json?    
   statementInsightsData Json?    
-  insightsJobId         String?  
+  insightsJobId         String?
   enrichmentStatus      String   @default("PENDING")
+  syncDataFetchedAt     DateTime?
 
   applicantId    String
   applicant      Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)

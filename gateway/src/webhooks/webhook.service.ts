@@ -249,6 +249,7 @@ export class MonoWebhookService {
         balanceData:        balance.status      === 'fulfilled'   ? balance.value        : Prisma.DbNull,
         transactionsData:   transactions.status === 'fulfilled'   ? transactions.value   : Prisma.DbNull,
         identityData:       identity.status     === 'fulfilled'   ? identity.value       : Prisma.DbNull,
+        syncDataFetchedAt:  new Date(),
       },
     });
 
