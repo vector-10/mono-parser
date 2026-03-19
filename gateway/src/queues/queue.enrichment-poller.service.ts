@@ -162,13 +162,48 @@ export class EnrichmentPollerProcessor extends WorkerHost {
       account.applicant.fintechId,
       'account.enrichment_ready',
       {
-        accountId: account.id,
+        accountId:     account.id,
         monoAccountId,
-        applicantId: account.applicantId,
+        applicantId:   account.applicantId,
         applicationId: resolvedApplicationId,
-        message:
-          'Account enrichment complete. You may now submit this applicant for loan analysis.',
+        message:       'Account enrichment complete.',
       },
     );
+
+    await this._checkAndFireApplicationReady(account.id, account.applicant.fintechId);
+  }
+
+  private async _checkAndFireApplicationReady(
+    bankAccountId: string,
+    fintechId: string,
+  ): Promise<void> {
+    const applications = await this.prisma.application.findMany({
+      where: {
+        bankAccountIds:  { has: bankAccountId },
+        linkingFinalized: true,
+        status:           'LINKED',
+      },
+    });
+
+    for (const app of applications) {
+      const accounts = await this.prisma.bankAccount.findMany({
+        where:  { id: { in: app.bankAccountIds } },
+        select: { enrichmentStatus: true },
+      });
+
+      const allReady =
+        accounts.length > 0 && accounts.every((a) => a.enrichmentStatus === 'READY');
+
+      if (allReady) {
+        await this.outboundWebhookService.dispatch(fintechId, 'application.ready_for_analysis', {
+          applicationId: app.id,
+          applicantId:   app.applicantId,
+          accountCount:  app.bankAccountIds.length,
+          message:       'All accounts are enriched. You may now submit for analysis.',
+        });
+
+        this.logger.info({ applicationId: app.id }, 'application.ready_for_analysis fired');
+      }
+    }
   }
 }

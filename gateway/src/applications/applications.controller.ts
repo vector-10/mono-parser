@@ -15,7 +15,6 @@ import { ApplicationsService } from './applications.service';
 import { GeminiService } from 'src/gemini/gemini.service';
 import { CreateApplicationDto } from 'src/applications/dto/create-application.dto';
 import { InitiateApplicationDto } from 'src/applications/dto/initiate-application.dto';
-import { DataAggregationService } from './data-aggregation.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
 
@@ -23,7 +22,6 @@ import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
 export class ApplicationsController {
   constructor(
     private readonly applicationsService: ApplicationsService,
-    private readonly dataAggregationService: DataAggregationService,
     private readonly geminiService: GeminiService,
     @InjectQueue('applications') private readonly applicationsQueue: Queue,
   ) {}
@@ -40,6 +38,12 @@ export class ApplicationsController {
   @UseGuards(ApiKeyGuard)
   async linkAccount(@Request() req, @Param('id') id: string) {
     return this.applicationsService.linkAccount(id, req.user.id);
+  }
+
+  @Post(':id/finalize-linking')
+  @UseGuards(ApiKeyGuard)
+  async finalizeAccountLinking(@Request() req, @Param('id') id: string) {
+    return this.applicationsService.finalizeAccountLinking(id, req.user.id);
   }
 
   @Post(':id/analyze')

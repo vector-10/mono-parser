@@ -71,30 +71,34 @@ export class ApplicationProcessorService {
         throw new Error('Applicant has no linked bank accounts');
       }
 
-      const notReady = applicant.bankAccounts.filter(
-        (acc) => acc.enrichmentStatus !== 'READY',
-      );
+      const targetAccounts = application.bankAccountIds.length
+        ? applicant.bankAccounts.filter((acc) => application.bankAccountIds.includes(acc.id))
+        : applicant.bankAccounts;
 
-      if (notReady.length > 0) {
-        const statuses = notReady
-          .map((a) => `${a.monoAccountId}:${a.enrichmentStatus}`)
-          .join(', ');
-        throw new Error(
-          `Enrichment not complete for ${notReady.length} account(s): ${statuses}. ` +
-            'Wait for the account.enrichment_ready event before submitting for analysis.',
+      const readyAccounts  = targetAccounts.filter((acc) => acc.enrichmentStatus === 'READY');
+      const failedAccounts = targetAccounts.filter((acc) => acc.enrichmentStatus === 'FAILED');
+
+      if (failedAccounts.length > 0) {
+        this.logger.warn(
+          { count: failedAccounts.length, applicationId },
+          'Skipping accounts with FAILED enrichment',
         );
+      }
+
+      if (!readyAccounts.length) {
+        throw new Error('No accounts with completed enrichment available for analysis');
       }
 
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(
           clientId,
-          `Analysing ${applicant.bankAccounts.length} bank account(s)...`,
+          `Analysing ${readyAccounts.length} bank account(s)...`,
         );
       }
 
-      await this.refreshStaleAccounts(applicant.bankAccounts, monoApiKey);
+      await this.refreshStaleAccounts(readyAccounts, monoApiKey);
 
-      const monoAccountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
+      const monoAccountIds = readyAccounts.map((acc) => acc.monoAccountId);
       const accountsData = await this.dataAggregationService.gatherMultiAccountData(monoAccountIds);
 
       if (clientId) {

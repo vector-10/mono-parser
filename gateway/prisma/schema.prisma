@@ -111,6 +111,7 @@ model Application {
   purpose           String?
   
   status            String    @default("PENDING")
+  linkingFinalized  Boolean   @default(false)
   score             Int?
   decision          Json?
 
