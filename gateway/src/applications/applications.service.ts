@@ -10,7 +10,6 @@ import { CreateApplicationDto } from './dto/create-application.dto';
 import { InitiateApplicationDto } from './dto/initiate-application.dto';
 import { PinoLogger } from 'nestjs-pino';
 
-// ─── ApplicationsService ───────────────────────────────────────────────────────
 
 @Injectable()
 export class ApplicationsService {

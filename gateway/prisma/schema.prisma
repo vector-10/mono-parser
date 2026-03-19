@@ -63,7 +63,8 @@ model Applicant {
 
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-
+  
+  @@unique([email, fintechId])
   @@index([fintechId])
   @@index([email])
 }
@@ -77,17 +78,15 @@ model BankAccount {
   accountNumber  String?
   balance        Int?
 
-  // Fetched synchronously at account-link time (fire-and-forget alongside enrichments)
-  accountDetailsData    Json?    // GET /accounts/{id}
-  balanceData           Json?    // GET /accounts/{id}/balance
-  transactionsData      Json?    // GET /accounts/{id}/transactions
-  identityData          Json?    // GET /accounts/{id}/identity
+  accountDetailsData    Json?    
+  balanceData           Json?    
+  transactionsData      Json?   
+  identityData          Json?    
 
-  // Async enrichment data stored as Mono webhooks/jobs complete
-  incomeData            Json?    // from mono.events.account_income webhook
-  statementInsightsData Json?    // from Mono enrichments job (polled via insightsJobId)
-  insightsJobId         String?  // jobId returned when we trigger the insights job
-  enrichmentStatus      String   @default("PENDING") // PENDING | READY | FAILED
+  incomeData            Json?    
+  statementInsightsData Json?    
+  insightsJobId         String?  
+  enrichmentStatus      String   @default("PENDING")
 
   applicantId    String
   applicant      Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
@@ -124,6 +123,8 @@ model Application {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   processedAt       DateTime?
+  idempotencyKey    String?   @unique
+  abandonedAt       DateTime?
   
   applicant         Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   

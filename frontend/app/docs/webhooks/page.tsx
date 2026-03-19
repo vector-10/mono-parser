@@ -7,8 +7,8 @@ export default function WebhooksPage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Webhooks</h1>
       <p className="text-gray-600 text-sm leading-relaxed mb-4">
-        Mono-Parser pushes events to your registered webhook URL. All webhook payloads share the
-        same envelope shape:
+        Mono-Parser pushes events to your registered webhook URL. All webhook
+        payloads share the same envelope shape:
       </p>
 
       <CodeBlock
@@ -21,9 +21,9 @@ export default function WebhooksPage() {
       />
 
       <Callout type="info">
-        Register your webhook URL in the dashboard under Settings → Webhook URL. Your endpoint must
-        respond with HTTP <code>2xx</code> within 10 seconds. Failed deliveries are retried with
-        exponential backoff.
+        Register your webhook URL in the dashboard under Settings → Webhook URL.
+        Your endpoint must respond with HTTP <code>2xx</code> within 10 seconds.
+        Failed deliveries are retried with exponential backoff.
       </Callout>
 
       {/* ── account.linked ── */}
@@ -32,13 +32,16 @@ export default function WebhooksPage() {
           <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold rounded-full">
             EVENT
           </span>
-          <code className="font-mono font-semibold text-gray-900 text-sm">account.linked</code>
+          <code className="font-mono font-semibold text-gray-900 text-sm">
+            account.linked
+          </code>
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">account.linked</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
-          Fired when a bank account is successfully linked via Mono Connect. Enrichment starts
-          automatically after this event — you do not need to do anything yet. Wait for{" "}
-          <code>account.enrichment_ready</code> before calling analyze.
+          Fired when a bank account is successfully linked via Mono Connect.
+          Enrichment starts automatically after this event — you do not need to
+          do anything yet. Wait for <code>account.enrichment_ready</code> before
+          calling analyze.
         </p>
         <CodeBlock
           lang="json"
@@ -66,12 +69,14 @@ export default function WebhooksPage() {
             account.enrichment_ready
           </code>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">account.enrichment_ready</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          account.enrichment_ready
+        </h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
-          Fired when all enrichment data (income analysis + statement insights) has been collected
-          and stored. This is your signal to call <code>/analyze</code>. The{" "}
-          <code>applicationId</code> is included for convenience — pass it directly to the analyze
-          endpoint.
+          Fired when all enrichment data (income analysis + statement insights)
+          has been collected and stored. This is your signal to call{" "}
+          <code>/analyze</code>. The <code>applicationId</code> is included for
+          convenience — pass it directly to the analyze endpoint.
         </p>
         <CodeBlock
           lang="json"
@@ -89,8 +94,8 @@ export default function WebhooksPage() {
         />
         <Callout type="success">
           Once you receive this event, call{" "}
-          <code>POST /api/applications/{"{applicationId}"}/analyze</code> using the{" "}
-          <code>applicationId</code> from the payload.
+          <code>POST /api/applications/{"{applicationId}"}/analyze</code> using
+          the <code>applicationId</code> from the payload.
         </Callout>
       </section>
 
@@ -104,10 +109,15 @@ export default function WebhooksPage() {
             application.decision
           </code>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">application.decision</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          application.decision
+        </h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
           The final scored decision. Delivered after analysis completes. See the{" "}
-          <Link href="/docs/decision-object" className="text-[#0055ba] hover:underline">
+          <Link
+            href="/docs/decision-object"
+            className="text-[#0055ba] hover:underline"
+          >
             Decision Object
           </Link>{" "}
           section for a full breakdown of all fields.
