@@ -20,7 +20,7 @@ interface PollInsightsJobData {
   applicationId?: string;
 }
 
-@Processor('enrichments')
+@Processor('enrichments', { concurrency: 5 })
 export class EnrichmentPollerProcessor extends WorkerHost {
   constructor(
     private readonly prisma: PrismaService,

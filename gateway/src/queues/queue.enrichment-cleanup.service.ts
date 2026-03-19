@@ -10,7 +10,7 @@ const STUCK_THRESHOLD_MS = 20 * 60 * 1000;
 const PENDING_LINKING_TIMEOUT_MS = 24 * 60 * 60 * 1000;
 const LINKED_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000;
 
-@Processor('enrichment-cleanup')
+@Processor('enrichment-cleanup', { concurrency: 2 })
 export class EnrichmentCleanupProcessor
   extends WorkerHost
   implements OnApplicationBootstrap
