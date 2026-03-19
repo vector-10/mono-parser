@@ -6,6 +6,7 @@ import {
   MinLength,
   MaxLength,
   Min,
+  IsNotEmpty,
 } from 'class-validator';
 
 export class InitiateApplicationDto {
@@ -49,4 +50,8 @@ export class InitiateApplicationDto {
   @IsOptional()
   @IsString()
   purpose?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  idempotencyKey: string;
 }

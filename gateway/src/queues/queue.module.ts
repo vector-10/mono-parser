@@ -49,7 +49,7 @@ import { QueueController } from './queue.controller';
         attempts: 3,
         backoff: {
           type: 'exponential',
-          delay: 5000,
+          delay: 120_000,
         },
         removeOnComplete: 100,
         removeOnFail: 200,

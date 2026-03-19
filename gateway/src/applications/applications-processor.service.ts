@@ -8,6 +8,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
 import { MonoService } from 'src/mono/mono.service';
 
+export class BrainUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BrainUnavailableError';
+  }
+}
+
 @Injectable()
 export class ApplicationProcessorService {
   private readonly brainUrl: string;
@@ -35,7 +42,6 @@ export class ApplicationProcessorService {
         this.eventsGateway.emitApplicationProgress(clientId, 'Fetching applicant data...');
       }
 
-      // ── Load application with all related data ────────────────────────────
       const application = await this.prisma.application.findUnique({
         where: { id: applicationId },
         include: {
@@ -53,7 +59,7 @@ export class ApplicationProcessorService {
       }
 
       const { applicant } = application;
-      const monoApiKey   = applicant.fintech.monoApiKey;
+      const monoApiKey = applicant.fintech.monoApiKey;
 
       if (!monoApiKey) {
         throw new Error('Fintech Mono API key not configured');
@@ -63,17 +69,17 @@ export class ApplicationProcessorService {
         throw new Error('Applicant has no linked bank accounts');
       }
 
-      // ── Enrichment readiness check ────────────────────────────────────────
       const notReady = applicant.bankAccounts.filter(
         (acc) => acc.enrichmentStatus !== 'READY',
       );
+
       if (notReady.length > 0) {
         const statuses = notReady
           .map((a) => `${a.monoAccountId}:${a.enrichmentStatus}`)
           .join(', ');
         throw new Error(
           `Enrichment not complete for ${notReady.length} account(s): ${statuses}. ` +
-          'Wait for the account.enrichment_ready event before submitting for analysis.',
+            'Wait for the account.enrichment_ready event before submitting for analysis.',
         );
       }
 
@@ -84,19 +90,13 @@ export class ApplicationProcessorService {
         );
       }
 
-      // ── Read all stored data for all accounts from DB, All fields were pre-fetched and stored at
-      // account-link time ────────────────────
-      
       const monoAccountIds = applicant.bankAccounts.map((acc) => acc.monoAccountId);
-      const accountsData   = await this.dataAggregationService.gatherMultiAccountData(
-        monoAccountIds,
-      );
+      const accountsData = await this.dataAggregationService.gatherMultiAccountData(monoAccountIds);
 
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(clientId, 'Looking up credit history...');
       }
 
-      // ── Credit history — BVN-level, one per applicant ─────────────────────
       let creditHistory: any = null;
       if (applicant.bvn) {
         try {
@@ -109,17 +109,13 @@ export class ApplicationProcessorService {
           );
         }
       } else {
-        this.logger.info(
-          { applicantId: applicant.id },
-          'No BVN on record — skipping credit history lookup',
-        );
+        this.logger.info({ applicantId: applicant.id }, 'No BVN on record — skipping credit history lookup');
       }
 
       if (clientId) {
         this.eventsGateway.emitApplicationProgress(clientId, 'Running credit analysis...');
       }
 
-      // ── Call the brain service ────────────────────────────────────
       const brainResponse = await this.callBrainService({
         applicant_id:   application.applicantId,
         applicant_name: `${applicant.firstName} ${applicant.lastName}`,
@@ -137,7 +133,6 @@ export class ApplicationProcessorService {
         'Brain analysis complete',
       );
 
-      // ── Persist decision ──────────────────────────────────────────────────
       const bankAccountIds = applicant.bankAccounts.map((acc) => acc.id);
       const updatedApp = await this.applicationsService.updateStatus(
         applicationId,
@@ -157,7 +152,6 @@ export class ApplicationProcessorService {
         });
       }
 
-      // ── Dispatch outbound webhook to fintech ────────────────
       await this.outboundWebhookService.dispatch(
         applicant.fintechId,
         'application.decision',
@@ -174,40 +168,48 @@ export class ApplicationProcessorService {
     } catch (error) {
       this.logger.error({ err: error, applicationId }, 'Failed to process application');
 
-      await this.applicationsService.updateStatus(applicationId, 'FAILED', undefined, {
-        error: error.message,
-      });
-
-      if (clientId) {
-        this.eventsGateway.emitApplicationError(
-          clientId,
-          `Processing failed: ${error.message}`,
-        );
+      if (error.name === 'BrainUnavailableError') {
+        this.logger.warn({ applicationId }, 'Brain unavailable — allowing BullMQ to retry');
+        throw error;
       }
 
-      const failedApp = await this.prisma.application.findUnique({
-        where: { id: applicationId },
-        include: { applicant: true },
-      });
-
-      if (failedApp) {
-        await this.outboundWebhookService.dispatch(
-          failedApp.applicant.fintechId,
-          'application.failed',
-          {
-            applicationId,
-            applicantId: failedApp.applicantId,
-            status:      'FAILED',
-            reason:      error.message,
-          },
-        );
-      }
-
+      await this.handleProcessingFailure(applicationId, clientId, error);
       return { success: false, error: error.message };
     }
   }
 
-  // ─── Brain HTTP call ─────────────────────
+  async handleProcessingFailure(
+    applicationId: string,
+    clientId: string | undefined,
+    error: Error,
+  ): Promise<void> {
+    await this.applicationsService.updateStatus(applicationId, 'FAILED', undefined, {
+      error: error.message,
+    });
+
+    if (clientId) {
+      this.eventsGateway.emitApplicationError(clientId, `Processing failed: ${error.message}`);
+    }
+
+    const failedApp = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { applicant: true },
+    });
+
+    if (failedApp) {
+      await this.outboundWebhookService.dispatch(
+        failedApp.applicant.fintechId,
+        'application.failed',
+        {
+          applicationId,
+          applicantId: failedApp.applicantId,
+          status:      'FAILED',
+          reason:      error.message,
+        },
+      );
+    }
+  }
+
   private async callBrainService(payload: {
     applicant_id:   string;
     applicant_name: string;
@@ -221,19 +223,34 @@ export class ApplicationProcessorService {
   }) {
     this.logger.info(`Calling brain at ${this.brainUrl}/analyze`);
 
-    const response = await fetch(`${this.brainUrl}/analyze`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+
+    let response: Response;
+
+    try {
+      response = await fetch(`${this.brainUrl}/analyze`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+        signal:  controller.signal,
+      });
+    } catch (err) {
+      clearTimeout(timeout);
+      throw new BrainUnavailableError(`Brain service unreachable: ${err.message}`);
+    }
+
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const errorText = await response.text();
-      this.logger.error(
-        { status: response.status, errorText },
-        'Brain service returned an error',
-      );
-      throw new Error(`Brain service failed (${response.status}): ${errorText}`);
+      this.logger.error({ status: response.status, errorText }, 'Brain service returned an error');
+
+      if (response.status >= 500) {
+        throw new BrainUnavailableError(`Brain service unavailable (${response.status}): ${errorText}`);
+      }
+
+      throw new Error(`Brain service rejected request (${response.status}): ${errorText}`);
     }
 
     return response.json();
