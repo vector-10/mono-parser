@@ -98,6 +98,10 @@ class FeatureExtractor:
         """
         if best_income and best_income.income_streams:
             return self._income_from_webhook(best_income)
+        logger.warning(
+            "Income webhook data unavailable — falling back to transaction-based "
+            "income estimation. Results will be less accurate."
+        )
         return self._income_from_transactions(accounts)
 
     def _income_from_webhook(self, income: MonoIncomeData) -> Dict:

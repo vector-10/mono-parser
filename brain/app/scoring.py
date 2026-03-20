@@ -102,8 +102,12 @@ class CreditScorer:
         final_score = max(BASELINE_SCORE, min(850, final_score))
 
         logger.info(
-            f"Score: {final_score} | thin_file={is_thin_file} | "
-            f"raw={raw_scores} | earned={breakdown}"
+            f"[SCORE] score={final_score} thin_file={is_thin_file} "
+            f"credit_history={breakdown.get('credit_history', 0):.1f} "
+            f"income_stability={breakdown.get('income_stability', 0):.1f} "
+            f"cash_flow={breakdown.get('cash_flow_health', 0):.1f} "
+            f"dsc={breakdown.get('debt_service_capacity', 0):.1f} "
+            f"account_behavior={breakdown.get('account_behavior', 0):.1f}"
         )
         return final_score, breakdown
 
