@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PinoLogger } from 'nestjs-pino';
 
+type ChatMessage = { role: 'user' | 'assistant'; content: string };
+
 @Injectable()
-export class GeminiService {
+export class AIService {
   private genAI: GoogleGenerativeAI;
-  private model: any;
 
   constructor(private readonly logger: PinoLogger) {
-    this.logger.setContext(GeminiService.name);
+    this.logger.setContext(AIService.name);
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -16,7 +17,6 @@ export class GeminiService {
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
   async explainLoanDecision(analysisData: any): Promise<string> {
@@ -63,7 +63,10 @@ IMPORTANT RULES:
 - Do NOT use markdown formatting like ** or # - just plain text with line breaks`;
 
     try {
-      const result = await this.model.generateContent(prompt);
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+      });
+      const result = await model.generateContent(prompt);
       const response = await result.response;
       let text = response.text();
 
@@ -72,11 +75,58 @@ IMPORTANT RULES:
         .replace(/#{1,6}\s/g, '')
         .trim();
 
-      this.logger.info('Gemini explanation generated successfully');
+      this.logger.info('AI explanation generated successfully');
       return text;
     } catch (error) {
-      this.logger.error({ err: error }, 'Gemini API failed');
+      this.logger.error({ err: error }, 'AI API failed');
       throw new Error('Failed to generate explanation');
     }
+  }
+
+  async reviewChat(
+    applicationData: any,
+    message: string,
+    history: ChatMessage[],
+  ): Promise<string> {
+    const systemInstruction = this.buildReviewSystemPrompt(applicationData);
+
+    const model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction,
+    });
+
+    const geminiHistory = history.map((msg) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
+
+    const chat = model.startChat({ history: geminiHistory });
+
+    try {
+      const result = await chat.sendMessage(message);
+      const text = result.response.text().trim();
+      this.logger.info('AI review chat response generated');
+      return text;
+    } catch (error) {
+      this.logger.error({ err: error }, 'AI review chat failed');
+      throw new Error('Failed to generate response');
+    }
+  }
+
+  private buildReviewSystemPrompt(app: any): string {
+    return `You are an AI credit review assistant helping a loan officer evaluate a loan application.
+
+Application data:
+${JSON.stringify(app, null, 2)}
+
+Your role:
+- Answer questions about this specific application clearly and concisely
+- Help the officer understand the credit score, risk factors, strengths, and weaknesses
+- Suggest follow-up questions or documents if needed
+- Help draft summaries for managers or stakeholders
+- Provide balanced analysis grounded in the data above
+- Never make the final approval or decline decision — that is the officer's responsibility
+
+If asked about something not present in the data, say so clearly. Keep responses professional and focused.`;
   }
 }

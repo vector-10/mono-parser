@@ -18,10 +18,10 @@ export class ApplicationProcessor extends WorkerHost {
   async process(job: Job) {
     this.logger.info({ jobId: job.id, data: job.data }, 'Processing job');
 
-    const { applicationId, clientId } = job.data;
+    const { applicationId } = job.data;
 
     try {
-      await this.applicationProcessorService.processApplication(applicationId, clientId);
+      await this.applicationProcessorService.processApplication(applicationId);
       this.logger.info({ jobId: job.id }, 'Job completed');
       return { completed: true };
     } catch (error) {
@@ -33,11 +33,7 @@ export class ApplicationProcessor extends WorkerHost {
           { jobId: job.id, applicationId, attemptsMade: job.attemptsMade },
           'All retry attempts exhausted — marking application as failed',
         );
-        await this.applicationProcessorService.handleProcessingFailure(
-          applicationId,
-          clientId,
-          error,
-        );
+        await this.applicationProcessorService.handleProcessingFailure(applicationId, error);
       } else {
         this.logger.warn(
           { jobId: job.id, applicationId, attemptsMade: job.attemptsMade, maxAttempts },

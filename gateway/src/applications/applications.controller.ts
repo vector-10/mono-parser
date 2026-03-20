@@ -12,7 +12,7 @@ import { Throttle } from '@nestjs/throttler';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ApplicationsService } from './applications.service';
-import { GeminiService } from 'src/gemini/gemini.service';
+import { AIService } from 'src/ai/ai.service';
 import { CreateApplicationDto } from 'src/applications/dto/create-application.dto';
 import { InitiateApplicationDto } from 'src/applications/dto/initiate-application.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -22,7 +22,7 @@ import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
 export class ApplicationsController {
   constructor(
     private readonly applicationsService: ApplicationsService,
-    private readonly geminiService: GeminiService,
+    private readonly aiService: AIService,
     @InjectQueue('applications') private readonly applicationsQueue: Queue,
   ) {}
 
@@ -78,36 +78,6 @@ export class ApplicationsController {
   }
 
   @Throttle({ default: { ttl: 60000, limit: 10 } })
-  @Post(':id/start-analysis')
-  @UseGuards(JwtAuthGuard)
-  async startAnalysis(
-    @Request() req,
-    @Param('id') id: string,
-    @Body('clientId') clientId?: string,
-  ) {
-    const application = await this.applicationsService.findOne(id, req.user.id);
-
-    if (!application) {
-      throw new Error('Application not found');
-    }
-
-    if (application.status !== 'PENDING') {
-      throw new Error('Application already processed');
-    }
-
-    await this.applicationsQueue.add('process-application', {
-      applicationId: id,
-      clientId,
-    });
-
-    return {
-      applicationId: id,
-      status: 'PROCESSING',
-      message: 'Analysis started. You will receive updates via WebSocket',
-    };
-  }
-
-  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @Get(':id/explain')
   @UseGuards(JwtAuthGuard)
   async explainApplication(@Request() req, @Param('id') id: string) {
@@ -117,12 +87,32 @@ export class ApplicationsController {
       throw new Error('Application analysis not complete yet');
     }
 
-    const explanation = await this.geminiService.explainLoanDecision({
+    const explanation = await this.aiService.explainLoanDecision({
       score: application.score,
       decision: application.decision,
     });
 
     return { explanation };
+  }
+
+  @Throttle({ default: { ttl: 60000, limit: 30 } })
+  @Post(':id/chat')
+  @UseGuards(JwtAuthGuard)
+  async reviewChat(
+    @Request() req,
+    @Param('id') id: string,
+    @Body('message') message: string,
+    @Body('history') history: { role: 'user' | 'assistant'; content: string }[] = [],
+  ) {
+    if (!message?.trim()) {
+      throw new Error('Message is required');
+    }
+
+    const application = await this.applicationsService.findOne(id, req.user.id);
+
+    const reply = await this.aiService.reviewChat(application, message, history);
+
+    return { reply };
   }
 
   @Get()

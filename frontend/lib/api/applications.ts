@@ -28,6 +28,8 @@ export interface Application {
   }
 }
 
+export type ChatMessage = { role: 'user' | 'assistant'; content: string }
+
 export const applicationsApi = {
   getAll: async (status?: string): Promise<Application[]> => {
     const response = await api.get('/applications', {
@@ -39,5 +41,10 @@ export const applicationsApi = {
   getOne: async (id: string): Promise<Application> => {
     const response = await api.get(`/applications/${id}`)
     return response.data
+  },
+
+  chat: async (id: string, message: string, history: ChatMessage[]): Promise<string> => {
+    const response = await api.post(`/applications/${id}/chat`, { message, history })
+    return response.data.reply
   },
 }

@@ -6,12 +6,11 @@ import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
 import { ApplicationProcessorService } from './applications-processor.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { EventsModule } from 'src/events/events.module';
 import { MonoModule } from 'src/mono/mono.module';
-import { GeminiModule } from 'src/gemini/gemini.module';
+import { AIModule } from 'src/ai/ai.module';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, forwardRef(() => QueueModule), MonoModule, EventsModule, GeminiModule],
+  imports: [ConfigModule, PrismaModule, forwardRef(() => QueueModule), MonoModule, AIModule],
   controllers: [ApplicationsController],
   providers: [
     ApplicationsService,

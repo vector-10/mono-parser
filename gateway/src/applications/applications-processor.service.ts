@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { ApplicationsService } from './applications.service';
 import { DataAggregationService } from './data-aggregation.service';
-import { EventsGateway } from 'src/events/events.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
 import { MonoService } from 'src/mono/mono.service';
@@ -24,7 +23,6 @@ export class ApplicationProcessorService {
   constructor(
     private applicationsService: ApplicationsService,
     private dataAggregationService: DataAggregationService,
-    private eventsGateway: EventsGateway,
     private prisma: PrismaService,
     private configService: ConfigService,
     private readonly logger: PinoLogger,
@@ -36,14 +34,10 @@ export class ApplicationProcessorService {
     this.logger.info({ brainUrl: this.brainUrl }, 'Brain service URL configured');
   }
 
-  async processApplication(applicationId: string, clientId?: string) {
+  async processApplication(applicationId: string) {
     this.logger.info({ applicationId }, 'Starting application processing');
 
     try {
-      if (clientId) {
-        this.eventsGateway.emitApplicationProgress(clientId, 'Fetching applicant data...');
-      }
-
       const application = await this.prisma.application.findUnique({
         where: { id: applicationId },
         include: {
@@ -89,21 +83,10 @@ export class ApplicationProcessorService {
         throw new Error('No accounts with completed enrichment available for analysis');
       }
 
-      if (clientId) {
-        this.eventsGateway.emitApplicationProgress(
-          clientId,
-          `Analysing ${readyAccounts.length} bank account(s)...`,
-        );
-      }
-
       await this.refreshStaleAccounts(readyAccounts, monoApiKey);
 
       const monoAccountIds = readyAccounts.map((acc) => acc.monoAccountId);
       const accountsData = await this.dataAggregationService.gatherMultiAccountData(monoAccountIds);
-
-      if (clientId) {
-        this.eventsGateway.emitApplicationProgress(clientId, 'Looking up credit history...');
-      }
 
       let creditHistory: any = null;
       if (applicant.bvn) {
@@ -118,10 +101,6 @@ export class ApplicationProcessorService {
         }
       } else {
         this.logger.info({ applicantId: applicant.id }, 'No BVN on record — skipping credit history lookup');
-      }
-
-      if (clientId) {
-        this.eventsGateway.emitApplicationProgress(clientId, 'Running credit analysis...');
       }
 
       const brainResponse = await this.callBrainService({
@@ -151,16 +130,6 @@ export class ApplicationProcessorService {
         bankAccountIds,
       );
 
-      if (clientId) {
-        this.eventsGateway.emitApplicationComplete(clientId, {
-          applicationId: updatedApp.id,
-          status:        updatedApp.status,
-          score:         updatedApp.score,
-          decision:      updatedApp.decision,
-          message:       finalStatus === 'MANUAL_REVIEW' ? 'Application requires manual review.' : 'Analysis complete!',
-        });
-      }
-
       await this.outboundWebhookService.dispatch(
         applicant.fintechId,
         'application.decision',
@@ -182,23 +151,15 @@ export class ApplicationProcessorService {
         throw error;
       }
 
-      await this.handleProcessingFailure(applicationId, clientId, error);
+      await this.handleProcessingFailure(applicationId, error);
       return { success: false, error: error.message };
     }
   }
 
-  async handleProcessingFailure(
-    applicationId: string,
-    clientId: string | undefined,
-    error: Error,
-  ): Promise<void> {
+  async handleProcessingFailure(applicationId: string, error: Error): Promise<void> {
     await this.applicationsService.updateStatus(applicationId, 'FAILED', undefined, {
       error: error.message,
     });
-
-    if (clientId) {
-      this.eventsGateway.emitApplicationError(clientId, `Processing failed: ${error.message}`);
-    }
 
     const failedApp = await this.prisma.application.findUnique({
       where: { id: applicationId },

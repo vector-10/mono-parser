@@ -3,11 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApplication } from "@/lib/hooks/queries/use-application";
 import {
-  RiArrowLeftLine, RiSendPlanLine, RiCheckLine, RiCloseLine,
-  RiArrowRightSLine, RiShieldKeyholeLine,
+  RiArrowLeftLine, RiSendPlaneLine, RiCheckLine, RiCloseLine,
+  RiArrowRightSLine, RiShieldKeyholeLine, RiLoader4Line,
 } from "react-icons/ri";
-import { TbCurrencyNaira } from "react-icons/tb";
 import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
+import { applicationsApi, type ChatMessage } from "@/lib/api/applications";
 
 function formatNaira(amount: number) {
   return `₦${amount.toLocaleString("en-NG")}`;
@@ -40,8 +40,6 @@ type DecisionData = {
   counter_offer?: { counter_amount?: number; monthly_payment?: number; counter_tenor?: number };
 };
 
-type ChatMessage = { role: "user" | "assistant"; content: string };
-
 const SUGGESTED_PROMPTS = [
   "What is the main risk in this application?",
   "Can we counter-offer at a lower amount?",
@@ -49,23 +47,36 @@ const SUGGESTED_PROMPTS = [
   "What additional documents should we request?",
 ];
 
-function ChatPanel() {
+function ChatPanel({ applicationId }: { applicationId: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = (text: string) => {
-    if (!text.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: text },
-      { role: "assistant", content: "Gemini integration coming soon. This panel will answer questions about this specific application using the full credit assessment as context." },
-    ]);
+  const handleSend = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const updatedHistory = [...messages, userMsg];
+    setMessages(updatedHistory);
     setInput("");
+    setIsLoading(true);
+
+    try {
+      const reply = await applicationsApi.chat(applicationId, text, messages);
+      setMessages([...updatedHistory, { role: "assistant", content: reply }]);
+    } catch {
+      setMessages([
+        ...updatedHistory,
+        { role: "assistant", content: "Something went wrong. Please try again." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -86,7 +97,8 @@ function ChatPanel() {
               <button
                 key={prompt}
                 onClick={() => handleSend(prompt)}
-                className="w-full text-left px-4 py-3 rounded-xl border border-gray-100 text-sm text-gray-600 hover:border-[#0055ba]/30 hover:text-gray-900 hover:bg-[#0055ba]/5 transition-colors"
+                disabled={isLoading}
+                className="w-full text-left px-4 py-3 rounded-xl border border-gray-100 text-sm text-gray-600 hover:border-[#0055ba]/30 hover:text-gray-900 hover:bg-[#0055ba]/5 transition-colors disabled:opacity-50"
               >
                 {prompt}
               </button>
@@ -99,7 +111,7 @@ function ChatPanel() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                   msg.role === "user"
                     ? "bg-[#0055ba] text-white rounded-br-sm"
                     : "bg-gray-50 text-gray-700 border border-gray-100 rounded-bl-sm"
@@ -109,6 +121,13 @@ function ChatPanel() {
               </div>
             </div>
           ))
+        )}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
+              <RiLoader4Line className="w-4 h-4 text-gray-400 animate-spin" />
+            </div>
+          </div>
         )}
         <div ref={bottomRef} />
       </div>
@@ -122,13 +141,14 @@ function ChatPanel() {
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(input); } }}
             placeholder="Ask about this application…"
             className="flex-1 text-sm bg-transparent text-gray-900 placeholder-gray-300 focus:outline-none"
+            disabled={isLoading}
           />
           <button
             onClick={() => handleSend(input)}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isLoading}
             className="text-[#0055ba] hover:text-[#003d85] disabled:text-gray-200 transition-colors"
           >
-            <RiSendPlanLine className="w-4 h-4" />
+            <RiSendPlaneLine className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -160,9 +180,10 @@ export default function ReviewWorkspacePage() {
   const d        = app.decision as DecisionData | null;
   const reasons  = d?.manual_review_reasons ?? [];
   const band     = app.score ? scoreBand(app.score) : null;
+  const isCounter = !!d?.counter_offer;
   const terms    = d?.counter_offer ?? d?.approval_details;
-  const amount   = d?.counter_offer ? terms?.counter_amount : terms?.approved_amount;
-  const tenor    = d?.counter_offer ? (terms as { counter_tenor?: number })?.counter_tenor : terms?.approved_tenor;
+  const amount   = isCounter ? d?.counter_offer?.counter_amount : d?.approval_details?.approved_amount;
+  const tenor    = isCounter ? d?.counter_offer?.counter_tenor  : d?.approval_details?.approved_tenor;
 
   return (
     <div className="-mx-6 -my-8 h-[calc(100vh-4rem)] flex flex-col">
@@ -322,7 +343,7 @@ export default function ReviewWorkspacePage() {
         </div>
 
         <div className="flex-1 flex flex-col bg-white">
-          <ChatPanel />
+          <ChatPanel applicationId={applicationId} />
         </div>
       </div>
     </div>
