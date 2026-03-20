@@ -1,4 +1,4 @@
-import { Controller, Put, Body, Request, UseGuards } from '@nestjs/common';
+import { Controller, Put, Post, Body, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -22,5 +22,10 @@ export class UsersController {
     @Body('webhookUrl') webhookUrl: string,
   ) {
     return this.usersService.updateWebhookUrl(req.user.id, webhookUrl);
+  }
+
+  @Post('rotate-api-key')
+  async rotateApiKey(@Request() req) {
+    return this.usersService.rotateApiKey(req.user.id);
   }
 }

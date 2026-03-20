@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -11,15 +12,17 @@ export class ApiKeyGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+    const req    = context.switchToHttp().getRequest();
     const apiKey = req.headers['x-api-key'];
 
     if (!apiKey) {
       throw new UnauthorizedException('Missing x-api-key header');
     }
 
+    const hash = createHash('sha256').update(apiKey).digest('hex');
+
     const user = await this.prisma.user.findUnique({
-      where: { apiKey },
+      where: { apiKey: hash },
       select: { id: true, monoApiKey: true },
     });
 
@@ -31,7 +34,7 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException('Mono API key not configured for this account');
     }
 
-    req.user = { id: user.id };
+    req.user       = { id: user.id };
     req.monoApiKey = user.monoApiKey;
     return true;
   }

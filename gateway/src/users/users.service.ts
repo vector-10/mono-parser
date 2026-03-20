@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 
 function generateApiKey(): string {
   return `mp_live_${randomBytes(32).toString('base64url')}`;
+}
+
+function hashApiKey(key: string): string {
+  return createHash('sha256').update(key).digest('hex');
 }
 
 @Injectable()
@@ -25,7 +29,6 @@ export class UsersService {
         password: hashedPassword,
         name,
         companyName,
-        apiKey: generateApiKey(),
       },
       select: {
         id: true,
@@ -37,6 +40,25 @@ export class UsersService {
         otpExpiry: true,
       },
     });
+  }
+
+  async generateAndStoreApiKey(userId: string): Promise<{ apiKey: string; webhookSecret: string }> {
+    const plainKey      = generateApiKey();
+    const webhookSecret = randomBytes(32).toString('base64url');
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        apiKey:        hashApiKey(plainKey),
+        webhookSecret,
+      },
+    });
+
+    return { apiKey: plainKey, webhookSecret };
+  }
+
+  async rotateApiKey(userId: string): Promise<{ apiKey: string; webhookSecret: string }> {
+    return this.generateAndStoreApiKey(userId);
   }
 
   async findByEmail(email: string) {
@@ -55,14 +77,20 @@ export class UsersService {
         companyName: true,
         apiKey: true,
         monoApiKey: true,
+        webhookSecret: true,
         webhookUrl: true,
       },
     });
 
     if (!user) return null;
 
-    const { monoApiKey, ...rest } = user;
-    return { ...rest, hasMonoApiKey: !!monoApiKey };
+    const { monoApiKey, apiKey, webhookSecret, ...rest } = user;
+    return {
+      ...rest,
+      hasApiKey:        !!apiKey,
+      hasMonoApiKey:    !!monoApiKey,
+      hasWebhookSecret: !!webhookSecret,
+    };
   }
 
   async updateOTP(userId: string, otp: string | null, expiresAt: Date | null) {

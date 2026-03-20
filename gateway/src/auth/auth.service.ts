@@ -76,7 +76,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(verifyotpDto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or OTP');
+      throw new UnauthorizedException('Invalid email');
     }
 
     if (user.otp !== this.hashOTP(verifyotpDto.otp)) {
@@ -89,6 +89,8 @@ export class AuthService {
 
     await this.usersService.verifyEmail(user.id);
 
+    const { apiKey, webhookSecret } = await this.usersService.generateAndStoreApiKey(user.id);
+
     const access_token = this.tokenService.generateAccessToken(
       user.id,
       user.email,
@@ -99,6 +101,8 @@ export class AuthService {
       message: 'Email verified successfully',
       access_token,
       refresh_token,
+      apiKey,
+      webhookSecret,
       user: {
         id: user.id,
         email: user.email,

@@ -39,6 +39,7 @@ export class EnrichmentCleanupProcessor
 
   async process(_job: Job): Promise<void> {
     await this.cleanStuckEnrichments();
+    await this.recoverMissedEnrichments();
     await this.abandonPendingLinking();
     await this.abandonLinked();
   }
@@ -143,6 +144,125 @@ export class EnrichmentCleanupProcessor
         this.logger.error(
           { err, applicationId: application.id },
           'Failed to abandon application (no_link)',
+        );
+      }
+    }
+  }
+
+  private async recoverMissedEnrichments(): Promise<void> {
+    const candidates = await this.prisma.bankAccount.findMany({
+      where: {
+        enrichmentStatus: { notIn: ['READY', 'FAILED', 'SCRUBBED'] },
+        incomeData: { not: Prisma.AnyNull },
+        statementInsightsData: { not: Prisma.AnyNull },
+      },
+      include: {
+        applicant: {
+          include: {
+            applications: {
+              where: { status: 'LINKED' },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    if (!candidates.length) {
+      this.logger.info('Enrichment recovery: no missed enrichments found');
+      return;
+    }
+
+    this.logger.warn(
+      { count: candidates.length },
+      'Enrichment recovery: found accounts with complete data but not READY',
+    );
+
+    for (const account of candidates) {
+      try {
+        const result = await this.prisma.bankAccount.updateMany({
+          where: {
+            id: account.id,
+            enrichmentStatus: { notIn: ['READY', 'FAILED', 'SCRUBBED'] },
+            incomeData: { not: Prisma.AnyNull },
+            statementInsightsData: { not: Prisma.AnyNull },
+          },
+          data: { enrichmentStatus: 'READY' },
+        });
+
+        if (result.count === 0) continue;
+
+        const applicationId = account.applicant.applications[0]?.id ?? null;
+
+        await this.outboundWebhookService.dispatch(
+          account.applicant.fintechId,
+          'account.enrichment_ready',
+          {
+            accountId: account.id,
+            monoAccountId: account.monoAccountId,
+            applicantId: account.applicantId,
+            applicationId,
+            message: 'Account enrichment complete.',
+          },
+        );
+
+        await this._checkAndFireApplicationReady(
+          account.id,
+          account.applicant.fintechId,
+        );
+
+        this.logger.info(
+          { accountId: account.id },
+          'Enrichment recovery: account marked READY',
+        );
+      } catch (err) {
+        this.logger.error(
+          { err, accountId: account.id },
+          'Enrichment recovery failed for account',
+        );
+      }
+    }
+  }
+
+  private async _checkAndFireApplicationReady(
+    bankAccountId: string,
+    fintechId: string,
+  ): Promise<void> {
+    const applications = await this.prisma.application.findMany({
+      where: {
+        bankAccountIds: { has: bankAccountId },
+        linkingFinalized: true,
+        status: 'LINKED',
+      },
+    });
+
+    for (const app of applications) {
+      const accounts = await this.prisma.bankAccount.findMany({
+        where: { id: { in: app.bankAccountIds } },
+        select: { enrichmentStatus: true },
+      });
+
+      const allReady =
+        accounts.length > 0 &&
+        accounts.every((a) => a.enrichmentStatus === 'READY');
+
+      if (allReady) {
+        await this.outboundWebhookService.dispatch(
+          fintechId,
+          'application.ready_for_analysis',
+          {
+            applicationId: app.id,
+            applicantId: app.applicantId,
+            accountCount: app.bankAccountIds.length,
+            message:
+              'All accounts are enriched. You may now submit for analysis.',
+          },
+        );
+
+        this.logger.info(
+          { applicationId: app.id },
+          'application.ready_for_analysis fired',
         );
       }
     }

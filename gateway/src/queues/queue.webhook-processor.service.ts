@@ -30,7 +30,7 @@ export class WebhookDeliveryProcessor extends WorkerHost {
 
     const fintech = await this.prisma.user.findUnique({
       where: { id: delivery.fintechId },
-      select: { apiKey: true },
+      select: { webhookSecret: true },
     });
 
     if (!fintech) {
@@ -44,15 +44,21 @@ export class WebhookDeliveryProcessor extends WorkerHost {
       timestamp: new Date().toISOString(),
     });
 
-    const signature = createHmac('sha256', fintech.apiKey).update(body).digest('hex');
+    const signature = fintech.webhookSecret
+      ? createHmac('sha256', fintech.webhookSecret).update(body).digest('hex')
+      : null;
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (signature) {
+      headers['x-signature'] = signature;
+    } else {
+      this.logger.warn({ deliveryId, fintechId: delivery.fintechId }, 'Webhook sent unsigned — rotate API key to generate a webhook secret');
+    }
 
     try {
       const response = await fetch(delivery.webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-signature': signature,
-        },
+        method:  'POST',
+        headers,
         body,
       });
 
