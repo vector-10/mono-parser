@@ -57,7 +57,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
     const status: string = (record?.status ?? '').toLowerCase();
 
     if (status === 'successful' || status === 'success') {
-      // ── Job complete ────────────────────────────────────────────────────────
+
       const insightsPayload = record.data ?? record.jobData ?? record;
 
       await this.prisma.bankAccount.update({
@@ -70,7 +70,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
       await this._checkAndFireEnrichmentReady(monoAccountId, applicationId);
 
     } else if (status === 'failed' || status === 'error') {
-      // ── Mono-side failure ───────────────────────────────────────────────────
+
       this.logger.error(
         { monoAccountId, jobId, record },
         'Mono reported statement insights job as failed',
@@ -78,7 +78,7 @@ export class EnrichmentPollerProcessor extends WorkerHost {
       await this._markFailed(bankAccountId, monoAccountId, jobId);
 
     } else {
-      // ── Still processing (pending / processing / queued) ────────────────────
+  
       this.logger.info(
         { monoAccountId, jobId, status, pollAttempt },
         'Insights job still pending, re-scheduling poll',
@@ -87,7 +87,6 @@ export class EnrichmentPollerProcessor extends WorkerHost {
     }
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
 
   private async _reschedule(data: PollInsightsJobData): Promise<void> {
     await this.enrichmentsQueue.add(

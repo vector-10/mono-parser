@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { ApplicantsModule } from './applicants/applicants.module';
 import { AIModule } from './ai/ai.module';
+import { RiskPolicyModule } from './risk-policy/risk-policy.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AIModule } from './ai/ai.module';
     WebhooksModule,
     ApplicationsModule,
     AIModule,
+    RiskPolicyModule,
     ApplicantsModule,
     PrismaModule,
   ],

@@ -26,7 +26,7 @@ export class ApplicationsController {
     @InjectQueue('applications') private readonly applicationsQueue: Queue,
   ) {}
 
-  // ── Fintech-facing (API key auth) ──────────────────────────────────────────
+
 
   @Post('initiate')
   @UseGuards(ApiKeyGuard)
@@ -60,7 +60,6 @@ export class ApplicationsController {
     return { applicationId: id, status: 'PROCESSING', message: 'Analysis queued.' };
   }
 
-  // ── Dashboard/internal (JWT auth) ──────────────────────────────────────────
 
   @Post()
   @UseGuards(JwtAuthGuard)

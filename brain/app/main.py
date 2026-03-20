@@ -45,8 +45,7 @@ def health_check():
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # Log the validation errors WITHOUT the raw request body — the body can contain
-    # BVN, bank account data, and other sensitive financial information.
+
     logger.error(
         f"Request validation failed path={request.url.path} "
         f"errors={exc.errors()}"

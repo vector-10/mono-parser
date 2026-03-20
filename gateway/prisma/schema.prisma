@@ -31,6 +31,7 @@ model User {
   
   applicants     Applicant[]
   refreshTokens  RefreshToken[]
+  riskPolicy     RiskPolicy?
 }
 
 model RefreshToken {
@@ -152,6 +153,37 @@ model WebhookDelivery {
 
   @@index([fintechId])
   @@index([status])
+}
+
+
+model RiskPolicy {
+  id        String   @id @default(uuid())
+  fintechId String   @unique
+  fintech   User     @relation(fields: [fintechId], references: [id], onDelete: Cascade)
+
+  scoreRejectFloor      Int    @default(500)
+  scoreManualFloor      Int    @default(600)
+  scoreApproveFloor     Int    @default(700)
+  manualReviewBuffer    Int    @default(20)
+  highValueThreshold    Float  @default(500000)
+
+  affordabilityCap      Float  @default(0.35)
+  minViableOfferRatio   Float  @default(0.30)
+
+
+  thinFileIncomeMultiple Int   @default(2)
+  thinFileMaxTenor       Int   @default(6)
+
+
+  minimumMonthlyIncome   Float @default(30000)
+  incomeStalenessdays    Int   @default(90)
+  minAccountAgeMonths    Int   @default(3)
+  maxOverdrafts          Int   @default(10)
+  maxBouncedPayments     Int   @default(3)
+  maxConsecutiveFailures Int   @default(3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 

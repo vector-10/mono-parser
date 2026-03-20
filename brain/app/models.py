@@ -2,19 +2,19 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional, Any
 
 
-# ─── Input: Per-stream income detail ──────────────────────────────────────────
+
 
 class MonoIncomeStream(BaseModel):
     """One income source from the mono.events.account_income webhook."""
-    income_type: str            # SALARY, WAGES, BUSINESS, INVESTMENT, OTHER
-    frequency: str              # MONTHLY, BI_WEEKLY, WEEKLY, VARIABLE
+    income_type: str          
+    frequency: str            
     monthly_average: float
     average_income_amount: float
     last_income_amount: float
-    last_income_date: str       # "YYYY-MM-DD"
+    last_income_date: str      
     last_income_description: Optional[str] = None
     currency: str = "NGN"
-    stability: float = 0.0      # 0-1, Mono's own stability rating
+    stability: float = 0.0     
     periods_with_income: int = 0
     number_of_incomes: int = 0
 
@@ -81,9 +81,41 @@ class AccountData(BaseModel):
     transactions: List[Dict[str, Any]] = []
     identity: Optional[Dict[str, Any]] = None
 
-    # Async enrichments
     income: Optional[MonoIncomeData] = None
     statement_insights: Optional[MonoStatementInsights] = None
+
+
+class RiskPolicy(BaseModel):
+    """
+    Per-fintech risk parameters sent by the gateway at analysis time.
+    Every field has a default matching the brain's built-in constants so the
+    brain behaves identically when no policy is provided.
+
+    The gateway fetches the fintech's saved RiskPolicy from the DB and attaches
+    it here. If no customisation exists, the gateway sends None and the brain
+    falls back to these defaults automatically.
+    """
+
+    score_reject_floor:      int   = 500
+    score_manual_floor:      int   = 600
+    score_approve_floor:     int   = 700
+    manual_review_buffer:    int   = 20
+    high_value_threshold:    float = 500_000
+
+    affordability_cap:       float = 0.35
+    min_viable_offer_ratio:  float = 0.30
+
+  
+    thin_file_income_multiple: int = 2
+    thin_file_max_tenor:       int = 6
+
+  
+    minimum_monthly_income:   float = 30_000
+    income_staleness_days:    int   = 90
+    min_account_age_months:   int   = 3
+    max_overdrafts:           int   = 10
+    max_bounced_payments:     int   = 3
+    max_consecutive_failures: int   = 3
 
 
 class AnalyzeRequest(BaseModel):
@@ -96,19 +128,23 @@ class AnalyzeRequest(BaseModel):
     credit_history is BVN-based (one per applicant, not per account).
     It comes from GET /v3/lookup/credit-history/{provider} and is fetched
     during the data aggregation step in NestJS.
+
+    risk_policy carries the fintech's saved thresholds. When absent the brain
+    uses RiskPolicy defaults, which match the original hardcoded constants.
     """
     applicant_id: str
     applicant_name: str
     applicant_bvn: str
     loan_amount: float
     tenor_months: int
-    interest_rate: float        # Annual percentage rate
+    interest_rate: float       
     purpose: Optional[str] = None
     accounts: List[AccountData]
     credit_history: Optional[Dict[str, Any]] = None
+    risk_policy: Optional[RiskPolicy] = None
 
 
-# ─── Output models ────────────────────────────────────────────────────────────
+
 
 class ScoreBreakdown(BaseModel):
     """Component contributions to the final score (in earned points, not %)."""
@@ -122,7 +158,7 @@ class ScoreBreakdown(BaseModel):
 
 class RiskFactor(BaseModel):
     factor: str
-    severity: str   # HIGH, MEDIUM, LOW
+    severity: str  
     detail: str
 
 
@@ -164,9 +200,9 @@ class RegulatoryCompliance(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     applicant_id: str
-    decision: str           # APPROVED, REJECTED, COUNTER_OFFER, MANUAL_REVIEW
-    score: int              # 350-850
-    score_band: str         # VERY_HIGH_RISK, HIGH_RISK, MEDIUM_RISK, LOW_RISK, VERY_LOW_RISK
+    decision: str           
+    score: int          
+    score_band: str        
     score_breakdown: ScoreBreakdown
     risk_factors: List[RiskFactor]
     approval_details: Optional[ApprovalDetails] = None

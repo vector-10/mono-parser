@@ -11,7 +11,7 @@ export const api = axios.create({
   withCredentials: true,
 })
 
-// Request interceptor - attach access token
+
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token
@@ -25,7 +25,7 @@ api.interceptors.request.use(
   }
 )
 
-// Token refresh state - prevents multiple simultaneous refresh calls
+
 let isRefreshing = false
 let failedQueue: {
   resolve: (token: string) => void
@@ -43,13 +43,12 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = []
 }
 
-// Response interceptor - auto refresh on 401
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    // Skip refresh for auth endpoints or already retried requests
     const isAuthEndpoint = originalRequest?.url?.startsWith('/auth/refresh') ||
       originalRequest?.url?.startsWith('/auth/login') ||
       originalRequest?.url?.startsWith('/auth/logout')
@@ -71,7 +70,7 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        // Cookie is sent automatically by the browser — no body needed
+
         const response = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true })
         const { access_token } = response.data
 

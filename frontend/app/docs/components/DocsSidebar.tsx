@@ -79,13 +79,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-// Mobile toggle bar + drawer — rendered outside the flex container
+
 export function DocsMobileNav() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile toggle bar */}
+  
       <div className="lg:hidden sticky top-16 z-30 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
           <BookOpen className="h-3.5 w-3.5" /> Contents
@@ -102,7 +102,7 @@ export function DocsMobileNav() {
         </button>
       </div>
 
-      {/* Mobile overlay */}
+  
       {mobileNavOpen && (
         <div
           className="fixed inset-0 bg-black/30 z-40 lg:hidden"
@@ -110,7 +110,7 @@ export function DocsMobileNav() {
         />
       )}
 
-      {/* Mobile drawer */}
+   
       <div
         className={`fixed top-0 left-0 bottom-0 w-72 bg-white border-r border-gray-200 z-50 lg:hidden transform transition-transform duration-300 overflow-y-auto p-4 pt-20 ${
           mobileNavOpen ? "translate-x-0" : "-translate-x-full"
@@ -131,7 +131,7 @@ export function DocsMobileNav() {
   );
 }
 
-// Desktop sticky sidebar — rendered inside the flex container
+
 export function DocsDesktopSidebar() {
   return (
     <aside className="hidden lg:block w-64 shrink-0 sticky top-16 self-start h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-200 p-6">

@@ -1,9 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProfile } from "@/lib/hooks/queries/use-profile";
 import { useUpdateWebhookUrl } from "@/lib/hooks/queries/use-update-webhook-url";
 import { useUpdateApiKey } from "@/lib/hooks/queries/use-update-api-key";
 import { useRotateApiKey } from "@/lib/hooks/queries/use-rotate-api-key";
+import { useRiskPolicy, useUpdateRiskPolicy } from "@/lib/hooks/queries/use-risk-policy";
+import type { RiskPolicy } from "@/lib/api/risk-policy";
 import { RiFileCopyLine, RiCheckLine, RiRefreshLine, RiEyeLine, RiEyeOffLine, RiShieldKeyholeLine } from "react-icons/ri";
 import { TbShieldCheck } from "react-icons/tb";
 import { toast } from "sonner";
@@ -305,6 +307,220 @@ function AccountSection() {
   );
 }
 
+const BRAIN_DEFAULTS: Required<Omit<RiskPolicy, "id" | "fintechId">> = {
+  scoreRejectFloor: 500,
+  scoreManualFloor: 600,
+  scoreApproveFloor: 700,
+  manualReviewBuffer: 20,
+  highValueThreshold: 500000,
+  affordabilityCap: 0.35,
+  minViableOfferRatio: 0.30,
+  thinFileIncomeMultiple: 2,
+  thinFileMaxTenor: 6,
+  minimumMonthlyIncome: 30000,
+  incomeStalenessdays: 90,
+  minAccountAgeMonths: 3,
+  maxOverdrafts: 10,
+  maxBouncedPayments: 3,
+  maxConsecutiveFailures: 3,
+};
+
+function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      onClick={() => onChange(!enabled)}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 focus:outline-none ${
+        enabled ? "bg-[#0055ba]" : "bg-gray-200"
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ${
+          enabled ? "translate-x-6" : "translate-x-1"
+        }`}
+      />
+    </button>
+  );
+}
+
+function PolicyNumberInput({
+  label,
+  fieldKey,
+  value,
+  disabled,
+  defaultVal,
+  prefix,
+  suffix,
+  onChange,
+}: {
+  label: string;
+  fieldKey: string;
+  value: number | undefined;
+  disabled: boolean;
+  defaultVal: number;
+  prefix?: string;
+  suffix?: string;
+  onChange: (key: string, val: number) => void;
+}) {
+  const displayVal = value !== undefined ? String(value) : "";
+  const placeholder = String(defaultVal);
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-gray-500 mb-1.5">{label}</label>
+      <div className={`flex items-center border rounded-lg overflow-hidden transition ${
+        disabled
+          ? "bg-gray-50 border-gray-100"
+          : "bg-white border-gray-200 focus-within:border-[#0055ba]/40"
+      }`}>
+        {prefix && (
+          <span className={`px-2.5 py-2.5 text-sm border-r ${disabled ? "border-gray-100 text-gray-300 bg-gray-50" : "border-gray-200 text-gray-400"}`}>
+            {prefix}
+          </span>
+        )}
+        <input
+          type="number"
+          value={displayVal}
+          disabled={disabled}
+          placeholder={placeholder}
+          onChange={(e) => onChange(fieldKey, parseFloat(e.target.value))}
+          className={`flex-1 px-3 py-2.5 text-sm bg-transparent focus:outline-none ${
+            disabled ? "text-gray-300 cursor-default placeholder-gray-300" : "text-gray-900 placeholder-gray-300"
+          }`}
+        />
+        {suffix && (
+          <span className={`px-2.5 text-sm ${disabled ? "text-gray-300" : "text-gray-400"}`}>
+            {suffix}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RiskPolicySection() {
+  const { data: riskPolicy } = useRiskPolicy();
+  const { mutate: save, isPending } = useUpdateRiskPolicy();
+  const [enabled, setEnabled] = useState(false);
+  const [form, setForm] = useState<Partial<RiskPolicy>>({});
+
+  useEffect(() => {
+    if (riskPolicy?.id) {
+      setEnabled(true);
+      setForm(riskPolicy);
+    }
+  }, [riskPolicy]);
+
+  const handleToggle = (v: boolean) => {
+    setEnabled(v);
+    if (v && Object.keys(form).length === 0) {
+      setForm({ ...BRAIN_DEFAULTS });
+    }
+  };
+
+  const handleChange = (key: string, val: number) => {
+    setForm((prev) => ({ ...prev, [key]: val }));
+  };
+
+  const handleSave = () => {
+    save(form, {
+      onSuccess: () => toast.success("Risk policy saved"),
+      onError: () => toast.error("Failed to save risk policy"),
+    });
+  };
+
+  const handleReset = () => {
+    setForm({ ...BRAIN_DEFAULTS });
+    save(BRAIN_DEFAULTS, {
+      onSuccess: () => toast.success("Reset to brain defaults"),
+      onError: () => toast.error("Failed to reset"),
+    });
+  };
+
+  const f = (key: keyof typeof BRAIN_DEFAULTS) => (form as Record<string, number>)[key];
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-6">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Risk Policy</h2>
+          <p className="text-sm text-gray-400 mt-0.5">
+            Override the brain&apos;s default scoring and affordability parameters per your lending policy.
+          </p>
+        </div>
+        <div className="flex items-center gap-2.5 mt-0.5">
+          <span className={`text-xs font-medium ${enabled ? "text-[#0055ba]" : "text-gray-400"}`}>
+            {enabled ? "Custom" : "Using defaults"}
+          </span>
+          <Toggle enabled={enabled} onChange={handleToggle} />
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Decision Thresholds</p>
+          <div className="grid grid-cols-2 gap-4">
+            <PolicyNumberInput label="Score Reject Floor" fieldKey="scoreRejectFloor" value={f("scoreRejectFloor")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.scoreRejectFloor} onChange={handleChange} />
+            <PolicyNumberInput label="Score Manual Floor" fieldKey="scoreManualFloor" value={f("scoreManualFloor")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.scoreManualFloor} onChange={handleChange} />
+            <PolicyNumberInput label="Score Approve Floor" fieldKey="scoreApproveFloor" value={f("scoreApproveFloor")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.scoreApproveFloor} onChange={handleChange} />
+            <PolicyNumberInput label="Manual Review Buffer (pts)" fieldKey="manualReviewBuffer" value={f("manualReviewBuffer")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.manualReviewBuffer} onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="border-t border-gray-50 pt-6">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Affordability</p>
+          <div className="grid grid-cols-2 gap-4">
+            <PolicyNumberInput label="Affordability Cap" fieldKey="affordabilityCap" value={f("affordabilityCap")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.affordabilityCap} suffix="ratio" onChange={handleChange} />
+            <PolicyNumberInput label="Min Viable Offer Ratio" fieldKey="minViableOfferRatio" value={f("minViableOfferRatio")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.minViableOfferRatio} suffix="ratio" onChange={handleChange} />
+            <PolicyNumberInput label="Minimum Monthly Income" fieldKey="minimumMonthlyIncome" value={f("minimumMonthlyIncome")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.minimumMonthlyIncome} prefix="₦" onChange={handleChange} />
+            <PolicyNumberInput label="High Value Threshold" fieldKey="highValueThreshold" value={f("highValueThreshold")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.highValueThreshold} prefix="₦" onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="border-t border-gray-50 pt-6">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Thin-File Rules</p>
+          <div className="grid grid-cols-3 gap-4">
+            <PolicyNumberInput label="Income Multiple (×)" fieldKey="thinFileIncomeMultiple" value={f("thinFileIncomeMultiple")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.thinFileIncomeMultiple} onChange={handleChange} />
+            <PolicyNumberInput label="Max Tenor (months)" fieldKey="thinFileMaxTenor" value={f("thinFileMaxTenor")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.thinFileMaxTenor} suffix="mo" onChange={handleChange} />
+            <PolicyNumberInput label="Income Staleness (days)" fieldKey="incomeStalenessdays" value={f("incomeStalenessdays")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.incomeStalenessdays} suffix="d" onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="border-t border-gray-50 pt-6">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Knockout Limits</p>
+          <div className="grid grid-cols-2 gap-4">
+            <PolicyNumberInput label="Min Account Age (months)" fieldKey="minAccountAgeMonths" value={f("minAccountAgeMonths")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.minAccountAgeMonths} suffix="mo" onChange={handleChange} />
+            <PolicyNumberInput label="Max Overdrafts" fieldKey="maxOverdrafts" value={f("maxOverdrafts")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.maxOverdrafts} onChange={handleChange} />
+            <PolicyNumberInput label="Max Bounced Payments" fieldKey="maxBouncedPayments" value={f("maxBouncedPayments")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.maxBouncedPayments} onChange={handleChange} />
+            <PolicyNumberInput label="Max Consecutive Failures" fieldKey="maxConsecutiveFailures" value={f("maxConsecutiveFailures")} disabled={!enabled} defaultVal={BRAIN_DEFAULTS.maxConsecutiveFailures} onChange={handleChange} />
+          </div>
+        </div>
+      </div>
+
+      {enabled && (
+        <div className="flex items-center gap-3 mt-6 pt-5 border-t border-gray-50">
+          <button
+            onClick={handleSave}
+            disabled={isPending}
+            className="inline-flex items-center gap-2 bg-[#0055ba] text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#004494] transition disabled:opacity-50 shadow-sm shadow-[#0055ba]/20"
+          >
+            {isPending ? "Saving…" : "Save Changes"}
+          </button>
+          <button
+            onClick={handleReset}
+            disabled={isPending}
+            className="text-sm font-medium text-gray-400 hover:text-gray-700 transition"
+          >
+            Reset to defaults
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   return (
     <div className="space-y-4">
@@ -319,6 +535,8 @@ export default function SettingsPage() {
         <WebhookUrlSection />
         <MonoIntegrationSection />
       </div>
+
+      <RiskPolicySection />
     </div>
   );
 }

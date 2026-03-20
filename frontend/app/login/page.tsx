@@ -28,7 +28,7 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(data)
       
-      // Refresh token is stored as HTTP-only cookie by the backend
+
       setAuth(response.user, response.access_token)
       
       toast.success('Login successful!')
@@ -44,7 +44,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-[600px]">
-          {/* Left Side - Blue Background */}
+     
           <div className="md:w-[60%]  bg-gradient-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
             <div className="mb-8">
               <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold">
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
           </div>
 
-          {/* Right Side - Login Form */}
+
           <div className="md:w-[40%] p-8 md:p-12 flex flex-col justify-center">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
@@ -74,7 +74,7 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Email */}
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email address
@@ -93,7 +93,7 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Password */}
+
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                   Password
@@ -125,7 +125,7 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Remember & Forgot */}
+
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input type="checkbox" className="w-4 h-4 text-[#0055ba] border-gray-300 rounded focus:ring-[#0055ba]" />
@@ -136,7 +136,7 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              {/* Submit Button */}
+    
               <button
                 type="submit"
                 disabled={isSubmitting}

@@ -5,26 +5,11 @@ import logging
 from app.models import (
     AnalyzeRequest, AnalyzeResponse, ScoreBreakdown, RiskFactor,
     ApprovalDetails, CounterOffer, EligibleTenor, Explainability,
-    RegulatoryCompliance,
+    RegulatoryCompliance, RiskPolicy,
 )
 from app.scoring import CreditScorer
 
 logger = logging.getLogger(__name__)
-
-# ─── Decision thresholds ──────────────────────────────────────────────────────
-SCORE_REJECT_FLOOR       = 500   # Below 500 → auto-reject (VERY_HIGH_RISK band)
-SCORE_MANUAL_FLOOR       = 600   # 500–599 → manual review, not auto-reject
-SCORE_APPROVE_FLOOR      = 700   # 600–699 → counter-offer eligible; ≥700 → approve
-MANUAL_REVIEW_BUFFER     = 20    # ±20 pts of a threshold = borderline → manual review
-HIGH_VALUE_THRESHOLD     = 500_000  # ₦500k+  → always flag for manual review
-
-# ─── Affordability ────────────────────────────────────────────────────────────
-AFFORDABILITY_CAP        = 0.35  # Monthly payment ≤ 35% of safe monthly income
-MIN_VIABLE_OFFER_RATIO   = 0.30  # Counter-offer must be ≥ 30% of requested amount
-
-# ─── Thin-file limits ─────────────────────────────────────────────────────────
-THIN_FILE_INCOME_MULTIPLE = 2    # Max loan = 2× monthly income
-THIN_FILE_MAX_TENOR       = 6    # Max tenor = 6 months
 
 STANDARD_TENORS = [3, 6, 9, 12, 15, 18, 21, 24]
 
@@ -53,12 +38,12 @@ class DecisionEngine:
         features: Dict[str, Any],
         score: int,
         score_breakdown: Dict[str, float],
+        policy: RiskPolicy,
     ) -> AnalyzeResponse:
 
         aid = request.applicant_id
         is_thin_file = features.get("is_thin_file", True)
 
-        # ── Safe income ───────────────────────────────────────────────────────
         monthly_income = features.get("total_monthly_income", 0.0)
         avg_credits    = features.get("monthly_avg_credits", 0.0)
         safe_income    = min(monthly_income, avg_credits) if monthly_income > 0 else avg_credits
@@ -70,7 +55,7 @@ class DecisionEngine:
             f"avg_credits=₦{avg_credits:,.0f} "
             f"safe_income=₦{safe_income:,.0f} "
             f"affordability_cap=₦{max_monthly_payment:,.0f} "
-            f"({AFFORDABILITY_CAP * 100:.0f}% of income)"
+            f"({policy.affordability_cap * 100:.0f}% of income)"
         )
 
         risk_factors:          List[RiskFactor] = []
@@ -81,18 +66,19 @@ class DecisionEngine:
 
         self._collect_risk_factors(features, risk_factors)
 
-        # ── Stage 4a: Score gate ──────────────────────────────────────────────
-        if score < SCORE_REJECT_FLOOR:
+
+        if score < policy.score_reject_floor:
             decision = "REJECTED"
             logger.warning(
                 f"[SCORE GATE] applicant={aid} score={score} "
-                f"threshold={SCORE_REJECT_FLOOR} outcome=REJECTED "
+                f"threshold={policy.score_reject_floor} outcome=REJECTED "
                 f"reason=score_below_floor"
             )
-        elif score < SCORE_MANUAL_FLOOR:
+        elif score < policy.score_manual_floor:
             decision = "MANUAL_REVIEW"
             reason = (
-                f"Score {score} is in the HIGH_RISK band (500–599). "
+                f"Score {score} is in the HIGH_RISK band "
+                f"({policy.score_reject_floor}–{policy.score_manual_floor - 1}). "
                 "Requires human assessment."
             )
             manual_review_reasons.append(reason)
@@ -100,7 +86,7 @@ class DecisionEngine:
                 f"[SCORE GATE] applicant={aid} score={score} "
                 f"band=HIGH_RISK outcome=MANUAL_REVIEW"
             )
-        elif score < SCORE_APPROVE_FLOOR:
+        elif score < policy.score_approve_floor:
             decision = "COUNTER_OFFER"
             logger.info(
                 f"[SCORE GATE] applicant={aid} score={score} "
@@ -112,7 +98,6 @@ class DecisionEngine:
                 f"outcome=APPROVED_ELIGIBLE"
             )
 
-        # ── No verifiable income ──────────────────────────────────────────────
         if safe_income <= 0:
             decision = "REJECTED"
             logger.error(
@@ -126,12 +111,12 @@ class DecisionEngine:
                 detail="Could not establish a positive monthly income from available data",
             ))
 
-        # ── Stage 4b: Thin-file caps ──────────────────────────────────────────
+
         effective_amount = request.loan_amount
         effective_tenor  = request.tenor_months
 
         if is_thin_file and decision not in ("REJECTED",):
-            thin_file_max = safe_income * THIN_FILE_INCOME_MULTIPLE
+            thin_file_max = safe_income * policy.thin_file_income_multiple
 
             if effective_amount > thin_file_max:
                 old_amount       = effective_amount
@@ -142,35 +127,39 @@ class DecisionEngine:
                     f"[THIN FILE CAP] applicant={aid} "
                     f"amount_before=₦{old_amount:,.0f} "
                     f"amount_after=₦{effective_amount:,.0f} "
-                    f"cap=2x_monthly_income decision_updated={decision}"
+                    f"cap={policy.thin_file_income_multiple}x_monthly_income "
+                    f"decision_updated={decision}"
                 )
                 risk_factors.append(RiskFactor(
                     factor="Thin credit file — loan amount capped",
                     severity="MEDIUM",
                     detail=(
-                        f"No credit history. Amount capped at 2× monthly income "
+                        f"No credit history. Amount capped at "
+                        f"{policy.thin_file_income_multiple}× monthly income "
                         f"(₦{thin_file_max:,.0f})"
                     ),
                 ))
 
-            if effective_tenor > THIN_FILE_MAX_TENOR:
+            if effective_tenor > policy.thin_file_max_tenor:
                 old_tenor       = effective_tenor
-                effective_tenor = THIN_FILE_MAX_TENOR
+                effective_tenor = policy.thin_file_max_tenor
                 if decision == "APPROVED":
                     decision = "COUNTER_OFFER"
                 logger.warning(
                     f"[THIN FILE CAP] applicant={aid} "
                     f"tenor_before={old_tenor}m "
                     f"tenor_after={effective_tenor}m "
-                    f"cap={THIN_FILE_MAX_TENOR}m decision_updated={decision}"
+                    f"cap={policy.thin_file_max_tenor}m decision_updated={decision}"
                 )
                 risk_factors.append(RiskFactor(
                     factor="Thin credit file — tenor capped",
                     severity="MEDIUM",
-                    detail=f"No credit history. Tenor capped at {THIN_FILE_MAX_TENOR} months",
+                    detail=(
+                        f"No credit history. Tenor capped at "
+                        f"{policy.thin_file_max_tenor} months"
+                    ),
                 ))
 
-        # ── Stage 4c: Affordability check ────────────────────────────────────
         if decision not in ("REJECTED",) and safe_income > 0:
             effective_payment = self._scorer._amortize(
                 effective_amount, effective_tenor, request.interest_rate
@@ -189,7 +178,7 @@ class DecisionEngine:
                 max_affordable = self._max_affordable_amount(
                     max_monthly_payment, effective_tenor, request.interest_rate
                 )
-                min_viable = request.loan_amount * MIN_VIABLE_OFFER_RATIO
+                min_viable = request.loan_amount * policy.min_viable_offer_ratio
 
                 logger.info(
                     f"[COUNTER OFFER CALC] applicant={aid} "
@@ -251,13 +240,16 @@ class DecisionEngine:
                     if effective_amount < request.loan_amount or effective_tenor != request.tenor_months:
                         decision = "COUNTER_OFFER"
 
-        # ── Stage 5: Manual review triggers ──────────────────────────────────
         if decision not in ("REJECTED",):
-            thresholds = [SCORE_REJECT_FLOOR, SCORE_MANUAL_FLOOR, SCORE_APPROVE_FLOOR]
+            thresholds = [
+                policy.score_reject_floor,
+                policy.score_manual_floor,
+                policy.score_approve_floor,
+            ]
             for threshold in thresholds:
-                if abs(score - threshold) <= MANUAL_REVIEW_BUFFER:
+                if abs(score - threshold) <= policy.manual_review_buffer:
                     reason = (
-                        f"Score ({score}) is within {MANUAL_REVIEW_BUFFER} points of "
+                        f"Score ({score}) is within {policy.manual_review_buffer} points of "
                         f"decision threshold ({threshold})"
                     )
                     manual_review_reasons.append(reason)
@@ -267,17 +259,17 @@ class DecisionEngine:
                     )
                     break
 
-            if request.loan_amount > HIGH_VALUE_THRESHOLD:
+            if request.loan_amount > policy.high_value_threshold:
                 reason = (
                     f"Loan amount ₦{request.loan_amount:,.0f} exceeds "
-                    f"high-value threshold of ₦{HIGH_VALUE_THRESHOLD:,.0f}"
+                    f"high-value threshold of ₦{policy.high_value_threshold:,.0f}"
                 )
                 manual_review_reasons.append(reason)
                 logger.info(
                     f"[MANUAL TRIGGER] applicant={aid} "
                     f"trigger=high_value "
                     f"amount=₦{request.loan_amount:,.0f} "
-                    f"threshold=₦{HIGH_VALUE_THRESHOLD:,.0f}"
+                    f"threshold=₦{policy.high_value_threshold:,.0f}"
                 )
 
             total_txns = sum(len(a.transactions) for a in request.accounts)
@@ -299,7 +291,6 @@ class DecisionEngine:
                     f"approved→MANUAL_REVIEW triggers={len(manual_review_reasons)}"
                 )
 
-        # ── Final decision summary ─────────────────────────────────────────────
         logger.info(
             f"[DECISION] applicant={aid} "
             f"decision={decision} score={score} "
@@ -308,7 +299,6 @@ class DecisionEngine:
             f"manual_triggers={len(manual_review_reasons)}"
         )
 
-        # ── Regulatory compliance ─────────────────────────────────────────────
         regulatory = RegulatoryCompliance(
             identity_verified=any(a.identity is not None for a in request.accounts),
             credit_bureau_checked=request.credit_history is not None,
@@ -317,11 +307,11 @@ class DecisionEngine:
         )
 
         eligible_tenors = self._compute_eligible_tenors(
-            max_monthly_payment, request.interest_rate, is_thin_file
+            max_monthly_payment, request.interest_rate, is_thin_file, policy
         )
 
         explainability = self._build_explainability(
-            features, score, score_breakdown, decision, is_thin_file
+            features, score, score_breakdown, decision, is_thin_file, policy
         )
 
         return AnalyzeResponse(
@@ -347,7 +337,6 @@ class DecisionEngine:
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 
-    # ─── Helpers ──────────────────────────────────────────────────────────────
 
     def _max_affordable_amount(
         self, max_payment: float, tenor: int, annual_rate_pct: float
@@ -360,9 +349,10 @@ class DecisionEngine:
         return max_payment * ((1 + r) ** tenor - 1) / (r * (1 + r) ** tenor)
 
     def _compute_eligible_tenors(
-        self, max_monthly_payment: float, rate: float, is_thin_file: bool
+        self, max_monthly_payment: float, rate: float, is_thin_file: bool,
+        policy: RiskPolicy,
     ) -> List[EligibleTenor]:
-        max_tenor = THIN_FILE_MAX_TENOR if is_thin_file else 24
+        max_tenor = policy.thin_file_max_tenor if is_thin_file else 24
         results   = []
         for tenor in STANDARD_TENORS:
             if tenor > max_tenor:
@@ -445,6 +435,7 @@ class DecisionEngine:
         breakdown: Dict,
         decision: str,
         is_thin_file: bool,
+        policy: RiskPolicy,
     ) -> Explainability:
         strengths:  List[str] = []
         weaknesses: List[str] = []
@@ -483,10 +474,10 @@ class DecisionEngine:
         if decision == "APPROVED":
             primary = strengths[0] if strengths else "Applicant meets all credit criteria"
         elif decision == "REJECTED":
-            if score < SCORE_REJECT_FLOOR:
+            if score < policy.score_reject_floor:
                 primary = (
                     f"Credit score ({score}) is below the minimum threshold "
-                    f"of {SCORE_REJECT_FLOOR}"
+                    f"of {policy.score_reject_floor}"
                 )
             else:
                 primary = weaknesses[0] if weaknesses else "Does not meet lending criteria"

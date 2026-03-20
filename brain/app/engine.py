@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.models import (
     AnalyzeRequest, AnalyzeResponse, ScoreBreakdown, RiskFactor,
-    Explainability, RegulatoryCompliance,
+    Explainability, RegulatoryCompliance, RiskPolicy,
 )
 from app.knockout import KnockoutEngine
 from app.features import FeatureExtractor
@@ -45,8 +45,9 @@ class AnalysisEngine:
             f"rate={request.interest_rate}% accounts={len(request.accounts)}"
         )
 
-        # ── Stage 1: Knockout rules ───────────────────────────────────────────
-        ko_result = cls._knockout.run(request)
+        policy = request.risk_policy or RiskPolicy()
+
+        ko_result = cls._knockout.run(request, policy)
         if ko_result.knocked_out:
             duration_ms = (time.perf_counter() - t0) * 1000
             logger.warning(
@@ -56,10 +57,8 @@ class AnalysisEngine:
             )
             return cls._build_knockout_response(request, ko_result.reason, ko_result.detail)
 
-        # ── Stage 2: Feature extraction ───────────────────────────────────────
         features = cls._extractor.extract(request)
 
-        # ── Stage 3: Scoring ──────────────────────────────────────────────────
         score, score_breakdown = cls._scorer.calculate(
             features,
             request.loan_amount,
@@ -67,8 +66,7 @@ class AnalysisEngine:
             request.interest_rate,
         )
 
-        # ── Stages 4 & 5: Decision + manual review ────────────────────────────
-        response = cls._decision.decide(request, features, score, score_breakdown)
+        response = cls._decision.decide(request, features, score, score_breakdown, policy)
 
         duration_ms = (time.perf_counter() - t0) * 1000
         logger.info(

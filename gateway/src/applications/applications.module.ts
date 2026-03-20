@@ -8,9 +8,10 @@ import { ApplicationProcessorService } from './applications-processor.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { MonoModule } from 'src/mono/mono.module';
 import { AIModule } from 'src/ai/ai.module';
+import { RiskPolicyModule } from 'src/risk-policy/risk-policy.module';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, forwardRef(() => QueueModule), MonoModule, AIModule],
+  imports: [ConfigModule, PrismaModule, forwardRef(() => QueueModule), MonoModule, AIModule, RiskPolicyModule],
   controllers: [ApplicationsController],
   providers: [
     ApplicationsService,

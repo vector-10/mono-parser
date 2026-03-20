@@ -117,8 +117,6 @@ class CreditScorer:
                 return band
         return "VERY_HIGH_RISK"
 
-    # ─── Component: Credit History (0–100) ───────────────────────────────────
-
     def _score_credit_history(self, features: Dict) -> float:
         """
         Breakdown:
@@ -135,10 +133,10 @@ class CreditScorer:
 
         score = 0.0
 
-        # 1. Repayment performance (70 pts)
+
         psr = features.get("payment_success_rate")
         if psr is None:
-            score += 35.0   # Loans exist but no schedule data — neutral
+            score += 35.0   
         elif psr >= 0.95:
             score += 70.0
         elif psr >= 0.90:
@@ -150,7 +148,6 @@ class CreditScorer:
         else:
             score += 0.0
 
-        # 2. Credit age (20 pts)
         age = features.get("credit_age_months", 0.0)
         if age >= 36:
             score += 20.0
@@ -161,7 +158,6 @@ class CreditScorer:
         else:
             score += 5.0
 
-        # 3. Loan closure rate (10 pts) — successfully closed loans show track record
         total  = features.get("total_loan_count", 0)
         closed = features.get("closed_loan_count", 0)
         if total > 0:
@@ -175,7 +171,6 @@ class CreditScorer:
 
         return min(score, 100.0)
 
-    # ─── Component: Income Stability (0–100) ─────────────────────────────────
 
     def _score_income_stability(self, features: Dict) -> float:
         """
@@ -196,8 +191,7 @@ class CreditScorer:
 
         score = 0.0
 
-        # 1. Income type × frequency (35 pts via stable_income_ratio)
-        # stable_income_ratio = salary_income / total_monthly. Higher = more salary.
+
         stable_ratio = features.get("stable_income_ratio", 0.0)
         if stable_ratio >= 0.80:
             score += 35.0
@@ -208,9 +202,9 @@ class CreditScorer:
         elif stable_ratio >= 0.20:
             score += 10.0
         else:
-            score += 5.0    # All variable / irregular
+            score += 5.0    
 
-        # 2. Recency (25 pts)
+
         recency = features.get("income_recency_days", 999)
         if recency <= 31:
             score += 25.0
@@ -223,25 +217,25 @@ class CreditScorer:
         else:
             score += 0.0
 
-        # 3. Mono's stability score (20 pts)
-        avg_stability = features.get("avg_income_stability", 0.0)
-        score += avg_stability * 20.0   # 0–1 mapped to 0–20 pts
 
-        # 4. Growth (15 pts)
+        avg_stability = features.get("avg_income_stability", 0.0)
+        score += avg_stability * 20.0   
+
+       
         if features.get("income_is_growing"):
             score += 15.0
         else:
-            # Regular/consistent income still earns partial credit
+     
             regular_ratio = features.get("income_regular_ratio", 0.0)
-            score += regular_ratio * 8.0    # up to 8 pts
+            score += regular_ratio * 8.0   
 
-        # 5. Diversity (5 pts)
+    
         stream_count = features.get("income_stream_count", 0)
         score += min(stream_count * 2.0, 5.0)
 
         return min(score, 100.0)
 
-    # ─── Component: Cash Flow Health (0–100) ─────────────────────────────────
+
 
     def _score_cash_flow_health(self, features: Dict) -> float:
         """
@@ -257,7 +251,7 @@ class CreditScorer:
         """
         score = 0.0
 
-        # 1. Surplus ratio (30 pts)
+     
         surplus_ratio = features.get("surplus_ratio", 0.0)
         if surplus_ratio >= 0.30:
             score += 30.0
@@ -268,13 +262,12 @@ class CreditScorer:
         elif surplus_ratio >= 0.0:
             score += 8.0
         else:
-            score += 0.0    # Spending exceeds income (negative surplus)
+            score += 0.0    
 
-        # 2. Positive cash flow months (30 pts)
+      
         positive_ratio = features.get("positive_cash_flow_ratio", 0.0)
         score += positive_ratio * 30.0
 
-        # 3. Debit-to-credit ratio (20 pts)
         dtc = features.get("debit_to_credit_ratio", 999.0)
         if dtc <= 0.70:
             score += 20.0
@@ -287,7 +280,7 @@ class CreditScorer:
         else:
             score += 0.0
 
-        # 4. Spending volatility (20 pts) — lower volatility = better
+        
         volatility = features.get("spending_volatility", 1.0)
         if volatility <= 0.20:
             score += 20.0
@@ -302,7 +295,6 @@ class CreditScorer:
 
         return min(score, 100.0)
 
-    # ─── Component: Debt Service Capacity (0–100) ─────────────────────────────
 
     def _score_debt_service_capacity(
         self,
@@ -336,7 +328,7 @@ class CreditScorer:
         total_obligation    = monthly_payment + existing_obligation
         total_dti           = total_obligation / safe_income
 
-        # 1. Total DTI including this loan (60 pts)
+
         if total_dti < 0.30:
             dti_score = 60.0
         elif total_dti < 0.40:
@@ -346,7 +338,7 @@ class CreditScorer:
         else:
             dti_score = 0.0
 
-        # 2. Existing debt burden before this loan (40 pts)
+
         existing_dti = existing_obligation / safe_income
         if existing_dti < 0.20:
             burden_score = 40.0
@@ -359,7 +351,7 @@ class CreditScorer:
 
         return min(dti_score + burden_score, 100.0)
 
-    # ─── Component: Account Behavior (0–100) ──────────────────────────────────
+
 
     def _score_account_behavior(self, features: Dict) -> float:
         """
@@ -377,7 +369,7 @@ class CreditScorer:
         """
         score = 0.0
 
-        # 1. Account age (40 pts)
+
         age = features.get("account_age_months", 0.0)
         if age >= 24:
             score += 40.0
@@ -390,14 +382,12 @@ class CreditScorer:
         else:
             score += 5.0
 
-        # 2. Overdraft and bounce discipline (30 pts)
         overdrafts = features.get("overdraft_count", 0)
         bounced    = features.get("bounced_payment_count", 0)
         penalty    = (overdrafts * 3) + (bounced * 5)
         score     += max(0.0, 30.0 - penalty)
 
-        # 3. Minimum balance maintenance (20 pts)
-        # Fewer days with near-zero balance = better buffer discipline
+
         days_low = features.get("days_below_1000_ngn", 0)
         if days_low == 0:
             score += 20.0
@@ -410,7 +400,7 @@ class CreditScorer:
         else:
             score += 0.0
 
-        # 4. High-risk transactions (10 pts)
+     
         high_risk = features.get("high_risk_transaction_count", 0)
         if high_risk == 0:
             score += 10.0
@@ -421,7 +411,6 @@ class CreditScorer:
 
         return min(score, 100.0)
 
-    # ─── Shared helper ────────────────────────────────────────────────────────
 
     def _amortize(self, principal: float, months: int, annual_rate_pct: float) -> float:
         """

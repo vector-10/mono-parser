@@ -8,7 +8,7 @@ from app.models import AnalyzeRequest, MonoIncomeData
 
 logger = logging.getLogger(__name__)
 
-# Narration keywords that flag high-risk behaviour
+
 GAMBLING_KEYWORDS = ("bet", "betway", "sporty", "sportpesa", "nairabet",
                      "lotto", "stake", "casino", "1xbet", "22bet", "winning")
 LOANAPP_KEYWORDS  = ("carbon", "fairmoney", "branch", "palmcredit", "aella",
@@ -64,7 +64,6 @@ class FeatureExtractor:
         )
         return features
 
-    # ─── Aggregation helpers ──────────────────────────────────────────────────
 
     def _aggregate_transactions(self, accounts: list) -> List[Dict]:
         """Merge transactions from all linked accounts, newest-first."""
@@ -86,7 +85,6 @@ class FeatureExtractor:
                 best_val = account.income.monthly_income
         return best
 
-    # ─── Income features ──────────────────────────────────────────────────────
 
     def _income(self, accounts: list, best_income: Optional[MonoIncomeData]) -> Dict:
         """
@@ -201,7 +199,6 @@ class FeatureExtractor:
             "income_source":        "transaction_fallback",
         }
 
-    # ─── Cash flow features ───────────────────────────────────────────────────
 
     def _cash_flow(self, all_transactions: List[Dict], accounts: list) -> Dict:
         """
@@ -254,7 +251,6 @@ class FeatureExtractor:
         if len(debit_vals) > 1 and avg_debits > 0:
             spending_volatility = statistics.stdev(debit_vals) / avg_debits
 
-        # Override with Mono's pre-computed ratio if available
         for account in accounts:
             si = account.statement_insights
             if si and si.account_summary:
@@ -275,7 +271,6 @@ class FeatureExtractor:
             "spending_volatility":      spending_volatility,
         }
 
-    # ─── Credit history features ──────────────────────────────────────────────
 
     def _credit_history(self, credit_history: Optional[Dict]) -> Dict:
         """
@@ -338,7 +333,6 @@ class FeatureExtractor:
             "has_credit_history":   total_loans > 0,
         }
 
-    # ─── Debt features ────────────────────────────────────────────────────────
 
     def _debt(self, accounts: list, credit_history: Optional[Dict]) -> Dict:
         """
@@ -354,14 +348,12 @@ class FeatureExtractor:
         """
         total_debt = 0.0
 
-        # Open loans from credit history
         if credit_history:
             for entry in credit_history.get("credit_history", []):
                 for loan in entry.get("history", []):
                     if loan.get("loan_status", "").lower() == "open":
                         total_debt += float(loan.get("opening_balance", 0))
 
-        # Recurring debt from statement insights
         recurring_debt_monthly = 0.0
         for account in accounts:
             si = account.statement_insights
@@ -385,7 +377,6 @@ class FeatureExtractor:
             "recurring_debt_monthly": recurring_debt_monthly,
         }
 
-    # ─── Account behaviour features ───────────────────────────────────────────
 
     def _account_behaviour(self, all_transactions: List[Dict], accounts: list) -> Dict:
         """
@@ -422,7 +413,7 @@ class FeatureExtractor:
             if any(w in narration for w in GAMBLING_KEYWORDS + LOANAPP_KEYWORDS):
                 high_risk += 1
 
-        # Account age — prefer statement insights (covers full statement period)
+
         account_age_months = 0.0
         for account in accounts:
             si = account.statement_insights
@@ -434,7 +425,6 @@ class FeatureExtractor:
                 except Exception:
                     pass
 
-        # Fallback: estimate from oldest transaction date
         if account_age_months == 0.0 and all_transactions:
             try:
                 dates = [
@@ -456,7 +446,6 @@ class FeatureExtractor:
             "days_below_1000_ngn":         days_low_bal,
         }
 
-    # ─── Insights features ────────────────────────────────────────────────────
 
     def _insights(self, accounts: list) -> Dict:
         """
@@ -502,8 +491,6 @@ class FeatureExtractor:
             "inflow_avg_last_12m":           inflow_12m,
             "outflow_avg_last_12m":          outflow_12m,
         }
-
-    # ─── Thin-file detection ──────────────────────────────────────────────────
 
     def _is_thin_file(self, credit_history: Optional[Dict]) -> bool:
         """

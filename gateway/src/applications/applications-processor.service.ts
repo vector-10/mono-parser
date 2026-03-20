@@ -6,6 +6,7 @@ import { DataAggregationService } from './data-aggregation.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OutboundWebhookService } from 'src/queues/outbound-webhook.service';
 import { MonoService } from 'src/mono/mono.service';
+import { RiskPolicyService } from 'src/risk-policy/risk-policy.service';
 
 const SYNC_DATA_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
@@ -28,6 +29,7 @@ export class ApplicationProcessorService {
     private readonly logger: PinoLogger,
     private readonly outboundWebhookService: OutboundWebhookService,
     private readonly monoService: MonoService,
+    private readonly riskPolicyService: RiskPolicyService,
   ) {
     this.logger.setContext(ApplicationProcessorService.name);
     this.brainUrl = this.configService.get<string>('BRAIN_API_URL', 'http://brain:8000');
@@ -103,6 +105,8 @@ export class ApplicationProcessorService {
         this.logger.info({ applicantId: applicant.id }, 'No BVN on record — skipping credit history lookup');
       }
 
+      const riskPolicy = await this.riskPolicyService.toSnakeCasePayload(applicant.fintechId);
+
       const brainResponse = await this.callBrainService({
         applicant_id:   application.applicantId,
         applicant_name: `${applicant.firstName} ${applicant.lastName}`,
@@ -113,6 +117,7 @@ export class ApplicationProcessorService {
         purpose:        application.purpose,
         accounts:       accountsData,
         credit_history: creditHistory,
+        risk_policy:    riskPolicy,
       });
 
       this.logger.info(
@@ -239,6 +244,7 @@ export class ApplicationProcessorService {
     purpose?:       string | null;
     accounts:       any[];
     credit_history: any;
+    risk_policy:    Record<string, number>;
   }) {
     this.logger.info(`Calling brain at ${this.brainUrl}/analyze`);
 
