@@ -7,8 +7,8 @@ export function useUpdateApiKey() {
   const { actions } = useAuthStore()
 
   return useMutation({
-    mutationFn: ({ monoApiKey }: { monoApiKey: string; }) => 
-      usersApi.updateApiKey(monoApiKey),
+    mutationFn: ({ monoApiKey, monoPublicKey }: { monoApiKey: string; monoPublicKey: string }) =>
+      usersApi.updateMonoApiKey(monoApiKey, monoPublicKey),
     onSuccess: (data) => {
       actions.setAuth(data, useAuthStore.getState().token!)
       queryClient.invalidateQueries({ queryKey: ['profile'] })

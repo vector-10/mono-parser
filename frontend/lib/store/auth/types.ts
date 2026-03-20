@@ -3,9 +3,10 @@ export interface User {
   email: string;
   name: string;
   companyName: string;
-  apiKey?: string;
   webhookUrl?: string | null;
+  hasApiKey?: boolean;
   hasMonoApiKey?: boolean;
+  hasWebhookSecret?: boolean;
 }
 
 export interface AuthState {

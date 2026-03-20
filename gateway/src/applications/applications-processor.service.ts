@@ -142,9 +142,10 @@ export class ApplicationProcessorService {
       );
 
       const bankAccountIds = applicant.bankAccounts.map((acc) => acc.id);
+      const finalStatus = brainResponse.decision === 'MANUAL_REVIEW' ? 'MANUAL_REVIEW' : 'COMPLETED';
       const updatedApp = await this.applicationsService.updateStatus(
         applicationId,
-        'COMPLETED',
+        finalStatus,
         brainResponse.score,
         brainResponse,
         bankAccountIds,
@@ -156,7 +157,7 @@ export class ApplicationProcessorService {
           status:        updatedApp.status,
           score:         updatedApp.score,
           decision:      updatedApp.decision,
-          message:       'Analysis complete!',
+          message:       finalStatus === 'MANUAL_REVIEW' ? 'Application requires manual review.' : 'Analysis complete!',
         });
       }
 
