@@ -6,23 +6,27 @@ import Link from "next/link";
 import type { Application } from "@/lib/api/applications";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-NG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function scoreBand(score: number) {
   if (score >= 750) return { label: "Very Low Risk", color: "text-[#59a927]" };
-  if (score >= 650) return { label: "Low Risk",      color: "text-[#59a927]" };
-  if (score >= 550) return { label: "Medium Risk",   color: "text-amber-600" };
-  if (score >= 500) return { label: "High Risk",     color: "text-red-500" };
-  return                     { label: "Very High Risk", color: "text-red-600" };
+  if (score >= 650) return { label: "Low Risk", color: "text-[#59a927]" };
+  if (score >= 550) return { label: "Medium Risk", color: "text-amber-600" };
+  if (score >= 500) return { label: "High Risk", color: "text-red-500" };
+  return { label: "Very High Risk", color: "text-red-600" };
 }
 
 type DecisionData = { manual_review_reasons?: string[] };
 
 function ReviewRow({ app }: { app: Application }) {
-  const d     = app.decision as DecisionData | null;
+  const d = app.decision as DecisionData | null;
   const reasons = d?.manual_review_reasons ?? [];
-  const band  = app.score ? scoreBand(app.score) : null;
+  const band = app.score ? scoreBand(app.score) : null;
 
   return (
     <Link
@@ -40,7 +44,9 @@ function ReviewRow({ app }: { app: Application }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-0.5">
           <p className="text-sm font-semibold text-gray-900">
-            {app.applicant ? `${app.applicant.firstName} ${app.applicant.lastName}` : "—"}
+            {app.applicant
+              ? `${app.applicant.firstName} ${app.applicant.lastName}`
+              : "—"}
           </p>
           <span className="flex items-center gap-0.5 text-xs text-gray-500 font-mono">
             <TbCurrencyNaira className="w-3 h-3" />
@@ -55,7 +61,9 @@ function ReviewRow({ app }: { app: Application }) {
       <div className="flex items-center gap-6 shrink-0">
         {app.score && (
           <div className="text-right">
-            <p className="font-mono text-sm font-medium text-[#0055ba]">{app.score}</p>
+            <p className="font-mono text-sm font-medium text-[#0055ba]">
+              {app.score}
+            </p>
             {band && <p className={`text-xs ${band.color}`}>{band.label}</p>}
           </div>
         )}
@@ -72,14 +80,13 @@ function ReviewRow({ app }: { app: Application }) {
 }
 
 export default function ReviewQueuePage() {
-  const { data: applications = [], isLoading } = useApplications("MANUAL_REVIEW");
+  const { data: applications = [], isLoading } =
+    useApplications("MANUAL_REVIEW");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Manual Review
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Manual Review</h1>
         <p className="text-sm text-gray-400 mt-1">
           Applications that require a human decision before proceeding.
         </p>
@@ -111,7 +118,10 @@ export default function ReviewQueuePage() {
           <div>
             <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
               {["Applicant", "Score", "Date", ""].map((col) => (
-                <p key={col} className="text-xs font-medium text-gray-400 uppercase tracking-wide flex-1 last:flex-none">
+                <p
+                  key={col}
+                  className="text-xs font-medium text-gray-400 uppercase tracking-wide flex-1 last:flex-none"
+                >
                   {col}
                 </p>
               ))}

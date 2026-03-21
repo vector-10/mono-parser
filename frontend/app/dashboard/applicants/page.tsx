@@ -2,33 +2,73 @@
 import { useState, useMemo } from "react";
 import { useApplicants } from "@/lib/hooks/queries/use-applicants";
 import { useCreateApplicant } from "@/lib/hooks/queries/use-create-applicant";
-import { useUpdateApplicant, useDeleteApplicant } from "@/lib/hooks/queries/use-applicant";
-import { RiSearchLine, RiCloseLine, RiUserAddLine, RiTeamLine, RiEditLine, RiDeleteBinLine } from "react-icons/ri";
+import {
+  useUpdateApplicant,
+  useDeleteApplicant,
+} from "@/lib/hooks/queries/use-applicant";
+import {
+  RiSearchLine,
+  RiCloseLine,
+  RiUserAddLine,
+  RiTeamLine,
+  RiEditLine,
+  RiDeleteBinLine,
+} from "react-icons/ri";
 import { HiArrowRight } from "react-icons/hi2";
 import { toast } from "sonner";
 import type { Applicant } from "@/lib/api/applicants";
 
 function maskBvn(bvn: string) {
-  return bvn.length >= 4 ? `${"•".repeat(bvn.length - 4)}${bvn.slice(-4)}` : "••••";
+  return bvn.length >= 4
+    ? `${"•".repeat(bvn.length - 4)}${bvn.slice(-4)}`
+    : "••••";
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-NG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function initials(first: string, last: string) {
   return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
 }
 
-type FormState = { firstName: string; lastName: string; email: string; phone: string; bvn: string };
-const emptyForm: FormState = { firstName: "", lastName: "", email: "", phone: "", bvn: "" };
+type FormState = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  bvn: string;
+};
+const emptyForm: FormState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  bvn: "",
+};
 
-function Field({ label, value, onChange, type = "text", placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string;
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1.5">{label}</label>
+      <label className="block text-xs font-medium text-gray-500 mb-1.5">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
@@ -42,7 +82,8 @@ function Field({ label, value, onChange, type = "text", placeholder }: {
 
 function CreateModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<FormState>(emptyForm);
-  const set = (key: keyof FormState) => (v: string) => setForm((f) => ({ ...f, [key]: v }));
+  const set = (key: keyof FormState) => (v: string) =>
+    setForm((f) => ({ ...f, [key]: v }));
   const { mutate, isPending } = useCreateApplicant();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,14 +93,24 @@ function CreateModal({ onClose }: { onClose: () => void }) {
       return;
     }
     mutate(
-      { firstName: form.firstName, lastName: form.lastName, email: form.email, phone: form.phone || undefined, bvn: form.bvn || undefined },
       {
-        onSuccess: () => { toast.success("Applicant created"); onClose(); },
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phone: form.phone || undefined,
+        bvn: form.bvn || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Applicant created");
+          onClose();
+        },
         onError: (err: unknown) => {
-          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+          const msg = (err as { response?: { data?: { message?: string } } })
+            ?.response?.data?.message;
           toast.error(msg ?? "Failed to create applicant");
         },
-      }
+      },
     );
   };
 
@@ -69,18 +120,47 @@ function CreateModal({ onClose }: { onClose: () => void }) {
       <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <p className="text-sm font-semibold text-gray-900">New Applicant</p>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <RiCloseLine className="w-4 h-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="px-6 py-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="First Name *" value={form.firstName} onChange={set("firstName")} placeholder="Ada" />
-            <Field label="Last Name *" value={form.lastName} onChange={set("lastName")} placeholder="Okafor" />
+            <Field
+              label="First Name *"
+              value={form.firstName}
+              onChange={set("firstName")}
+              placeholder="Ada"
+            />
+            <Field
+              label="Last Name *"
+              value={form.lastName}
+              onChange={set("lastName")}
+              placeholder="Okafor"
+            />
           </div>
-          <Field label="Email *" value={form.email} onChange={set("email")} type="email" placeholder="ada@example.com" />
-          <Field label="Phone" value={form.phone} onChange={set("phone")} placeholder="+2348000000000" />
-          <Field label="BVN" value={form.bvn} onChange={set("bvn")} placeholder="22xxxxxxxxx" />
+          <Field
+            label="Email *"
+            value={form.email}
+            onChange={set("email")}
+            type="email"
+            placeholder="ada@example.com"
+          />
+          <Field
+            label="Phone"
+            value={form.phone}
+            onChange={set("phone")}
+            placeholder="+2348000000000"
+          />
+          <Field
+            label="BVN"
+            value={form.bvn}
+            onChange={set("bvn")}
+            placeholder="22xxxxxxxxx"
+          />
           <div className="pt-2">
             <button
               type="submit"
@@ -97,24 +177,45 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function DetailPanel({ applicant, onClose }: { applicant: Applicant; onClose: () => void }) {
+function DetailPanel({
+  applicant,
+  onClose,
+}: {
+  applicant: Applicant;
+  onClose: () => void;
+}) {
   const [mode, setMode] = useState<"view" | "edit" | "delete">("view");
   const [form, setForm] = useState<FormState>({
     firstName: applicant.firstName,
-    lastName:  applicant.lastName,
-    email:     applicant.email,
-    phone:     applicant.phone ?? "",
-    bvn:       applicant.bvn ?? "",
+    lastName: applicant.lastName,
+    email: applicant.email,
+    phone: applicant.phone ?? "",
+    bvn: applicant.bvn ?? "",
   });
-  const set = (key: keyof FormState) => (v: string) => setForm((f) => ({ ...f, [key]: v }));
+  const set = (key: keyof FormState) => (v: string) =>
+    setForm((f) => ({ ...f, [key]: v }));
   const { mutate: update, isPending: updating } = useUpdateApplicant();
   const { mutate: remove, isPending: deleting } = useDeleteApplicant();
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     update(
-      { id: applicant.id, data: { firstName: form.firstName, lastName: form.lastName, email: form.email, phone: form.phone || undefined, bvn: form.bvn || undefined } },
-      { onSuccess: () => { setMode("view"); onClose(); } }
+      {
+        id: applicant.id,
+        data: {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone || undefined,
+          bvn: form.bvn || undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          setMode("view");
+          onClose();
+        },
+      },
     );
   };
 
@@ -128,9 +229,16 @@ function DetailPanel({ applicant, onClose }: { applicant: Applicant; onClose: ()
       <aside className="relative w-[420px] bg-white h-full shadow-xl overflow-y-auto custom-scrollbar">
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
           <p className="text-sm font-semibold text-gray-900">
-            {mode === "edit" ? "Edit Applicant" : mode === "delete" ? "Delete Applicant" : "Applicant Profile"}
+            {mode === "edit"
+              ? "Edit Applicant"
+              : mode === "delete"
+                ? "Delete Applicant"
+                : "Applicant Profile"}
           </p>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+          >
             <RiCloseLine className="w-4 h-4 text-gray-500" />
           </button>
         </div>
@@ -144,7 +252,9 @@ function DetailPanel({ applicant, onClose }: { applicant: Applicant; onClose: ()
                 </span>
               </div>
               <div>
-                <p className="text-base font-semibold text-gray-900">{applicant.firstName} {applicant.lastName}</p>
+                <p className="text-base font-semibold text-gray-900">
+                  {applicant.firstName} {applicant.lastName}
+                </p>
                 <p className="text-sm text-gray-400">{applicant.email}</p>
               </div>
             </div>
@@ -152,13 +262,23 @@ function DetailPanel({ applicant, onClose }: { applicant: Applicant; onClose: ()
             <div className="space-y-3">
               {[
                 { label: "Phone", value: applicant.phone ?? "—" },
-                { label: "BVN", value: applicant.bvn ? maskBvn(applicant.bvn) : "—" },
+                {
+                  label: "BVN",
+                  value: applicant.bvn ? maskBvn(applicant.bvn) : "—",
+                },
                 { label: "Created", value: formatDate(applicant.createdAt) },
                 { label: "Applicant ID", value: applicant.id, mono: true },
               ].map(({ label, value, mono }) => (
-                <div key={label} className="flex items-start justify-between py-3 border-b border-gray-50">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-                  <p className={`text-sm text-gray-700 text-right max-w-[240px] truncate ${mono ? "font-mono text-xs text-gray-400" : ""}`}>
+                <div
+                  key={label}
+                  className="flex items-start justify-between py-3 border-b border-gray-50"
+                >
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                    {label}
+                  </p>
+                  <p
+                    className={`text-sm text-gray-700 text-right max-w-[240px] truncate ${mono ? "font-mono text-xs text-gray-400" : ""}`}
+                  >
                     {value}
                   </p>
                 </div>
@@ -185,10 +305,23 @@ function DetailPanel({ applicant, onClose }: { applicant: Applicant; onClose: ()
         {mode === "edit" && (
           <form onSubmit={handleUpdate} className="px-6 py-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="First Name" value={form.firstName} onChange={set("firstName")} />
-              <Field label="Last Name" value={form.lastName} onChange={set("lastName")} />
+              <Field
+                label="First Name"
+                value={form.firstName}
+                onChange={set("firstName")}
+              />
+              <Field
+                label="Last Name"
+                value={form.lastName}
+                onChange={set("lastName")}
+              />
             </div>
-            <Field label="Email" value={form.email} onChange={set("email")} type="email" />
+            <Field
+              label="Email"
+              value={form.email}
+              onChange={set("email")}
+              type="email"
+            />
             <Field label="Phone" value={form.phone} onChange={set("phone")} />
             <Field label="BVN" value={form.bvn} onChange={set("bvn")} />
             <div className="flex gap-3 pt-2">
@@ -213,9 +346,12 @@ function DetailPanel({ applicant, onClose }: { applicant: Applicant; onClose: ()
         {mode === "delete" && (
           <div className="px-6 py-6 space-y-6">
             <div className="bg-red-50 border border-red-100 rounded-xl p-5">
-              <p className="text-sm font-semibold text-red-700 mb-1">Delete {applicant.firstName} {applicant.lastName}?</p>
+              <p className="text-sm font-semibold text-red-700 mb-1">
+                Delete {applicant.firstName} {applicant.lastName}?
+              </p>
               <p className="text-sm text-red-600 leading-relaxed">
-                This will permanently delete the applicant and all associated applications and bank account data. This cannot be undone.
+                This will permanently delete the applicant and all associated
+                applications and bank account data. This cannot be undone.
               </p>
             </div>
             <div className="flex gap-3">
@@ -250,9 +386,10 @@ export default function ApplicantsPage() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return applicants;
-    return applicants.filter((a) =>
-      `${a.firstName} ${a.lastName}`.toLowerCase().includes(q) ||
-      a.email.toLowerCase().includes(q)
+    return applicants.filter(
+      (a) =>
+        `${a.firstName} ${a.lastName}`.toLowerCase().includes(q) ||
+        a.email.toLowerCase().includes(q),
     );
   }, [applicants, search]);
 
@@ -260,10 +397,11 @@ export default function ApplicantsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Applicants
-          </h1>
-          <p className="text-sm text-gray-400 mt-1">{applicants.length} applicant{applicants.length !== 1 ? "s" : ""} on record.</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Applicants</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            {applicants.length} applicant{applicants.length !== 1 ? "s" : ""} on
+            record.
+          </p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -294,20 +432,29 @@ export default function ApplicantsPage() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <RiTeamLine className="w-8 h-8 text-gray-200 mb-3" />
-            <p className="text-sm text-gray-400">{search ? "No applicants match your search" : "No applicants yet"}</p>
+            <p className="text-sm text-gray-400">
+              {search ? "No applicants match your search" : "No applicants yet"}
+            </p>
             {!search && (
-              <p className="text-xs text-gray-300 mt-1">Applicants will appear here once created or linked via your API</p>
+              <p className="text-xs text-gray-300 mt-1">
+                Applicants will appear here once created or linked via your API
+              </p>
             )}
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-50">
-                {["Applicant", "Email", "Phone", "BVN", "Created", ""].map((col) => (
-                  <th key={col} className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3">
-                    {col}
-                  </th>
-                ))}
+                {["Applicant", "Email", "Phone", "BVN", "Created", ""].map(
+                  (col) => (
+                    <th
+                      key={col}
+                      className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3"
+                    >
+                      {col}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -329,12 +476,18 @@ export default function ApplicantsPage() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-3.5 text-gray-500 text-xs">{applicant.email}</td>
-                  <td className="px-6 py-3.5 text-gray-500 text-xs">{applicant.phone ?? "—"}</td>
+                  <td className="px-6 py-3.5 text-gray-500 text-xs">
+                    {applicant.email}
+                  </td>
+                  <td className="px-6 py-3.5 text-gray-500 text-xs">
+                    {applicant.phone ?? "—"}
+                  </td>
                   <td className="px-6 py-3.5 text-gray-400 font-mono text-xs">
                     {applicant.bvn ? maskBvn(applicant.bvn) : "—"}
                   </td>
-                  <td className="px-6 py-3.5 text-gray-400 text-xs">{formatDate(applicant.createdAt)}</td>
+                  <td className="px-6 py-3.5 text-gray-400 text-xs">
+                    {formatDate(applicant.createdAt)}
+                  </td>
                   <td className="px-6 py-3.5">
                     <RiCloseLine className="w-4 h-4 text-gray-200 rotate-45" />
                   </td>
@@ -346,10 +499,7 @@ export default function ApplicantsPage() {
       </div>
 
       {selected && (
-        <DetailPanel
-          applicant={selected}
-          onClose={() => setSelected(null)}
-        />
+        <DetailPanel applicant={selected} onClose={() => setSelected(null)} />
       )}
 
       {showCreate && <CreateModal onClose={() => setShowCreate(false)} />}

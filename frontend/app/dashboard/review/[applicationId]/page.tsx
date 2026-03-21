@@ -3,8 +3,13 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApplication } from "@/lib/hooks/queries/use-application";
 import {
-  RiArrowLeftLine, RiSendPlaneLine, RiCheckLine, RiCloseLine,
-  RiArrowRightSLine, RiShieldKeyholeLine, RiLoader4Line,
+  RiArrowLeftLine,
+  RiSendPlaneLine,
+  RiCheckLine,
+  RiCloseLine,
+  RiArrowRightSLine,
+  RiShieldKeyholeLine,
+  RiLoader4Line,
 } from "react-icons/ri";
 import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
 import { applicationsApi, type ChatMessage } from "@/lib/api/applications";
@@ -15,16 +20,47 @@ function formatNaira(amount: number) {
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-NG", {
-    day: "numeric", month: "short", year: "numeric",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 }
 
 function scoreBand(score: number) {
-  if (score >= 750) return { label: "Very Low Risk", color: "text-[#59a927]", bar: "bg-[#59a927]", pct: 95 };
-  if (score >= 650) return { label: "Low Risk",      color: "text-[#59a927]", bar: "bg-[#59a927]", pct: 75 };
-  if (score >= 550) return { label: "Medium Risk",   color: "text-amber-500", bar: "bg-amber-400", pct: 55 };
-  if (score >= 500) return { label: "High Risk",     color: "text-red-500",   bar: "bg-red-400",   pct: 35 };
-  return                     { label: "Very High Risk", color: "text-red-600", bar: "bg-red-500",   pct: 15 };
+  if (score >= 750)
+    return {
+      label: "Very Low Risk",
+      color: "text-[#59a927]",
+      bar: "bg-[#59a927]",
+      pct: 95,
+    };
+  if (score >= 650)
+    return {
+      label: "Low Risk",
+      color: "text-[#59a927]",
+      bar: "bg-[#59a927]",
+      pct: 75,
+    };
+  if (score >= 550)
+    return {
+      label: "Medium Risk",
+      color: "text-amber-500",
+      bar: "bg-amber-400",
+      pct: 55,
+    };
+  if (score >= 500)
+    return {
+      label: "High Risk",
+      color: "text-red-500",
+      bar: "bg-red-400",
+      pct: 35,
+    };
+  return {
+    label: "Very High Risk",
+    color: "text-red-600",
+    bar: "bg-red-500",
+    pct: 15,
+  };
 }
 
 type DecisionData = {
@@ -36,8 +72,16 @@ type DecisionData = {
     strengths?: string[];
     weaknesses?: string[];
   };
-  approval_details?: { approved_amount?: number; monthly_payment?: number; approved_tenor?: number };
-  counter_offer?: { counter_amount?: number; monthly_payment?: number; counter_tenor?: number };
+  approval_details?: {
+    approved_amount?: number;
+    monthly_payment?: number;
+    approved_tenor?: number;
+  };
+  counter_offer?: {
+    counter_amount?: number;
+    monthly_payment?: number;
+    counter_tenor?: number;
+  };
 };
 
 const SUGGESTED_PROMPTS = [
@@ -72,7 +116,10 @@ function ChatPanel({ applicationId }: { applicationId: string }) {
     } catch {
       setMessages([
         ...updatedHistory,
-        { role: "assistant", content: "Something went wrong. Please try again." },
+        {
+          role: "assistant",
+          content: "Something went wrong. Please try again.",
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -84,15 +131,21 @@ function ChatPanel({ applicationId }: { applicationId: string }) {
       <div className="px-5 py-4 border-b border-gray-100 shrink-0">
         <div className="flex items-center gap-2">
           <RiShieldKeyholeLine className="w-4 h-4 text-[#0055ba]" />
-          <p className="text-sm font-semibold text-gray-900">AI Review Assistant</p>
+          <p className="text-sm font-semibold text-gray-900">
+            AI Review Assistant
+          </p>
         </div>
-        <p className="text-xs text-gray-400 mt-0.5 ml-6">Ask questions about this application</p>
+        <p className="text-xs text-gray-400 mt-0.5 ml-6">
+          Ask questions about this application
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
         {messages.length === 0 ? (
           <div className="space-y-3 pt-2">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Suggested questions</p>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+              Suggested questions
+            </p>
             {SUGGESTED_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
@@ -138,7 +191,12 @@ function ChatPanel({ applicationId }: { applicationId: string }) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(input); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend(input);
+              }
+            }}
             placeholder="Ask about this application…"
             className="flex-1 text-sm bg-transparent text-gray-900 placeholder-gray-300 focus:outline-none"
             disabled={isLoading}
@@ -177,13 +235,17 @@ export default function ReviewWorkspacePage() {
     );
   }
 
-  const d        = app.decision as DecisionData | null;
-  const reasons  = d?.manual_review_reasons ?? [];
-  const band     = app.score ? scoreBand(app.score) : null;
+  const d = app.decision as DecisionData | null;
+  const reasons = d?.manual_review_reasons ?? [];
+  const band = app.score ? scoreBand(app.score) : null;
   const isCounter = !!d?.counter_offer;
-  const terms    = d?.counter_offer ?? d?.approval_details;
-  const amount   = isCounter ? d?.counter_offer?.counter_amount : d?.approval_details?.approved_amount;
-  const tenor    = isCounter ? d?.counter_offer?.counter_tenor  : d?.approval_details?.approved_tenor;
+  const terms = d?.counter_offer ?? d?.approval_details;
+  const amount = isCounter
+    ? d?.counter_offer?.counter_amount
+    : d?.approval_details?.approved_amount;
+  const tenor = isCounter
+    ? d?.counter_offer?.counter_tenor
+    : d?.approval_details?.approved_tenor;
 
   return (
     <div className="-mx-6 -my-8 h-[calc(100vh-4rem)] flex flex-col">
@@ -196,7 +258,9 @@ export default function ReviewWorkspacePage() {
         </button>
         <div className="w-px h-4 bg-gray-100" />
         <p className="text-sm font-semibold text-gray-900">
-          {app.applicant ? `${app.applicant.firstName} ${app.applicant.lastName}` : "Application"}
+          {app.applicant
+            ? `${app.applicant.firstName} ${app.applicant.lastName}`
+            : "Application"}
         </p>
         <span className="px-2 py-0.5 rounded-full bg-[#0055ba]/10 text-[#0055ba] text-xs font-medium">
           Manual Review
@@ -204,32 +268,39 @@ export default function ReviewWorkspacePage() {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[420px] border-r border-gray-100 overflow-y-auto custom-scrollbar bg-white shrink-0">
+        <div className="w-105 border-r border-gray-100 overflow-y-auto custom-scrollbar bg-white shrink-0">
           <div className="px-6 py-6 space-y-6">
-
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Applicant</p>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+                Applicant
+              </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#0055ba]/10 flex items-center justify-center shrink-0">
                   <span className="text-sm font-semibold text-[#0055ba]">
-                    {app.applicant ? `${app.applicant.firstName.charAt(0)}${app.applicant.lastName.charAt(0)}`.toUpperCase() : "?"}
+                    {app.applicant
+                      ? `${app.applicant.firstName.charAt(0)}${app.applicant.lastName.charAt(0)}`.toUpperCase()
+                      : "?"}
                   </span>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    {app.applicant ? `${app.applicant.firstName} ${app.applicant.lastName}` : "—"}
+                    {app.applicant
+                      ? `${app.applicant.firstName} ${app.applicant.lastName}`
+                      : "—"}
                   </p>
-                  <p className="text-xs text-gray-400">{app.applicant?.email ?? "—"}</p>
+                  <p className="text-xs text-gray-400">
+                    {app.applicant?.email ?? "—"}
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Amount",   value: formatNaira(app.amount) },
-                { label: "Tenor",    value: `${app.tenor} months` },
-                { label: "Rate",     value: `${app.interestRate}%` },
-                { label: "Purpose",  value: app.purpose ?? "—" },
+                { label: "Amount", value: formatNaira(app.amount) },
+                { label: "Tenor", value: `${app.tenor} months` },
+                { label: "Rate", value: `${app.interestRate}%` },
+                { label: "Purpose", value: app.purpose ?? "—" },
                 { label: "Submitted", value: formatDate(app.createdAt) },
               ].map(({ label, value }) => (
                 <div key={label} className="bg-gray-50 rounded-xl p-3">
@@ -241,10 +312,16 @@ export default function ReviewWorkspacePage() {
 
             {app.score && band && (
               <div className="border border-gray-100 rounded-xl p-5">
-                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">Credit Score</p>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+                  Credit Score
+                </p>
                 <div className="flex items-end gap-3 mb-4">
-                  <p className="font-mono text-4xl font-medium text-[#0055ba]">{app.score}</p>
-                  <p className={`text-sm font-medium mb-1 ${band.color}`}>{band.label}</p>
+                  <p className="font-mono text-4xl font-medium text-[#0055ba]">
+                    {app.score}
+                  </p>
+                  <p className={`text-sm font-medium mb-1 ${band.color}`}>
+                    {band.label}
+                  </p>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
                   <div
@@ -262,10 +339,15 @@ export default function ReviewWorkspacePage() {
 
             {reasons.length > 0 && (
               <div className="bg-[#0055ba]/5 border border-[#0055ba]/15 rounded-xl p-5">
-                <p className="text-xs font-medium text-[#0055ba] uppercase tracking-wide mb-3">Review Triggers</p>
+                <p className="text-xs font-medium text-[#0055ba] uppercase tracking-wide mb-3">
+                  Review Triggers
+                </p>
                 <ul className="space-y-2">
                   {reasons.map((r, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-gray-700"
+                    >
                       <RiArrowRightSLine className="w-4 h-4 text-[#0055ba] shrink-0 mt-0.5" />
                       {r}
                     </li>
@@ -274,32 +356,47 @@ export default function ReviewWorkspacePage() {
               </div>
             )}
 
-            {(d?.explainability?.strengths?.length || d?.explainability?.weaknesses?.length) ? (
+            {d?.explainability?.strengths?.length ||
+            d?.explainability?.weaknesses?.length ? (
               <div className="grid grid-cols-2 gap-4">
-                {d?.explainability?.strengths && d.explainability.strengths.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-[#59a927] uppercase tracking-wide mb-2">Strengths</p>
-                    <ul className="space-y-1.5">
-                      {d.explainability.strengths.map((s, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
-                          <HiCheckCircle className="w-3.5 h-3.5 text-[#59a927] shrink-0 mt-0.5" /> {s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {d?.explainability?.weaknesses && d.explainability.weaknesses.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-red-500 uppercase tracking-wide mb-2">Weaknesses</p>
-                    <ul className="space-y-1.5">
-                      {d.explainability.weaknesses.map((w, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
-                          <HiXCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" /> {w}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {d?.explainability?.strengths &&
+                  d.explainability.strengths.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-[#59a927] uppercase tracking-wide mb-2">
+                        Strengths
+                      </p>
+                      <ul className="space-y-1.5">
+                        {d.explainability.strengths.map((s, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-1.5 text-xs text-gray-600"
+                          >
+                            <HiCheckCircle className="w-3.5 h-3.5 text-[#59a927] shrink-0 mt-0.5" />{" "}
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                {d?.explainability?.weaknesses &&
+                  d.explainability.weaknesses.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-red-500 uppercase tracking-wide mb-2">
+                        Weaknesses
+                      </p>
+                      <ul className="space-y-1.5">
+                        {d.explainability.weaknesses.map((w, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-1.5 text-xs text-gray-600"
+                          >
+                            <HiXCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />{" "}
+                            {w}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </div>
             ) : null}
 
@@ -311,15 +408,23 @@ export default function ReviewWorkspacePage() {
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
                     <p className="text-xs text-gray-400 mb-0.5">Amount</p>
-                    <p className="font-medium text-gray-900">{amount ? formatNaira(amount) : "—"}</p>
+                    <p className="font-medium text-gray-900">
+                      {amount ? formatNaira(amount) : "—"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 mb-0.5">Tenor</p>
-                    <p className="font-medium text-gray-900">{tenor ? `${tenor}mo` : "—"}</p>
+                    <p className="font-medium text-gray-900">
+                      {tenor ? `${tenor}mo` : "—"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 mb-0.5">Monthly</p>
-                    <p className="font-medium text-gray-900">{terms?.monthly_payment ? formatNaira(terms.monthly_payment) : "—"}</p>
+                    <p className="font-medium text-gray-900">
+                      {terms?.monthly_payment
+                        ? formatNaira(terms.monthly_payment)
+                        : "—"}
+                    </p>
                   </div>
                 </div>
               </div>
