@@ -4,6 +4,15 @@ body {
   font-family: var(--font-dm-sans), system-ui, sans-serif;
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

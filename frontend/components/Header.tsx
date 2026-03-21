@@ -24,7 +24,7 @@ const Header = () => {
           className={`bg-white transition-all duration-300 flex items-center justify-between ${
             scrolled
               ? 'max-w-5xl w-[95%] sm:w-[90%] py-2 sm:py-3 px-4 sm:px-6 md:px-8 shadow-lg rounded-lg sm:rounded-xl border border-gray-100'
-              : 'max-w-7xl w-full py-3 sm:py-4 px-4 sm:px-6 md:px-10 rounded-none border-b border-gray-100'
+              : 'max-w-7xl w-full py-3 sm:py-4 px-4 sm:px-6 md:px-10 rounded-md border-b border-gray-100'
           }`}
         >
           <Link href="/" className="flex items-center gap-2">

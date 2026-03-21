@@ -9,6 +9,7 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
 });
 
+
 export const metadata: Metadata = {
   title: "Mono-Parser - Credit Scoring for Nigerian Fintechs",
   description:
@@ -22,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} ${dmSans.variable} antialiased`}>
+      <body className={`${dmSans.variable} antialiased`}>
         <QueryProvider>
           {" "}
           <Toaster position="top-right" />
