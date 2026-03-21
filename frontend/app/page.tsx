@@ -14,6 +14,10 @@ import {
   RiGlobalLine,
   RiStockLine,
   RiShieldCheckLine,
+  RiLayout2Line,
+  RiMessage3Line,
+  RiCheckDoubleLine,
+  RiEqualizerLine,
 } from "react-icons/ri";
 
 function ScoreCard() {
@@ -50,13 +54,9 @@ function ScoreCard() {
       transition={{ duration: 0.6, delay: 0.4 }}
       className="relative bg-[#0d1117] rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/50 w-full max-w-sm mx-auto"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify- mb-6">
         <span className="text-xs text-gray-400 tracking-widest uppercase font-medium">
           Credit Analysis
-        </span>
-        <span className="flex items-center gap-1.5 text-xs text-[#59a927] font-semibold">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#59a927] animate-pulse" />
-          Live
         </span>
       </div>
 
@@ -74,7 +74,7 @@ function ScoreCard() {
         </div>
         <div className="h-2 bg-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#0055ba] to-[#59a927] rounded-full transition-all duration-75"
+            className="h-full bg-linear-to-r from-[#1A66C1] to-[#0055ba] rounded-full transition-all duration-75"
             style={{ width: `${barProgress}%` }}
           />
         </div>
@@ -86,7 +86,7 @@ function ScoreCard() {
       <div
         className={`border rounded-lg p-3 text-center mb-5 transition-all duration-500 ${
           showDecision
-            ? "border-[#59a927]/40 bg-[#59a927]/10 opacity-100"
+            ? "border-[#59a927]/40"
             : "border-white/5 bg-white/5 opacity-40"
         }`}
       >
@@ -185,12 +185,8 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero */}
-      <section className="relative bg-[#0a0f1e] overflow-hidden pt-32 sm:pt-36 lg:pt-44 pb-20 lg:pb-28 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#0055ba]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#59a927]/8 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto">
+      <section className="relative bg-white overflow-hidden pt-32 sm:pt-36 lg:pt-44 pb-0 px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto pb-24 lg:pb-32">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
               <motion.div
@@ -198,9 +194,9 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#0055ba]/40 bg-[#0055ba]/10 px-4 py-1.5 text-xs font-semibold text-[#0055ba] mb-6">
-                  <RiShieldCheckLine className="h-3.5 w-3.5" /> Powered by Mono Open
-                  Banking
+                <span className="inline-flex items-center gap-2 rounded-md border border-[#0055ba]/20 bg-[#0055ba]/5 px-4 py-1.5 text-xs font-semibold text-[#0055ba] mb-6">
+                  <RiShieldCheckLine className="h-3.5 w-3.5" /> Powered by Mono
+                  Open Banking
                 </span>
               </motion.div>
 
@@ -208,7 +204,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.1 }}
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.05] tracking-tight mb-6"
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-[1.05] tracking-tight mb-6"
               >
                 Credit intelligence
                 <br />
@@ -219,7 +215,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.2 }}
-                className="text-lg text-gray-400 leading-relaxed mb-8 max-w-xl"
+                className="text-lg text-gray-500 leading-relaxed mb-8 max-w-xl"
               >
                 Real-time cashflow analysis, FICO-compatible scoring, and
                 configurable risk policy — so your team approves more of the
@@ -240,7 +236,7 @@ export default function LandingPage() {
                 </Link>
                 <a
                   href="#api"
-                  className="inline-flex items-center justify-center rounded-lg border border-white/15 px-7 py-3 text-sm font-semibold text-white hover:bg-white/5 transition"
+                  className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-7 py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition"
                 >
                   View API Docs
                 </a>
@@ -250,14 +246,32 @@ export default function LandingPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
-                className="flex flex-wrap gap-6 text-sm text-gray-400"
+                className="flex flex-wrap gap-6 text-sm text-gray-500"
               >
                 {[
-                  { icon: <RiFlashlightLine className="h-4 w-4 text-[#59a927]" />, text: "Sub-30s decisions" },
-                  { icon: <RiBarChart2Line className="h-4 w-4 text-[#59a927]" />, text: "30+ data signals" },
-                  { icon: <RiCheckboxCircleLine className="h-4 w-4 text-[#59a927]" />, text: "99.9% uptime" },
+                  {
+                    icon: (
+                      <RiFlashlightLine className="h-4 w-4 text-[#59a927]" />
+                    ),
+                    text: "Sub-30s decisions",
+                  },
+                  {
+                    icon: (
+                      <RiBarChart2Line className="h-4 w-4 text-[#59a927]" />
+                    ),
+                    text: "30+ data signals",
+                  },
+                  {
+                    icon: (
+                      <RiCheckboxCircleLine className="h-4 w-4 text-[#59a927]" />
+                    ),
+                    text: "99.9% uptime",
+                  },
                 ].map(({ icon, text }) => (
-                  <div key={text} className="flex items-center gap-2 font-medium">
+                  <div
+                    key={text}
+                    className="flex items-center gap-2 font-medium"
+                  >
                     {icon}
                     <span>{text}</span>
                   </div>
@@ -269,6 +283,21 @@ export default function LandingPage() {
               <ScoreCard />
             </div>
           </div>
+        </div>
+
+        {/* Wave into dark pipeline section */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 180"
+            preserveAspectRatio="none"
+            className="block w-full h-28 sm:h-36 lg:h-44"
+          >
+            <path
+              fill="#0a0f1e"
+              d="M0,160L60,144C120,128,240,96,360,90.7C480,85,600,107,720,112C840,117,960,107,1080,96C1200,85,1320,75,1380,69.3L1440,64L1440,180L1380,180C1320,180,1200,180,1080,180C960,180,840,180,720,180C600,180,480,180,360,180C240,180,120,180,60,180L0,180Z"
+            />
+          </svg>
         </div>
       </section>
 
@@ -292,10 +321,10 @@ export default function LandingPage() {
                 <FadeIn
                   key={step.num}
                   delay={i * 0.08}
-                  className="flex-shrink-0 w-[220px] sm:w-[240px] lg:w-auto"
+                  className="shrink-0 w-55 sm:w-60 lg:w-auto"
                 >
                   <div className="group">
-                    <div className="relative rounded-2xl overflow-hidden aspect-[3/4]">
+                    <div className="relative rounded-2xl overflow-hidden aspect-3/4">
                       <Image
                         src={step.image}
                         alt={step.title}
@@ -303,7 +332,7 @@ export default function LandingPage() {
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                         sizes="(max-width: 1024px) 240px, 20vw"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
                       <div className="absolute top-3 left-3">
                         <span className="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full">
                           {step.num}
@@ -314,7 +343,7 @@ export default function LandingPage() {
                       <h3 className="font-bold text-white mb-1.5 text-lg">
                         {step.title}
                       </h3>
-                      <p className="text-xs text-gray-400 leading-relaxed">
+                      <p className=" text-gray-400 leading-relaxed text-sm">
                         {step.desc}
                       </p>
                     </div>
@@ -407,80 +436,153 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* More Reasons */}
-      <section
-        id="reasons"
-        className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-white"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-start">
-            <FadeIn className="lg:col-span-2 lg:sticky lg:top-28">
-              <span className="text-xs font-semibold tracking-widest uppercase text-[#0055ba] mb-3 block">
-                Data Signals
-              </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-5">
-                More reasons to say yes — or know when to say no
-              </h2>
-              <p className="text-base text-gray-500 leading-relaxed">
-                Traditional credit scores tell part of the story. We analyze the
-                full picture so your team makes confident lending decisions, not
-                guesses.
-              </p>
-            </FadeIn>
+      {/* AI Chat Interface */}
+      <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-3xl mx-auto">
+          <FadeIn className="text-center mb-12">
+            <span className="text-xs font-semibold tracking-widest uppercase text-[#0055ba] mb-3 block">
+              Built for your team
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Your team, not just your API
+            </h2>
+            <p className="text-base text-gray-500 max-w-xl mx-auto">
+              Loan officers get an AI assistant that understands every
+              application in full — and gives straight answers when it matters.
+            </p>
+          </FadeIn>
 
-            <div className="lg:col-span-3 grid sm:grid-cols-2 gap-4">
-              {[
-                {
-                  icon: "₦",
-                  title: "Cashflow Patterns",
-                  desc: "Track income stability, consistency, and month-on-month growth to predict repayment capacity.",
-                },
-                {
-                  icon: <RiStockLine className="h-4 w-4" />,
-                  title: "Spending Behavior",
-                  desc: "Understand financial discipline through spending patterns, volatility, and money management habits.",
-                },
-                {
-                  icon: <RiShieldCheckLine className="h-4 w-4" />,
-                  title: "Debt Service Capacity",
-                  desc: "Calculate real affordability with the 35% DTI rule and Nigerian lending best practices.",
-                },
-                {
-                  icon: <RiCheckboxCircleLine className="h-4 w-4" />,
-                  title: "Account Health",
-                  desc: "Assess banking relationship strength, overdraft history, and account tenure.",
-                },
-                {
-                  icon: <RiBarChart2Line className="h-4 w-4" />,
-                  title: "Transaction Analysis",
-                  desc: "Deep-dive into income sources, recency, regularity, and transaction-level categorisation.",
-                },
-                {
-                  icon: <RiGlobalLine className="h-4 w-4" />,
-                  title: "Nigerian Context",
-                  desc: "Algorithms designed specifically for the Nigerian lending market, income profiles, and banking behavior.",
-                },
-              ].map((reason, i) => (
-                <FadeIn key={i} delay={i * 0.06}>
-                  <div className="p-5 bg-white border border-gray-100 rounded-xl hover:border-[#59a927]/40 hover:shadow-sm transition h-full">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 bg-[#59a927]/10 rounded-lg flex items-center justify-center text-[#59a927] font-bold text-lg">
-                        {reason.icon}
+          <FadeIn delay={0.1}>
+            <div className="bg-[#0d1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl shadow-black/20">
+
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                <span className="ml-3 text-xs text-gray-400 font-medium">
+                  AI Assistant
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4 px-5 py-3.5 border-b border-white/5 bg-white/2">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-white">Emeka Adeyemi</div>
+                  <div className="text-xs text-gray-500 mt-0.5">₦2,000,000 · 18 months · 24% p.a.</div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-white leading-none">748</div>
+                    <div className="text-[10px] text-[#59a927] font-semibold tracking-wide">LOW_RISK</div>
+                  </div>
+                  <span className="text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 rounded-full px-2.5 py-1 whitespace-nowrap">
+                    MANUAL REVIEW
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-5 max-h-[520px] overflow-y-auto custom-scrollbar">
+
+                <div className="flex justify-end">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                    <p className="text-sm text-blue-100">
+                      Emeka has a 748 score and earns ₦450k a month. Why was this flagged for manual review?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-start">
+                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      Emeka&apos;s credit profile is genuinely strong — 748 puts him solidly in LOW_RISK. The flag here is <span className="text-white font-medium">not a credit risk issue, it&apos;s an affordability issue</span>. His verified salary of ₦450,000 gives a gross monthly cap of ₦157,500 at your 35% policy. But he carries ₦45,000 in existing loan obligations, leaving available capacity of ₦112,500. The ₦2,000,000 over 18 months generates a monthly payment of ₦133,400 — ₦20,900 above what he can safely service. The system protected him from being over-leveraged.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                    <p className="text-sm text-blue-100">
+                      Break down the affordability numbers exactly for me.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-start">
+                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                    <p className="text-sm text-gray-300 leading-relaxed mb-3">Here&apos;s the exact maths:</p>
+                    <div className="space-y-1.5 text-sm">
+                      {[
+                        ["Verified salary (Mono webhook)", "₦450,000 / mo"],
+                        ["Affordability cap (35%)", "₦157,500"],
+                        ["Existing obligations", "− ₦45,000"],
+                        ["Available capacity", "₦112,500"],
+                        ["Payment on ₦2M / 18mo at 24% p.a.", "₦133,400"],
+                        ["Shortfall", "₦20,900"],
+                      ].map(([label, value], i) => (
+                        <div key={i} className={`flex justify-between gap-4 ${i === 5 ? "pt-1.5 border-t border-white/10 text-amber-400 font-semibold" : "text-gray-400"}`}>
+                          <span>{label}</span>
+                          <span className={i === 5 ? "text-amber-400" : "text-white"}>{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-300 leading-relaxed mt-3">
+                      He can service a loan — just not this one at this size and tenor.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                    <p className="text-sm text-blue-100">
+                      What counter-offer options do we have?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-start">
+                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                    <p className="text-sm text-gray-300 leading-relaxed mb-3">Two clean options within his capacity:</p>
+                    <div className="space-y-2.5">
+                      <div className="bg-white/5 rounded-xl p-3 border border-white/8">
+                        <div className="text-xs font-semibold text-gray-400 mb-1">Option 1 — Reduce the amount</div>
+                        <div className="text-sm text-white font-medium">₦1,500,000 over 18 months</div>
+                        <div className="text-xs text-gray-400 mt-0.5">Monthly payment: ₦100,100 · ₦12,400 headroom</div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900 mb-1.5">
-                          {reason.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 leading-relaxed">
-                          {reason.desc}
-                        </p>
+                      <div className="bg-white/5 rounded-xl p-3 border border-white/8">
+                        <div className="text-xs font-semibold text-gray-400 mb-1">Option 2 — Extend the tenor</div>
+                        <div className="text-sm text-white font-medium">₦2,000,000 over 24 months</div>
+                        <div className="text-xs text-gray-400 mt-0.5">Monthly payment: ₦105,800 · ₦6,700 headroom</div>
                       </div>
                     </div>
                   </div>
-                </FadeIn>
-              ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                    <p className="text-sm text-blue-100">
+                      Which would you recommend?
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-start">
+                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      <span className="text-white font-medium">Option 2 — the 24-month full amount.</span> Emeka requested ₦2,000,000 which suggests a specific purpose. Giving him ₦1.5M may not solve his actual problem and risks losing the relationship. His credit profile comfortably supports a 24-month commitment, and the tenor is within policy for his tier. The headroom is tight but workable given his income stability. Confirm his loan purpose before presenting — if it&apos;s capital expenditure or asset purchase, Option 2 is the right call.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="px-5 py-4 border-t border-white/5">
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+                  <span className="text-sm text-gray-500 flex-1">Ask anything about this application...</span>
+                  <RiArrowRightLine className="w-4 h-4 text-gray-600 shrink-0" />
+                </div>
+              </div>
+
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -510,7 +612,7 @@ export default function LandingPage() {
                   "Comprehensive validation and error handling",
                 ].map((point) => (
                   <li key={point} className="flex items-start gap-3">
-                    <RiCheckboxCircleLine className="w-5 h-5 text-[#59a927] flex-shrink-0 mt-0.5" />
+                    <RiCheckboxCircleLine className="w-5 h-5 text-[#59a927] shrink-0 mt-0.5" />
                     <span className="text-sm text-gray-300">{point}</span>
                   </li>
                 ))}
@@ -618,64 +720,77 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <span className="text-lg font-bold text-white">
-                Mono-Parser
-              </span>
+              <span className="text-lg font-bold text-white">Mono-Parser</span>
               <p className="mt-3 text-gray-500 text-sm leading-relaxed">
                 Credit scoring and loan underwriting for Nigerian fintechs.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4 text-sm">
-                Product
-              </h3>
+              <h3 className="font-semibold text-white mb-4 text-sm">Product</h3>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <a href="#features" className="text-gray-500 hover:text-white transition">
+                  <a
+                    href="#features"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     Features
                   </a>
                 </li>
                 <li>
-                  <a href="#api" className="text-gray-500 hover:text-white transition">
+                  <a
+                    href="#api"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     API
                   </a>
                 </li>
                 <li>
-                  <Link href="/pricing" className="text-gray-500 hover:text-white transition">
+                  <Link
+                    href="/pricing"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     Pricing
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4 text-sm">
-                Company
-              </h3>
+              <h3 className="font-semibold text-white mb-4 text-sm">Company</h3>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <Link href="/about" className="text-gray-500 hover:text-white transition">
+                  <Link
+                    href="/about"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="text-gray-500 hover:text-white transition">
+                  <Link
+                    href="/contact"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     Contact
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-4 text-sm">
-                Legal
-              </h3>
+              <h3 className="font-semibold text-white mb-4 text-sm">Legal</h3>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <Link href="/privacy" className="text-gray-500 hover:text-white transition">
+                  <Link
+                    href="/privacy"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="text-gray-500 hover:text-white transition">
+                  <Link
+                    href="/terms"
+                    className="text-gray-500 hover:text-white transition"
+                  >
                     Terms
                   </Link>
                 </li>
@@ -683,7 +798,8 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="pt-8 border-t border-white/5 text-center text-sm text-gray-600">
-            © {new Date().getFullYear()} Mono-Parser. Built by First Software Systems.
+            © {new Date().getFullYear()} Mono-Parser. Built by First Software
+            Systems.
           </div>
         </div>
       </footer>
