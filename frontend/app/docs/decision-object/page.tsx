@@ -14,7 +14,7 @@ export default function DecisionObjectPage() {
         fields={[
           { name: "score", type: "number", desc: "Overall credit score (350–850). Higher is better." },
           { name: "decision", type: "string", desc: "APPROVED | REJECTED | MANUAL_REVIEW | COUNTER_OFFER" },
-          { name: "score_band", type: "string", desc: "LOW_RISK | MODERATE_RISK | HIGH_RISK | VERY_HIGH_RISK" },
+          { name: "score_band", type: "string", desc: "VERY_LOW_RISK | LOW_RISK | MEDIUM_RISK | HIGH_RISK | VERY_HIGH_RISK" },
           { name: "approval_details", type: "object | null", required: false, desc: "Present when APPROVED. Contains approved_amount, approved_tenor, approved_interest, monthly_payment." },
           { name: "counter_offer", type: "object | null", required: false, desc: "Present when COUNTER_OFFER. Contains suggested lower amount or shorter tenor." },
           { name: "risk_factors", type: "array", required: false, desc: "List of risk factors that influenced the decision. Each item has factor, severity, and detail." },

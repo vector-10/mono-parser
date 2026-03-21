@@ -1,4 +1,4 @@
-import { Shield, AlertTriangle, Check } from "lucide-react";
+import { RiShieldLine, RiAlertLine, RiCheckLine } from "react-icons/ri";
 
 export function Callout({
   type,
@@ -13,9 +13,9 @@ export function Callout({
     success: "bg-[#59a927]/5 border-[#59a927]/20 text-[#3a6e18]",
   };
   const icons = {
-    info: <Shield className="h-4 w-4 shrink-0 mt-0.5" />,
-    warning: <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />,
-    success: <Check className="h-4 w-4 shrink-0 mt-0.5" />,
+    info: <RiShieldLine className="h-4 w-4 shrink-0 mt-0.5" />,
+    warning: <RiAlertLine className="h-4 w-4 shrink-0 mt-0.5" />,
+    success: <RiCheckLine className="h-4 w-4 shrink-0 mt-0.5" />,
   };
   return (
     <div className={`flex gap-3 border rounded-lg p-4 text-sm my-4 ${styles[type]}`}>

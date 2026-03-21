@@ -127,6 +127,53 @@ export default function ApiReferencePage() {
         </Callout>
       </section>
 
+      {/* ── FINALIZE LINKING ── */}
+      <section id="finalize-linking" className="scroll-mt-28 mb-12">
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <MethodBadge method="POST" />
+          <code className="text-sm font-mono font-semibold text-gray-900">
+            /api/applications/:id/finalize-linking
+          </code>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Finalize Linking</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-6">
+          Signals that the applicant has finished linking all their bank accounts. This locks the
+          application from further account linking and makes it eligible for analysis. Once called,
+          we fire the <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">application.ready_for_analysis</code> webhook
+          when all enrichment is confirmed complete.
+        </p>
+
+        <h3 className="font-semibold text-gray-800 text-sm mb-2">Path Parameter</h3>
+        <FieldTable
+          fields={[
+            { name: ":id", type: "string (UUID)", desc: "The applicationId returned from the initiate endpoint." },
+          ]}
+        />
+
+        <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-6">Sample Request</h3>
+        <CodeBlock
+          lang="bash"
+          code={`curl -X POST https://api.mono-parser.shop/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/finalize-linking \\
+  -H "x-api-key: mp_live_your_secret_key"`}
+        />
+
+        <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-4">Response</h3>
+        <CodeBlock
+          lang="json"
+          code={`{
+  "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
+  "status": "LINKED",
+  "message": "Linking finalized. Analysis will be available once all accounts are enriched."
+}`}
+        />
+
+        <Callout type="info">
+          Call this once — after all the accounts your applicant needs to link are connected and
+          their <code>account.enrichment_ready</code> events have fired. If the applicant only has
+          one account, call this immediately after receiving <code>account.enrichment_ready</code>.
+        </Callout>
+      </section>
+
       {/* ── ANALYZE ── */}
       <section id="analyze" className="scroll-mt-28 mb-12">
         <div className="flex flex-wrap items-center gap-3 mb-3">
@@ -167,9 +214,10 @@ export default function ApiReferencePage() {
 
         <Callout type="warning">
           <strong>
-            Call this only after receiving <code>account.enrichment_ready</code>.
+            Call this only after receiving <code>application.ready_for_analysis</code>.
           </strong>{" "}
-          If the bank account has no linked accounts yet, this endpoint will return a 400 error.
+          This event fires after you have called <code>/finalize-linking</code> and all linked
+          accounts are enriched. Calling <code>/analyze</code> before this will return a 400 error.
         </Callout>
       </section>
     </div>

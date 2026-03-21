@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Menu, X } from "lucide-react";
+import { RiBookOpenLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 
 const navItems = [
   { href: "/docs", label: "Overview" },
@@ -14,6 +14,7 @@ const navItems = [
     children: [
       { href: "/docs/api-reference#initiate", label: "Initiate Application" },
       { href: "/docs/api-reference#link-account", label: "Link Account" },
+      { href: "/docs/api-reference#finalize-linking", label: "Finalize Linking" },
       { href: "/docs/api-reference#analyze", label: "Analyze Application" },
     ],
   },
@@ -23,6 +24,7 @@ const navItems = [
     children: [
       { href: "/docs/webhooks#wh-account-linked", label: "account.linked" },
       { href: "/docs/webhooks#wh-enrichment-ready", label: "account.enrichment_ready" },
+      { href: "/docs/webhooks#wh-ready-for-analysis", label: "application.ready_for_analysis" },
       { href: "/docs/webhooks#wh-decision", label: "application.decision" },
     ],
   },
@@ -88,16 +90,16 @@ export function DocsMobileNav() {
   
       <div className="lg:hidden sticky top-16 z-30 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
-          <BookOpen className="h-3.5 w-3.5" /> Contents
+          <RiBookOpenLine className="h-3.5 w-3.5" /> Contents
         </span>
         <button
           onClick={() => setMobileNavOpen(!mobileNavOpen)}
           className="flex items-center gap-1.5 text-sm font-medium text-[#0055ba] hover:text-[#004494] transition"
         >
           {mobileNavOpen ? (
-            <><X className="h-4 w-4" /> Close</>
+            <><RiCloseLine className="h-4 w-4" /> Close</>
           ) : (
-            <><Menu className="h-4 w-4" /> Browse</>
+            <><RiMenuLine className="h-4 w-4" /> Browse</>
           )}
         </button>
       </div>
@@ -122,7 +124,7 @@ export function DocsMobileNav() {
             onClick={() => setMobileNavOpen(false)}
             className="p-1.5 hover:bg-gray-100 rounded-lg transition"
           >
-            <X className="h-4 w-4 text-gray-500" />
+            <RiCloseLine className="h-4 w-4 text-gray-500" />
           </button>
         </div>
         <NavContent onNavigate={() => setMobileNavOpen(false)} />

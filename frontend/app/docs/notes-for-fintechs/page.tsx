@@ -1,20 +1,30 @@
-import { Shield, AlertTriangle } from "lucide-react";
+import { RiAlertLine, RiShieldLine } from "react-icons/ri";
 
 const notes = [
   {
     title: "Names must match exactly",
     type: "warning" as const,
-    body: "The applicant's first and last name submitted in the initiate call are compared against the identity data returned by Mono from the linked bank account. A mismatch is a HIGH-severity risk factor and will trigger immediate rejection with a score of 0. Always collect the applicant's name as it appears on their bank account — not a nickname or alias.",
+    body: "The applicant's first and last name submitted in the initiate call are compared against the identity data returned by Mono from the linked bank account. A mismatch is a HIGH-severity risk factor and will trigger immediate rejection. Always collect the applicant's name as it appears on their bank account — not a nickname or alias.",
   },
   {
-    title: "Do not call analyze before enrichment_ready",
+    title: "Call finalize-linking before analyze",
     type: "warning" as const,
-    body: "Enrichment is an asynchronous pipeline: income analysis and statement insights take between 30 seconds and 3 minutes to complete. Calling /analyze before both are ready means the scoring engine will have incomplete data, producing a lower-quality (or failed) decision. Wait for the account.enrichment_ready webhook — the applicationId is included for you.",
+    body: "You must call POST /applications/:id/finalize-linking before triggering analysis. This signals that all intended accounts are linked and locks the application. After this, we fire application.ready_for_analysis — that is your trigger for /analyze. Calling /analyze before finalize-linking will return a 400 error.",
+  },
+  {
+    title: "Do not call analyze before ready_for_analysis",
+    type: "warning" as const,
+    body: "Enrichment is an asynchronous pipeline — income analysis and statement insights take between 30 seconds and 3 minutes to complete. The application.ready_for_analysis webhook confirms that all linked accounts are fully enriched and that finalize-linking has been called. Only call /analyze after this event.",
   },
   {
     title: "Each widgetUrl is single-use",
     type: "info" as const,
     body: "The Mono Connect widget URL returned by /initiate and /link-account is a one-time-use link tied to a specific session. If the user closes the widget without completing, call /link-account to generate a fresh URL. Do not cache or reuse old widget URLs.",
+  },
+  {
+    title: "Multiple accounts are all analysed",
+    type: "info" as const,
+    body: "If an applicant links more than one bank account, the scoring engine aggregates data across all of them. All accounts are sent to the scoring engine simultaneously — having multiple accounts does not reduce the quality of the decision. Call /link-account as many times as needed before calling /finalize-linking.",
   },
   {
     title: "BVN enables credit bureau checks",
@@ -30,11 +40,6 @@ const notes = [
     title: "Sandbox vs. production behaviour",
     type: "info" as const,
     body: "In sandbox mode, Mono returns synthetic data. Statement insights jobs complete synchronously in sandbox (job_status is 'successful' immediately). Income webhooks still fire asynchronously. All scoring logic is identical — only the underlying bank data differs. Test with realistic amounts and realistic salary patterns for accurate sandbox decision validation.",
-  },
-  {
-    title: "One application, one bank account",
-    type: "info" as const,
-    body: "The scoring engine analyses the most recently linked bank account for an applicant. If an applicant has multiple linked accounts, all will be considered during analysis. Re-linking a bank account (calling /link-account) will refresh the existing account data and reset enrichment — the application moves back to PENDING_LINKING status.",
   },
   {
     title: "Rate limits",
@@ -62,9 +67,9 @@ export default function NotesForFintechsPage() {
               }`}
             >
               {note.type === "warning" ? (
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                <RiAlertLine className="h-4 w-4 text-amber-600 shrink-0" />
               ) : (
-                <Shield className="h-4 w-4 text-[#0055ba] shrink-0" />
+                <RiShieldLine className="h-4 w-4 text-[#0055ba] shrink-0" />
               )}
               <h2 className="font-semibold text-gray-900 text-sm">{note.title}</h2>
             </div>

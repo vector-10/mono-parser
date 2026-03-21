@@ -13,11 +13,7 @@ import {
   RiCodeSSlashLine,
   RiGlobalLine,
   RiStockLine,
-  RiShieldCheckLine,
-  RiLayout2Line,
-  RiMessage3Line,
-  RiCheckDoubleLine,
-  RiEqualizerLine,
+  RiShieldCheckLine
 } from "react-icons/ri";
 
 function ScoreCard() {
@@ -480,7 +476,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="p-5 space-y-5 max-h-[520px] overflow-y-auto custom-scrollbar">
+              <div className="p-5 space-y-5 max-h-130 overflow-y-auto custom-scrollbar">
 
                 <div className="flex justify-end">
                   <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">

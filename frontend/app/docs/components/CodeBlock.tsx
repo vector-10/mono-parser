@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { RiFileCopyLine, RiCheckLine } from "react-icons/ri";
 
 export function CodeBlock({ code, lang = "json" }: { code: string; lang?: string }) {
   const [copied, setCopied] = useState(false);
@@ -22,9 +22,9 @@ export function CodeBlock({ code, lang = "json" }: { code: string; lang?: string
           className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition"
         >
           {copied ? (
-            <Check className="h-3.5 w-3.5 text-[#59a927]" />
+            <RiCheckLine className="h-3.5 w-3.5 text-[#59a927]" />
           ) : (
-            <Copy className="h-3.5 w-3.5" />
+            <RiFileCopyLine className="h-3.5 w-3.5" />
           )}
           {copied ? "Copied" : "Copy"}
         </button>

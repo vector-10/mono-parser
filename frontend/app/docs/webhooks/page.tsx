@@ -73,10 +73,11 @@ export default function WebhooksPage() {
           account.enrichment_ready
         </h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
-          Fired when all enrichment data (income analysis + statement insights)
-          has been collected and stored. This is your signal to call{" "}
-          <code>/analyze</code>. The <code>applicationId</code> is included for
-          convenience — pass it directly to the analyze endpoint.
+          Fired per account when income analysis and statement insights have both completed for that
+          account. If your applicant is linking multiple accounts, you will receive this event once
+          per account. When you are done linking all accounts, call{" "}
+          <code>/finalize-linking</code> — we will then fire{" "}
+          <code>application.ready_for_analysis</code> as your trigger for <code>/analyze</code>.
         </p>
         <CodeBlock
           lang="json"
@@ -92,10 +93,48 @@ export default function WebhooksPage() {
   "timestamp": "2026-02-20T22:07:55.382Z"
 }`}
         />
+        <Callout type="info">
+          If your applicant has only one account, call <code>/finalize-linking</code> immediately
+          after this event. For multi-account flows, wait until all accounts fire this event before
+          finalizing.
+        </Callout>
+      </section>
+
+      {/* ── application.ready_for_analysis ── */}
+      <section id="wh-ready-for-analysis" className="scroll-mt-28 mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold rounded-full">
+            EVENT
+          </span>
+          <code className="font-mono font-semibold text-gray-900 text-sm">
+            application.ready_for_analysis
+          </code>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          application.ready_for_analysis
+        </h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          Fired after you have called <code>/finalize-linking</code> and all linked accounts on the
+          application are confirmed enriched. This is your definitive signal to call{" "}
+          <code>/analyze</code>. Unlike <code>account.enrichment_ready</code> which fires per
+          account, this fires once per application.
+        </p>
+        <CodeBlock
+          lang="json"
+          code={`{
+  "event": "application.ready_for_analysis",
+  "data": {
+    "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
+    "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
+    "accountCount":  1,
+    "message":       "All accounts are enriched. You may now submit for analysis."
+  },
+  "timestamp": "2026-02-20T22:08:10.441Z"
+}`}
+        />
         <Callout type="success">
-          Once you receive this event, call{" "}
-          <code>POST /api/applications/{"{applicationId}"}/analyze</code> using
-          the <code>applicationId</code> from the payload.
+          Call <code>POST /api/applications/{"{applicationId}"}/analyze</code> using the{" "}
+          <code>applicationId</code> from this payload.
         </Callout>
       </section>
 

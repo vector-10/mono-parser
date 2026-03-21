@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { CodeBlock } from "./components/CodeBlock";
-import { BookOpen, Zap, Webhook, Key } from "lucide-react";
+import { RiBookOpenLine, RiTimerFlashLine, RiNotification3Line, RiKey2Line } from "react-icons/ri";
 
 export default function DocsOverviewPage() {
   return (
     <div>
       <div className="mb-8">
         <span className="inline-flex items-center gap-2 rounded-full border border-[#0055ba]/20 bg-[#0055ba]/5 px-3 py-1.5 text-xs font-medium text-[#0055ba] mb-4">
-          <BookOpen className="h-3.5 w-3.5" /> Mono Parser API Documentation
+          <RiBookOpenLine className="h-3.5 w-3.5" /> Mono Parser API Documentation
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
           Introduction
@@ -23,17 +23,17 @@ export default function DocsOverviewPage() {
       <div className="grid sm:grid-cols-3 gap-4 mt-8">
         {[
           {
-            icon: <Zap className="h-5 w-5 text-[#0055ba]" />,
-            title: "Three API calls",
-            desc: "Initiate → Link Account → Analyze. Everything else is automated.",
+            icon: <RiTimerFlashLine className="h-5 w-5 text-[#0055ba]" />,
+            title: "Four API calls",
+            desc: "Initiate → Link Account → Finalize → Analyze. Everything else is automated.",
           },
           {
-            icon: <Webhook className="h-5 w-5 text-[#0055ba]" />,
+            icon: <RiNotification3Line className="h-5 w-5 text-[#0055ba]" />,
             title: "Webhook-driven",
             desc: "Results are pushed to your registered webhook URL asynchronously.",
           },
           {
-            icon: <Key className="h-5 w-5 text-[#0055ba]" />,
+            icon: <RiKey2Line className="h-5 w-5 text-[#0055ba]" />,
             title: "API key auth",
             desc: "All external endpoints use your secret API key — no OAuth needed.",
           },
@@ -67,7 +67,7 @@ export default function DocsOverviewPage() {
           {[
             { href: "/docs/authentication", label: "Authentication", desc: "API keys and security" },
             { href: "/docs/integration-flow", label: "Integration Flow", desc: "End-to-end lifecycle" },
-            { href: "/docs/api-reference", label: "API Reference", desc: "All 3 endpoints" },
+            { href: "/docs/api-reference", label: "API Reference", desc: "All 4 endpoints" },
             { href: "/docs/webhooks", label: "Webhooks", desc: "Events we send you" },
             { href: "/docs/decision-object", label: "Decision Object", desc: "Full response schema" },
             { href: "/docs/score-bands", label: "Score Bands", desc: "How scores map to decisions" },

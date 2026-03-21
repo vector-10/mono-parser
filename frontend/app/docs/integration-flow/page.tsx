@@ -4,37 +4,49 @@ const steps = [
   {
     step: "1",
     title: "POST /applications/initiate",
-    desc: "Create the applicant and application. Receive a Mono Connect widget URL.",
+    desc: "Create the applicant and application in one call. Receive a Mono Connect widget URL and an applicationId.",
     tag: "Your call",
   },
   {
     step: "2",
     title: "Open the widget URL",
-    desc: "Redirect or embed the widgetUrl so your applicant can link their bank account through Mono Connect.",
+    desc: "Redirect or embed the widgetUrl so your applicant can link their bank account through Mono Connect. The widget closes automatically on completion.",
     tag: "User action",
   },
   {
     step: "3",
     title: "account.linked webhook",
-    desc: "We notify your webhook URL that the bank account is linked. Enrichment begins automatically.",
+    desc: "We notify your webhook URL that a bank account has been linked. Enrichment (income analysis + statement insights) begins automatically. No action needed yet.",
     tag: "We send",
   },
   {
     step: "4",
     title: "account.enrichment_ready webhook",
-    desc: "Both income analysis and statement insights are ready. The applicationId is included — trigger analysis now.",
+    desc: "Enrichment for that account is complete. If you need to link an additional account, call /link-account again and repeat steps 2–4. Otherwise, proceed to finalize.",
     tag: "We send",
   },
   {
     step: "5",
-    title: "POST /applications/:id/analyze",
-    desc: "Trigger loan analysis. Use the applicationId from the enrichment_ready event.",
+    title: "POST /applications/:id/finalize-linking",
+    desc: "Signal that the applicant has finished linking all their accounts. This locks the application and makes it eligible for analysis.",
     tag: "Your call",
   },
   {
     step: "6",
+    title: "application.ready_for_analysis webhook",
+    desc: "All linked accounts are enriched and the application is ready. The applicationId is included — use it in the next call.",
+    tag: "We send",
+  },
+  {
+    step: "7",
+    title: "POST /applications/:id/analyze",
+    desc: "Trigger loan analysis. The scoring engine reads all enriched account data and runs the full credit pipeline.",
+    tag: "Your call",
+  },
+  {
+    step: "8",
     title: "application.decision webhook",
-    desc: "The full scored decision object is delivered to your webhook URL.",
+    desc: "The full scored decision object — including score, band, approval details or counter-offer, and explainability — is delivered to your webhook URL.",
     tag: "We send",
   },
 ];
@@ -44,8 +56,8 @@ export default function IntegrationFlowPage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Integration Flow</h1>
       <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-        The complete lifecycle of a loan application — from initiating to receiving a decision —
-        involves three API calls on your end and three webhook events from our side.
+        The complete lifecycle of a loan application involves four API calls on your end and four
+        webhook events from ours. The flow is async and webhook-driven — you never need to poll.
       </p>
 
       <div className="space-y-3 mb-8">
@@ -79,10 +91,9 @@ export default function IntegrationFlowPage() {
       </div>
 
       <Callout type="success">
-        <strong>Wait for enrichment_ready before calling analyze.</strong> Calling{" "}
-        <code>/analyze</code> endpoint before enrichment is complete will result in a lower-quality
-        decision. The <code>account.enrichment_ready</code> webhook is your reliable signal to
-        proceed.
+        <strong>Use application.ready_for_analysis as your trigger for /analyze.</strong> This event
+        fires only after finalize-linking and confirms all accounts are enriched. Calling{" "}
+        <code>/analyze</code> before this will return a 400 error.
       </Callout>
     </div>
   );
