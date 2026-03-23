@@ -19,6 +19,7 @@ import {
 } from "react-icons/ri";
 import { TbShieldCheck } from "react-icons/tb";
 import { toast } from "sonner";
+import { Tooltip } from "@/components/Tooltip";
 
 function SectionHeader({
   title,
@@ -465,6 +466,7 @@ function PolicyNumberInput({
   defaultVal,
   prefix,
   suffix,
+  tooltip,
   onChange,
 }: {
   label: string;
@@ -474,6 +476,7 @@ function PolicyNumberInput({
   defaultVal: number;
   prefix?: string;
   suffix?: string;
+  tooltip?: string;
   onChange: (key: string, val: number) => void;
 }) {
   const displayVal = value !== undefined ? String(value) : "";
@@ -481,8 +484,9 @@ function PolicyNumberInput({
 
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1.5">
+      <label className="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
         {label}
+        {tooltip && <Tooltip text={tooltip} />}
       </label>
       <div
         className={`flex items-center border rounded-lg overflow-hidden transition ${
@@ -586,9 +590,10 @@ function RiskPolicySection() {
 
       <div className="space-y-6">
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-            Decision Thresholds
-          </p>
+          <div className="flex items-center gap-1.5 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Decision Thresholds</p>
+            <Tooltip text="Score boundaries that determine whether a loan is automatically rejected, sent to manual review, or approved." />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <PolicyNumberInput
               label="Score Reject Floor"
@@ -596,6 +601,7 @@ function RiskPolicySection() {
               value={f("scoreRejectFloor")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.scoreRejectFloor}
+              tooltip="Scores at or below this threshold are automatically rejected without review."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -604,6 +610,7 @@ function RiskPolicySection() {
               value={f("scoreManualFloor")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.scoreManualFloor}
+              tooltip="Scores between this and the reject floor are sent to a loan officer for manual review."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -612,6 +619,7 @@ function RiskPolicySection() {
               value={f("scoreApproveFloor")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.scoreApproveFloor}
+              tooltip="Scores at or above this threshold are automatically approved, subject to affordability checks."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -620,15 +628,17 @@ function RiskPolicySection() {
               value={f("manualReviewBuffer")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.manualReviewBuffer}
+              tooltip="Extra point buffer applied near the approve floor. Borderline approvals within this range are flagged for review."
               onChange={handleChange}
             />
           </div>
         </div>
 
         <div className="border-t border-gray-50 pt-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-            Affordability
-          </p>
+          <div className="flex items-center gap-1.5 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Affordability</p>
+            <Tooltip text="Controls how much of a borrower's income can go towards loan repayment and what counts as a viable loan offer." />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <PolicyNumberInput
               label="Affordability Cap"
@@ -637,6 +647,7 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.affordabilityCap}
               suffix="ratio"
+              tooltip="Maximum share of monthly income that can go to loan repayment. 0.35 means a borrower earning ₦100k can service at most ₦35k/month."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -646,6 +657,7 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.minViableOfferRatio}
               suffix="ratio"
+              tooltip="Minimum loan amount the brain will counter-offer, as a ratio of the original request. Below this, no counter-offer is made."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -655,6 +667,7 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.minimumMonthlyIncome}
               prefix="₦"
+              tooltip="Applicants earning below this amount per month are automatically disqualified regardless of their score."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -664,15 +677,17 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.highValueThreshold}
               prefix="₦"
+              tooltip="Loan amounts above this value are flagged for additional scrutiny and may trigger a manual review regardless of score."
               onChange={handleChange}
             />
           </div>
         </div>
 
         <div className="border-t border-gray-50 pt-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-            Thin-File Rules
-          </p>
+          <div className="flex items-center gap-1.5 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Thin-File Rules</p>
+            <Tooltip text="Special limits applied to applicants with limited transaction history. Restricts how much they can borrow and for how long." />
+          </div>
           <div className="grid grid-cols-3 gap-4">
             <PolicyNumberInput
               label="Income Multiple (×)"
@@ -680,6 +695,7 @@ function RiskPolicySection() {
               value={f("thinFileIncomeMultiple")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.thinFileIncomeMultiple}
+              tooltip="For thin-file applicants, the loan amount cannot exceed this multiple of their monthly income."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -689,6 +705,7 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.thinFileMaxTenor}
               suffix="mo"
+              tooltip="Maximum repayment period allowed for applicants with limited transaction history."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -698,15 +715,17 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.incomeStalenessdays}
               suffix="d"
+              tooltip="If the most recent verified income is older than this many days, it is considered stale and will affect the score negatively."
               onChange={handleChange}
             />
           </div>
         </div>
 
         <div className="border-t border-gray-50 pt-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-            Knockout Limits
-          </p>
+          <div className="flex items-center gap-1.5 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Knockout Limits</p>
+            <Tooltip text="Hard limits that automatically disqualify an applicant before scoring. Breaching any of these results in an immediate rejection." />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <PolicyNumberInput
               label="Min Account Age (months)"
@@ -715,6 +734,7 @@ function RiskPolicySection() {
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.minAccountAgeMonths}
               suffix="mo"
+              tooltip="Bank accounts younger than this are rejected outright. Ensures sufficient transaction history exists for analysis."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -723,6 +743,7 @@ function RiskPolicySection() {
               value={f("maxOverdrafts")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.maxOverdrafts}
+              tooltip="Maximum number of overdraft incidents allowed in the transaction history. Exceeding this triggers an automatic rejection."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -731,6 +752,7 @@ function RiskPolicySection() {
               value={f("maxBouncedPayments")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.maxBouncedPayments}
+              tooltip="Maximum number of returned or bounced payments allowed. High bounce counts signal inability to meet obligations."
               onChange={handleChange}
             />
             <PolicyNumberInput
@@ -739,6 +761,7 @@ function RiskPolicySection() {
               value={f("maxConsecutiveFailures")}
               disabled={!enabled}
               defaultVal={BRAIN_DEFAULTS.maxConsecutiveFailures}
+              tooltip="Maximum number of consecutive failed debits or missed payments before automatic disqualification."
               onChange={handleChange}
             />
           </div>

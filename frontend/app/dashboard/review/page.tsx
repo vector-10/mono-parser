@@ -1,17 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useApplications } from "@/lib/hooks/queries/use-applications";
-import { useFlagForReview } from "@/lib/hooks/queries/use-application-action";
 import {
   RiShieldCheckLine,
   RiSearchLine,
-  RiFlag2Line,
-  RiLoader4Line,
 } from "react-icons/ri";
 import { TbCurrencyNaira } from "react-icons/tb";
 import ReviewWorkspace from "./components/ReviewWorkspace";
 import type { Application } from "@/lib/api/applications";
-import toast from "react-hot-toast";
 
 function daysWaiting(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
@@ -109,7 +105,6 @@ export default function ReviewQueuePage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: applications = [], isLoading } = useApplications(debouncedSearch ? undefined : "MANUAL_REVIEW", debouncedSearch);
-  const { mutate: flag, isPending: isFlagging } = useFlagForReview();
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -179,32 +174,6 @@ export default function ReviewQueuePage() {
           )}
         </div>
 
-        <div className="px-4 py-3 border-t border-gray-100 shrink-0">
-          <p className="text-xs text-gray-400 mb-2">Flag any application for review</p>
-          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 focus-within:border-[#0055ba]/30 focus-within:bg-white transition">
-            <RiFlag2Line className="w-3.5 h-3.5 text-gray-300 shrink-0" />
-            <input
-              type="text"
-              placeholder="Paste application ID…"
-              className="flex-1 text-xs bg-transparent text-gray-900 placeholder-gray-300 focus:outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const id = (e.target as HTMLInputElement).value.trim();
-                  if (!id) return;
-                  flag(id, {
-                    onSuccess: () => {
-                      toast.success("Flagged for manual review");
-                      (e.target as HTMLInputElement).value = "";
-                      setSelectedId(id);
-                    },
-                    onError: () => toast.error("Could not flag application"),
-                  });
-                }
-              }}
-            />
-            {isFlagging && <RiLoader4Line className="w-3.5 h-3.5 text-gray-400 animate-spin shrink-0" />}
-          </div>
-        </div>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
