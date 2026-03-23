@@ -302,16 +302,66 @@ export class ApplicationsService {
     return application;
   }
 
-  async findAll(fintechId: string, status?: string) {
-    this.logger.info({ fintechId, status: status ?? 'all' }, 'Fetching applications list');
+  async findAll(fintechId: string, status?: string, search?: string) {
+    this.logger.info({ fintechId, status: status ?? 'all', search }, 'Fetching applications list');
 
     return this.prisma.application.findMany({
       where: {
         applicant: { fintechId },
         ...(status && { status }),
+        ...(search && {
+          OR: [
+            { applicant: { firstName: { contains: search, mode: 'insensitive' } } },
+            { applicant: { lastName: { contains: search, mode: 'insensitive' } } },
+            { applicant: { email: { contains: search, mode: 'insensitive' } } },
+          ],
+        }),
       },
       include: { applicant: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async manualDecision(applicationId: string, fintechId: string, action: 'APPROVE' | 'DECLINE') {
+    const application = await this.prisma.application.findFirst({
+      where: { id: applicationId, applicant: { fintechId }, status: 'MANUAL_REVIEW' },
+    });
+
+    if (!application) throw new NotFoundException('Application not found or not in manual review');
+
+    const existing = (application.decision as Record<string, unknown>) ?? {};
+
+    return this.prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: 'COMPLETED',
+        decision: {
+          ...existing,
+          decision: action === 'APPROVE' ? 'APPROVED' : 'REJECTED',
+          manually_reviewed: true,
+          reviewed_at: new Date().toISOString(),
+        },
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async flagForManualReview(applicationId: string, fintechId: string) {
+    const application = await this.prisma.application.findFirst({
+      where: { id: applicationId, applicant: { fintechId } },
+    });
+
+    if (!application) throw new NotFoundException('Application not found');
+
+    const existing = (application.decision as Record<string, unknown>) ?? {};
+
+    return this.prisma.application.update({
+      where: { id: applicationId },
+      data: {
+        status: 'MANUAL_REVIEW',
+        decision: { ...existing, manually_flagged: true, flagged_at: new Date().toISOString() },
+        updatedAt: new Date(),
+      },
     });
   }
 

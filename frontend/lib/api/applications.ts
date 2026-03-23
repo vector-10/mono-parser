@@ -7,7 +7,7 @@ export interface Application {
   tenor: number
   interestRate: number
   purpose?: string
-  status: 'PENDING_LINKING' | 'LINKED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'ABANDONED' | 'MANUAL_REVIEW'
+  status: 'PENDING_LINKING' | 'LINKED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED' | 'FAILED' | 'ABANDONED' | 'MANUAL_REVIEW'
   score?: number
   decision?: Record<string, unknown>
   explanation?: string
@@ -31,10 +31,20 @@ export interface Application {
 export type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
 export const applicationsApi = {
-  getAll: async (status?: string): Promise<Application[]> => {
+  getAll: async (status?: string, search?: string): Promise<Application[]> => {
     const response = await api.get('/applications', {
-      params: status ? { status } : undefined,
+      params: { ...(status && { status }), ...(search && { search }) },
     })
+    return response.data
+  },
+
+  manualDecision: async (id: string, action: 'APPROVE' | 'DECLINE'): Promise<Application> => {
+    const response = await api.patch(`/applications/${id}/decide`, { action })
+    return response.data
+  },
+
+  flagForReview: async (id: string): Promise<Application> => {
+    const response = await api.patch(`/applications/${id}/flag-review`, {})
     return response.data
   },
 

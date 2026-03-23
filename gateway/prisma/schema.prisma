@@ -17,7 +17,6 @@ model User {
   apiKey         String?  @unique
   webhookSecret  String?
   monoApiKey     String?
-  monoPublicKey  String?
   webhookUrl     String?
 
   monoCustomerId String?

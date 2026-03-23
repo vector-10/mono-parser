@@ -40,7 +40,7 @@ export class MonoService {
           customer: { name: applicantName, email: applicantEmail },
           meta: {
             user_id: applicantId,
-            ref: applicationId ?? `applicant_${applicantId}_${Date.now()}`,
+            ref: applicationId ? `${applicationId}_${Date.now()}` : `applicant_${applicantId}_${Date.now()}`,
             ...(applicationId && { application_id: applicationId }),
           },
           scope: 'auth',

@@ -76,17 +76,6 @@ export class MonoWebhookService {
 
         this.logger.info({ monoAccountId, applicantId }, 'Bank account refreshed');
 
-        if (existingAccount.applicant.fintech.monoApiKey) {
-          this._triggerEnrichments(
-            updated.id,
-            monoAccountId,
-            existingAccount.applicant.fintech.monoApiKey,
-            applicationId ?? undefined,
-          ).catch((err) =>
-            this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after re-link'),
-          );
-        }
-
         if (applicationId) {
           await this.prisma.application.update({
             where: { id: applicationId },
@@ -109,6 +98,17 @@ export class MonoWebhookService {
           );
         }
 
+        if (existingAccount.applicant.fintech.monoApiKey) {
+          this._triggerEnrichments(
+            updated.id,
+            monoAccountId,
+            existingAccount.applicant.fintech.monoApiKey,
+            applicationId ?? undefined,
+          ).catch((err) =>
+            this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after re-link'),
+          );
+        }
+
         return { status: 'success', accountId: updated.id, linked: false };
       }
 
@@ -125,17 +125,6 @@ export class MonoWebhookService {
       });
 
       this.logger.info({ monoAccountId, applicantId }, 'New bank account linked');
-
-      if (bankAccount.applicant.fintech.monoApiKey) {
-        this._triggerEnrichments(
-          bankAccount.id,
-          monoAccountId,
-          bankAccount.applicant.fintech.monoApiKey,
-          applicationId ?? undefined,
-        ).catch((err) =>
-          this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after new link'),
-        );
-      }
 
       if (applicationId) {
         await this.prisma.application.update({
@@ -156,6 +145,17 @@ export class MonoWebhookService {
             institution:   bankAccount.institution,
             accountNumber: bankAccount.accountNumber,
           },
+        );
+      }
+
+      if (bankAccount.applicant.fintech.monoApiKey) {
+        this._triggerEnrichments(
+          bankAccount.id,
+          monoAccountId,
+          bankAccount.applicant.fintech.monoApiKey,
+          applicationId ?? undefined,
+        ).catch((err) =>
+          this.logger.error({ err, monoAccountId }, 'Enrichment trigger failed after new link'),
         );
       }
 

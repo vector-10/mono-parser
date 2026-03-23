@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Get,
   Body,
   Param,
@@ -82,7 +83,7 @@ export class ApplicationsController {
   async explainApplication(@Request() req, @Param('id') id: string) {
     const application = await this.applicationsService.findOne(id, req.user.id);
 
-    if (application.status !== 'COMPLETED') {
+    if (application.status !== 'COMPLETED' && application.status !== 'MANUAL_REVIEW') {
       throw new Error('Application analysis not complete yet');
     }
 
@@ -116,13 +117,33 @@ export class ApplicationsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll(@Request() req, @Query('status') status?: string) {
-    return this.applicationsService.findAll(req.user.id, status);
+  async findAll(
+    @Request() req,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.applicationsService.findAll(req.user.id, status, search);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findOne(@Request() req, @Param('id') id: string) {
     return this.applicationsService.findOne(id, req.user.id);
+  }
+
+  @Patch(':id/decide')
+  @UseGuards(JwtAuthGuard)
+  async manualDecision(
+    @Request() req,
+    @Param('id') id: string,
+    @Body('action') action: 'APPROVE' | 'DECLINE',
+  ) {
+    return this.applicationsService.manualDecision(id, req.user.id, action);
+  }
+
+  @Patch(':id/flag-review')
+  @UseGuards(JwtAuthGuard)
+  async flagForManualReview(@Request() req, @Param('id') id: string) {
+    return this.applicationsService.flagForManualReview(id, req.user.id);
   }
 }

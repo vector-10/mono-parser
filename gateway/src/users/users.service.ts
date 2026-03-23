@@ -134,10 +134,10 @@ export class UsersService {
     });
   }
 
-  async updateMonoApiKey(userId: string, monoApiKey: string, monoPublicKey: string) {
+  async updateMonoApiKey(userId: string, monoApiKey: string) {
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { monoApiKey, monoPublicKey },
+      data: { monoApiKey },
       select: {
         id: true,
         email: true,
