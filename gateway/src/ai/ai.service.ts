@@ -114,7 +114,11 @@ Write a clear, professional explanation for a loan officer. Cover: what the deci
 
     try {
       const result = await chat.sendMessage(message);
-      const text = result.response.text().replace(/\*\*/g, '').replace(/#{1,6}\s/g, '').trim();
+      const text = result.response
+        .text()
+        .replace(/\*\*/g, '')
+        .replace(/#{1,6}\s/g, '')
+        .trim();
       this.logger.info('AI review chat response generated');
       return text;
     } catch (error) {

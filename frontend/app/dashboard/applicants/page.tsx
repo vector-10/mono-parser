@@ -15,6 +15,7 @@ import {
   RiDeleteBinLine,
 } from "react-icons/ri";
 import { HiArrowRight } from "react-icons/hi2";
+import { Skeleton } from "@/components/Skeleton";
 import { toast } from "sonner";
 import type { Applicant } from "@/lib/api/applicants";
 
@@ -426,8 +427,10 @@ export default function ApplicantsPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-48">
-            <div className="w-5 h-5 border-2 border-[#0055ba] border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-3 p-6">
+            <Skeleton width="w-3/4" height="h-4" />
+            <Skeleton width="w-1/2" height="h-4" />
+            <Skeleton width="w-2/3" height="h-4" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">

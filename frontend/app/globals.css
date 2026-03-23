@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 body {
   font-family: var(--font-dm-sans), system-ui, sans-serif;
 }

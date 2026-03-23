@@ -5,6 +5,7 @@ import {
   RiShieldCheckLine,
   RiSearchLine,
 } from "react-icons/ri";
+import { Skeleton } from "@/components/Skeleton";
 import { TbCurrencyNaira } from "react-icons/tb";
 import ReviewWorkspace from "./components/ReviewWorkspace";
 import type { Application } from "@/lib/api/applications";
@@ -149,8 +150,10 @@ export default function ReviewQueuePage() {
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {isLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="w-4 h-4 border-2 border-[#0055ba] border-t-transparent rounded-full animate-spin" />
+            <div className="space-y-3 p-4">
+              <Skeleton width="w-3/4" height="h-4" />
+              <Skeleton width="w-1/2" height="h-4" />
+              <Skeleton width="w-2/3" height="h-4" />
             </div>
           ) : applications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

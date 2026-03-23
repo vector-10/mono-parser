@@ -1,5 +1,6 @@
 "use client";
 import { useMemo } from "react";
+import { Skeleton } from "@/components/Skeleton";
 import { useApplications } from "@/lib/hooks/queries/use-applications";
 import { useProfile } from "@/lib/hooks/queries/use-profile";
 import { TbCurrencyNaira, TbTrendingUp, TbShieldCheck, TbAlertCircle } from "react-icons/tb";
@@ -15,7 +16,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   LINKED:         { label: "Linked",         color: "bg-amber-50 text-amber-600" },
   PENDING_LINKING:{ label: "Pending Link",   color: "bg-gray-100 text-gray-500" },
   FAILED:         { label: "Failed",         color: "bg-red-50 text-red-600" },
-  ABANDONED:      { label: "Abandoned",      color: "bg-gray-100 text-gray-400" },
+  ABANDONED:      { label: "Abandoned",      color: "bg-gray-100 text-gray-500" },
 };
 
 function formatNaira(amount: number) {
@@ -43,13 +44,13 @@ function StatCard({ label, value, sub, icon: Icon, accent = false }: {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-6">
       <div className="flex items-start justify-between mb-4">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
         <Icon className={`w-4 h-4 ${accent ? "text-[#0055ba]" : "text-gray-300"}`} />
       </div>
       <p className="text-3xl font-semibold text-gray-900 mb-1">
         {value}
       </p>
-      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+      {sub && <p className="text-xs text-gray-500">{sub}</p>}
     </div>
   );
 }
@@ -77,8 +78,10 @@ export default function OverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-5 h-5 border-2 border-[#0055ba] border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-3 py-4">
+        <Skeleton width="w-2/3" height="h-5" />
+        <Skeleton width="w-1/2" height="h-4" />
+        <Skeleton width="w-3/4" height="h-4" />
       </div>
     );
   }
@@ -92,7 +95,7 @@ export default function OverviewPage() {
         >
           Good morning{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}.
         </h1>
-        <p className="text-sm text-gray-400">Here&apos;s what&apos;s happening across your pipeline.</p>
+        <p className="text-sm text-gray-500">Here&apos;s what&apos;s happening across your pipeline.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -104,7 +107,7 @@ export default function OverviewPage() {
 
       <div className="bg-white rounded-xl border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Application Volume — Last 14 Days</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Application Volume — Last 14 Days</p>
         </div>
         {stats.chartData.length > 1 ? (
           <ResponsiveContainer width="100%" height={180}>
@@ -126,7 +129,7 @@ export default function OverviewPage() {
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-[180px] flex items-center justify-center text-sm text-gray-300">
+          <div className="h-45 flex items-center justify-center text-sm text-gray-300">
             Not enough data yet
           </div>
         )}
@@ -134,7 +137,7 @@ export default function OverviewPage() {
 
       <div className="bg-white rounded-xl border border-gray-100">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Recent Applications</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recent Applications</p>
           <Link
             href="/dashboard/applications"
             className="flex items-center gap-1 text-xs font-medium text-[#0055ba] hover:text-[#003d85] transition-colors"
@@ -146,7 +149,7 @@ export default function OverviewPage() {
         {stats.recent.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <RiTimeLine className="w-8 h-8 text-gray-200 mb-3" />
-            <p className="text-sm text-gray-400">No applications yet</p>
+            <p className="text-sm text-gray-500">No applications yet</p>
             <p className="text-xs text-gray-300 mt-1">Applications submitted via your API will appear here</p>
           </div>
         ) : (
@@ -154,7 +157,7 @@ export default function OverviewPage() {
             <thead>
               <tr className="border-b border-gray-50">
                 {["Applicant", "Amount", "Score", "Decision", "Status", "Date"].map((col) => (
-                  <th key={col} className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3">
+                  <th key={col} className="text-left text-xs font-medium text-gray-500 uppercase tracking-wide px-6 py-3">
                     {col}
                   </th>
                 ))}
@@ -186,7 +189,7 @@ export default function OverviewPage() {
                         {status.label}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-gray-400 text-xs">{formatDate(app.createdAt)}</td>
+                    <td className="px-6 py-3.5 text-gray-500 text-xs">{formatDate(app.createdAt)}</td>
                   </tr>
                 );
               })}

@@ -12,6 +12,7 @@ import {
 } from "react-icons/ri";
 import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
 import { useApplication } from "@/lib/hooks/queries/use-application";
+import { Skeleton } from "@/components/Skeleton";
 import { useManualDecision, useFlagForReview } from "@/lib/hooks/queries/use-application-action";
 import { applicationsApi, type ChatMessage } from "@/lib/api/applications";
 import toast from "react-hot-toast";
@@ -174,8 +175,10 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-5 h-5 border-2 border-[#0055ba] border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-3 p-6">
+        <Skeleton width="w-2/3" height="h-5" />
+        <Skeleton width="w-1/2" height="h-4" />
+        <Skeleton width="w-3/4" height="h-4" />
       </div>
     );
   }

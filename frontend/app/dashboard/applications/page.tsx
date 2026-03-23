@@ -8,6 +8,7 @@ import {
   RiFileList3Line,
 } from "react-icons/ri";
 import { TbCurrencyNaira } from "react-icons/tb";
+import { Skeleton } from "@/components/Skeleton";
 import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
 import type { Application } from "@/lib/api/applications";
 
@@ -411,8 +412,10 @@ export default function ApplicationsPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-48">
-            <div className="w-5 h-5 border-2 border-[#0055ba] border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-3 p-6">
+            <Skeleton width="w-3/4" height="h-4" />
+            <Skeleton width="w-1/2" height="h-4" />
+            <Skeleton width="w-2/3" height="h-4" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">

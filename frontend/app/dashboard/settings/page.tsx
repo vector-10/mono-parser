@@ -31,7 +31,7 @@ function SectionHeader({
   return (
     <div className="mb-6">
       <h2 className="text-base font-semibold text-gray-900">{title}</h2>
-      <p className="text-sm text-gray-400 mt-0.5">{description}</p>
+      <p className="text-sm text-gray-500 mt-0.5">{description}</p>
     </div>
   );
 }
@@ -64,7 +64,7 @@ function Field({
         placeholder={placeholder}
         className={`w-full px-3 py-2.5 text-sm border rounded-lg transition ${
           readOnly
-            ? "bg-gray-50 border-gray-100 text-gray-400 cursor-default"
+            ? "bg-gray-50 border-gray-100 text-gray-500 cursor-default"
             : "bg-white border-gray-200 text-gray-900 placeholder-gray-300 focus:outline-none focus:border-[#0055ba]/40"
         }`}
       />
@@ -132,7 +132,7 @@ function RevealedCredentials({
             </code>
             <button
               onClick={() => setShowKey(!showKey)}
-              className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+              className="text-gray-500 hover:text-gray-600 transition-colors shrink-0"
             >
               {showKey ? (
                 <RiEyeOffLine className="w-3.5 h-3.5" />
@@ -156,7 +156,7 @@ function RevealedCredentials({
             </code>
             <button
               onClick={() => setShowSecret(!showSecret)}
-              className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+              className="text-gray-500 hover:text-gray-600 transition-colors shrink-0"
             >
               {showSecret ? (
                 <RiEyeOffLine className="w-3.5 h-3.5" />
@@ -223,11 +223,11 @@ function ApiKeySection() {
                 </p>
               </div>
               <p
-                className={`text-sm font-medium ${profile?.hasApiKey ? "text-gray-900" : "text-gray-400"}`}
+                className={`text-sm font-medium ${profile?.hasApiKey ? "text-gray-900" : "text-gray-500"}`}
               >
                 {profile?.hasApiKey ? "Active" : "Not set"}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Stored as a hash — not recoverable
               </p>
             </div>
@@ -242,11 +242,11 @@ function ApiKeySection() {
                 </p>
               </div>
               <p
-                className={`text-sm font-medium ${profile?.hasWebhookSecret ? "text-gray-900" : "text-gray-400"}`}
+                className={`text-sm font-medium ${profile?.hasWebhookSecret ? "text-gray-900" : "text-gray-500"}`}
               >
                 {profile?.hasWebhookSecret ? "Active" : "Not set"}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Used to verify webhook payloads
               </p>
             </div>
@@ -268,7 +268,7 @@ function ApiKeySection() {
                   : "Generate API Key"}
             </button>
             {profile?.hasApiKey && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-500">
                 Rotating will invalidate your current key immediately.
               </p>
             )}
@@ -354,7 +354,7 @@ function MonoIntegrationSection() {
           <h2 className="text-base font-semibold text-gray-900">
             Mono API Key
           </h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             Used to fetch bank data and run enrichments via the Mono open
             banking API.
           </p>
@@ -497,7 +497,7 @@ function PolicyNumberInput({
       >
         {prefix && (
           <span
-            className={`px-2.5 py-2.5 text-sm border-r ${disabled ? "border-gray-100 text-gray-300 bg-gray-50" : "border-gray-200 text-gray-400"}`}
+            className={`px-2.5 py-2.5 text-sm border-r ${disabled ? "border-gray-100 text-gray-300 bg-gray-50" : "border-gray-200 text-gray-500"}`}
           >
             {prefix}
           </span>
@@ -516,7 +516,7 @@ function PolicyNumberInput({
         />
         {suffix && (
           <span
-            className={`px-2.5 text-sm ${disabled ? "text-gray-300" : "text-gray-400"}`}
+            className={`px-2.5 text-sm ${disabled ? "text-gray-300" : "text-gray-500"}`}
           >
             {suffix}
           </span>
@@ -573,14 +573,14 @@ function RiskPolicySection() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Risk Policy</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             Override the brain&apos;s default scoring and affordability
             parameters per your lending policy.
           </p>
         </div>
         <div className="flex items-center gap-2.5 mt-0.5">
           <span
-            className={`text-xs font-medium ${enabled ? "text-[#0055ba]" : "text-gray-400"}`}
+            className={`text-xs font-medium ${enabled ? "text-[#0055ba]" : "text-gray-500"}`}
           >
             {enabled ? "Custom" : "Using defaults"}
           </span>
@@ -591,7 +591,7 @@ function RiskPolicySection() {
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-1.5 mb-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Decision Thresholds</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Decision Thresholds</p>
             <Tooltip text="Score boundaries that determine whether a loan is automatically rejected, sent to manual review, or approved." />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -636,7 +636,7 @@ function RiskPolicySection() {
 
         <div className="border-t border-gray-50 pt-6">
           <div className="flex items-center gap-1.5 mb-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Affordability</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Affordability</p>
             <Tooltip text="Controls how much of a borrower's income can go towards loan repayment and what counts as a viable loan offer." />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -685,7 +685,7 @@ function RiskPolicySection() {
 
         <div className="border-t border-gray-50 pt-6">
           <div className="flex items-center gap-1.5 mb-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Thin-File Rules</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Thin-File Rules</p>
             <Tooltip text="Special limits applied to applicants with limited transaction history. Restricts how much they can borrow and for how long." />
           </div>
           <div className="grid grid-cols-3 gap-4">
@@ -723,7 +723,7 @@ function RiskPolicySection() {
 
         <div className="border-t border-gray-50 pt-6">
           <div className="flex items-center gap-1.5 mb-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Knockout Limits</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Knockout Limits</p>
             <Tooltip text="Hard limits that automatically disqualify an applicant before scoring. Breaching any of these results in an immediate rejection." />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -780,7 +780,7 @@ function RiskPolicySection() {
           <button
             onClick={handleReset}
             disabled={isPending}
-            className="text-sm font-medium text-gray-400 hover:text-gray-700 transition"
+            className="text-sm font-medium text-gray-500 hover:text-gray-700 transition"
           >
             Reset to defaults
           </button>
@@ -795,7 +795,7 @@ export default function SettingsPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           Manage your API credentials, integrations, and account details.
         </p>
       </div>
