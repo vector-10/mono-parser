@@ -256,7 +256,7 @@ function DetailPanel({
                 <p className="text-base font-semibold text-gray-900">
                   {applicant.firstName} {applicant.lastName}
                 </p>
-                <p className="text-sm text-gray-400">{applicant.email}</p>
+                <p className="text-sm text-gray-500">{applicant.email}</p>
               </div>
             </div>
 
@@ -274,11 +274,11 @@ function DetailPanel({
                   key={label}
                   className="flex items-start justify-between py-3 border-b border-gray-50"
                 >
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     {label}
                   </p>
                   <p
-                    className={`text-sm text-gray-700 text-right max-w-[240px] truncate ${mono ? "font-mono text-xs text-gray-400" : ""}`}
+                    className={`text-sm text-gray-700 text-right max-w-[240px] truncate ${mono ? "font-mono text-xs text-gray-500" : ""}`}
                   >
                     {value}
                   </p>
@@ -399,7 +399,7 @@ export default function ApplicantsPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Applicants</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             {applicants.length} applicant{applicants.length !== 1 ? "s" : ""} on
             record.
           </p>
@@ -435,7 +435,7 @@ export default function ApplicantsPage() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <RiTeamLine className="w-8 h-8 text-gray-200 mb-3" />
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500">
               {search ? "No applicants match your search" : "No applicants yet"}
             </p>
             {!search && (
@@ -452,7 +452,7 @@ export default function ApplicantsPage() {
                   (col) => (
                     <th
                       key={col}
-                      className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3"
+                      className="text-left text-xs font-medium text-gray-500 uppercase tracking-wide px-6 py-3"
                     >
                       {col}
                     </th>
@@ -485,10 +485,10 @@ export default function ApplicantsPage() {
                   <td className="px-6 py-3.5 text-gray-500 text-xs">
                     {applicant.phone ?? "—"}
                   </td>
-                  <td className="px-6 py-3.5 text-gray-400 font-mono text-xs">
+                  <td className="px-6 py-3.5 text-gray-500 font-mono text-xs">
                     {applicant.bvn ? maskBvn(applicant.bvn) : "—"}
                   </td>
-                  <td className="px-6 py-3.5 text-gray-400 text-xs">
+                  <td className="px-6 py-3.5 text-gray-500 text-xs">
                     {formatDate(applicant.createdAt)}
                   </td>
                   <td className="px-6 py-3.5">

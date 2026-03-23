@@ -23,7 +23,7 @@ export function FieldTable({
                 {f.required !== false ? (
                   <span className="text-xs font-medium text-red-600">Yes</span>
                 ) : (
-                  <span className="text-xs text-gray-400">No</span>
+                  <span className="text-xs text-gray-500">No</span>
                 )}
               </td>
               <td className="px-4 py-3 text-gray-600 text-xs leading-relaxed">{f.desc}</td>

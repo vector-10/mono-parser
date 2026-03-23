@@ -51,7 +51,7 @@ function ScoreCard() {
       className="relative bg-[#0d1117] rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/50 w-full max-w-sm mx-auto"
     >
       <div className="flex items-center justify- mb-6">
-        <span className="text-xs text-gray-400 tracking-widest uppercase font-medium">
+        <span className="text-xs text-gray-500 tracking-widest uppercase font-medium">
           Credit Analysis
         </span>
       </div>
@@ -60,7 +60,7 @@ function ScoreCard() {
         <div className="text-7xl font-bold text-white tabular-nums leading-none">
           {score}
         </div>
-        <div className="text-sm text-gray-400 mt-2">Credit Score</div>
+        <div className="text-sm text-gray-500 mt-2">Credit Score</div>
       </div>
 
       <div className="mb-5">
@@ -339,7 +339,7 @@ export default function LandingPage() {
                       <h3 className="font-bold text-white mb-1.5 text-lg">
                         {step.title}
                       </h3>
-                      <p className=" text-gray-400 leading-relaxed text-sm">
+                      <p className=" text-gray-500 leading-relaxed text-sm">
                         {step.desc}
                       </p>
                     </div>
@@ -455,7 +455,7 @@ export default function LandingPage() {
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                <span className="ml-3 text-xs text-gray-400 font-medium">
+                <span className="ml-3 text-xs text-gray-500 font-medium">
                   AI Assistant
                 </span>
               </div>
@@ -514,7 +514,7 @@ export default function LandingPage() {
                         ["Payment on ₦2M / 18mo at 24% p.a.", "₦133,400"],
                         ["Shortfall", "₦20,900"],
                       ].map(([label, value], i) => (
-                        <div key={i} className={`flex justify-between gap-4 ${i === 5 ? "pt-1.5 border-t border-white/10 text-amber-400 font-semibold" : "text-gray-400"}`}>
+                        <div key={i} className={`flex justify-between gap-4 ${i === 5 ? "pt-1.5 border-t border-white/10 text-amber-400 font-semibold" : "text-gray-500"}`}>
                           <span>{label}</span>
                           <span className={i === 5 ? "text-amber-400" : "text-white"}>{value}</span>
                         </div>
@@ -539,14 +539,14 @@ export default function LandingPage() {
                     <p className="text-sm text-gray-300 leading-relaxed mb-3">Two clean options within his capacity:</p>
                     <div className="space-y-2.5">
                       <div className="bg-white/5 rounded-xl p-3 border border-white/8">
-                        <div className="text-xs font-semibold text-gray-400 mb-1">Option 1 — Reduce the amount</div>
+                        <div className="text-xs font-semibold text-gray-500 mb-1">Option 1 — Reduce the amount</div>
                         <div className="text-sm text-white font-medium">₦1,500,000 over 18 months</div>
-                        <div className="text-xs text-gray-400 mt-0.5">Monthly payment: ₦100,100 · ₦12,400 headroom</div>
+                        <div className="text-xs text-gray-500 mt-0.5">Monthly payment: ₦100,100 · ₦12,400 headroom</div>
                       </div>
                       <div className="bg-white/5 rounded-xl p-3 border border-white/8">
-                        <div className="text-xs font-semibold text-gray-400 mb-1">Option 2 — Extend the tenor</div>
+                        <div className="text-xs font-semibold text-gray-500 mb-1">Option 2 — Extend the tenor</div>
                         <div className="text-sm text-white font-medium">₦2,000,000 over 24 months</div>
-                        <div className="text-xs text-gray-400 mt-0.5">Monthly payment: ₦105,800 · ₦6,700 headroom</div>
+                        <div className="text-xs text-gray-500 mt-0.5">Monthly payment: ₦105,800 · ₦6,700 headroom</div>
                       </div>
                     </div>
                   </div>
@@ -596,7 +596,7 @@ export default function LandingPage() {
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-5">
                 Simple, powerful API
               </h2>
-              <p className="text-lg text-gray-400 mb-8 leading-relaxed">
+              <p className="text-lg text-gray-500 mb-8 leading-relaxed">
                 Integrate credit scoring into your lending platform in minutes.
                 RESTful API with a structured, predictable response format.
               </p>

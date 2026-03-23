@@ -45,7 +45,7 @@ export default function Sidebar() {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
                   ? "bg-[#0055ba]/15 text-[#4d8fde]"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  : "text-gray-500 hover:text-white hover:bg-white/5"
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -58,7 +58,7 @@ export default function Sidebar() {
       <div className="px-3 py-5 border-t border-white/5">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"
         >
           <RiLogoutBoxLine className="w-4 h-4 shrink-0" />
           Log out

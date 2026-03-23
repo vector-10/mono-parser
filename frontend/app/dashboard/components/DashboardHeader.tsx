@@ -39,7 +39,7 @@ export default function DashboardHeader() {
               <p className="text-sm font-medium text-gray-900 leading-tight">
                 {user?.name ?? "—"}
               </p>
-              <p className="text-xs text-gray-400 leading-tight">
+              <p className="text-xs text-gray-500 leading-tight">
                 {user?.companyName ?? ""}
               </p>
             </div>

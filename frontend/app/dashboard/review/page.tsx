@@ -66,7 +66,7 @@ function QueueRow({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-0.5 text-xs text-gray-400 font-mono">
+            <span className="flex items-center gap-0.5 text-xs text-gray-500 font-mono">
               <TbCurrencyNaira className="w-3 h-3" />
               {app.amount.toLocaleString("en-NG")}
             </span>
@@ -93,7 +93,7 @@ function EmptyWorkspace() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8">
       <RiShieldCheckLine className="w-12 h-12 text-gray-100 mb-4" />
-      <p className="text-sm font-medium text-gray-400">Select an application</p>
+      <p className="text-sm font-medium text-gray-500">Select an application</p>
       <p className="text-xs text-gray-300 mt-1">Choose from the queue to review</p>
     </div>
   );
@@ -158,7 +158,7 @@ export default function ReviewQueuePage() {
           ) : applications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
               <RiShieldCheckLine className="w-8 h-8 text-gray-100 mb-3" />
-              <p className="text-xs font-medium text-gray-400">
+              <p className="text-xs font-medium text-gray-500">
                 {debouncedSearch ? "No results" : "Queue is clear"}
               </p>
               <p className="text-xs text-gray-300 mt-1">

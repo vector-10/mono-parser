@@ -93,13 +93,13 @@ function ChatPanel({ applicationId }: { applicationId: string }) {
           <RiShieldKeyholeLine className="w-4 h-4 text-[#0055ba]" />
           <p className="text-sm font-semibold text-gray-900">AI Review Assistant</p>
         </div>
-        <p className="text-xs text-gray-400 mt-0.5 ml-6">Ask questions about this application</p>
+        <p className="text-xs text-gray-500 mt-0.5 ml-6">Ask questions about this application</p>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
         {messages.length === 0 ? (
           <div className="space-y-3 pt-2">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Suggested questions</p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Suggested questions</p>
             {SUGGESTED_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
@@ -129,7 +129,7 @@ function ChatPanel({ applicationId }: { applicationId: string }) {
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
-              <RiLoader4Line className="w-4 h-4 text-gray-400 animate-spin" />
+              <RiLoader4Line className="w-4 h-4 text-gray-500 animate-spin" />
             </div>
           </div>
         )}
@@ -186,7 +186,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
   if (!app) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <p className="text-sm text-gray-400">Application not found.</p>
+        <p className="text-sm text-gray-500">Application not found.</p>
       </div>
     );
   }
@@ -217,7 +217,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
           <>
             <button
               onClick={onBack}
-              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
             >
               <RiArrowLeftLine className="w-4 h-4" /> Queue
             </button>
@@ -247,7 +247,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
         <div className="w-[420px] border-r border-gray-100 overflow-y-auto custom-scrollbar bg-white shrink-0">
           <div className="px-6 py-6 space-y-6">
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Applicant</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Applicant</p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#0055ba]/10 flex items-center justify-center shrink-0">
                   <span className="text-sm font-semibold text-[#0055ba]">
@@ -260,7 +260,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
                   <p className="text-sm font-semibold text-gray-900">
                     {app.applicant ? `${app.applicant.firstName} ${app.applicant.lastName}` : "—"}
                   </p>
-                  <p className="text-xs text-gray-400">{app.applicant?.email ?? "—"}</p>
+                  <p className="text-xs text-gray-500">{app.applicant?.email ?? "—"}</p>
                 </div>
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
                 { label: "Submitted", value: formatDate(app.createdAt) },
               ].map(({ label, value }) => (
                 <div key={label} className="bg-gray-50 rounded-xl p-3">
-                  <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{label}</p>
                   <p className="text-sm font-medium text-gray-900">{value}</p>
                 </div>
               ))}
@@ -282,7 +282,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
 
             {app.score && band && (
               <div className="border border-gray-100 rounded-xl p-5">
-                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">Credit Score</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-4">Credit Score</p>
                 <div className="flex items-end gap-3 mb-4">
                   <p className="font-mono text-4xl font-medium text-[#0055ba]">{app.score}</p>
                   <p className={`text-sm font-medium mb-1 ${band.color}`}>{band.label}</p>
@@ -347,15 +347,15 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
                 </p>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Amount</p>
+                    <p className="text-xs text-gray-500 mb-0.5">Amount</p>
                     <p className="font-medium text-gray-900">{amount ? formatNaira(amount) : "—"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Tenor</p>
+                    <p className="text-xs text-gray-500 mb-0.5">Tenor</p>
                     <p className="font-medium text-gray-900">{tenor ? `${tenor}mo` : "—"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Monthly</p>
+                    <p className="text-xs text-gray-500 mb-0.5">Monthly</p>
                     <p className="font-medium text-gray-900">{terms?.monthly_payment ? formatNaira(terms.monthly_payment) : "—"}</p>
                   </div>
                 </div>

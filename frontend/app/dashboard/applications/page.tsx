@@ -29,7 +29,7 @@ const STATUS_STYLE: Record<string, string> = {
   LINKED: "bg-amber-50 text-amber-600",
   PENDING_LINKING: "bg-gray-100 text-gray-500",
   FAILED: "bg-red-50 text-red-600",
-  ABANDONED: "bg-gray-100 text-gray-400",
+  ABANDONED: "bg-gray-100 text-gray-500",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -119,7 +119,7 @@ function DetailPanel({
 
         <div className="px-6 py-6 space-y-6">
           <div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
               Applicant
             </p>
             <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ function DetailPanel({
                     ? `${app.applicant.firstName} ${app.applicant.lastName}`
                     : "—"}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   {app.applicant?.email ?? "—"}
                 </p>
               </div>
@@ -143,32 +143,32 @@ function DetailPanel({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Loan Amount</p>
+              <p className="text-xs text-gray-500 mb-1">Loan Amount</p>
               <p className="text-lg font-semibold text-gray-900">
                 {formatNaira(app.amount)}
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Tenor</p>
+              <p className="text-xs text-gray-500 mb-1">Tenor</p>
               <p className="text-lg font-semibold text-gray-900">
                 {app.tenor} months
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Interest Rate</p>
+              <p className="text-xs text-gray-500 mb-1">Interest Rate</p>
               <p className="text-lg font-semibold text-gray-900">
                 {app.interestRate}%
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Purpose</p>
+              <p className="text-xs text-gray-500 mb-1">Purpose</p>
               <p className="text-sm text-gray-700">{app.purpose ?? "—"}</p>
             </div>
           </div>
 
           {app.score && (
             <div className="border border-gray-100 rounded-xl p-5">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-4">
                 Credit Assessment
               </p>
               <div className="flex items-end gap-4 mb-4">
@@ -176,7 +176,7 @@ function DetailPanel({
                   {app.score}
                 </p>
                 <div className="mb-1">
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {scoreBand(app.score)}
                   </p>
                   {decisionKey && (
@@ -214,19 +214,19 @@ function DetailPanel({
                 return (
                   <div className="grid grid-cols-3 gap-3 text-sm">
                     <div>
-                      <p className="text-xs text-gray-400 mb-0.5">Amount</p>
+                      <p className="text-xs text-gray-500 mb-0.5">Amount</p>
                       <p className="font-medium text-gray-900">
                         {amount ? formatNaira(amount) : "—"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 mb-0.5">Tenor</p>
+                      <p className="text-xs text-gray-500 mb-0.5">Tenor</p>
                       <p className="font-medium text-gray-900">
                         {tenor ? `${tenor}mo` : "—"}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400 mb-0.5">Monthly</p>
+                      <p className="text-xs text-gray-500 mb-0.5">Monthly</p>
                       <p className="font-medium text-gray-900">
                         {monthly ? formatNaira(monthly) : "—"}
                       </p>
@@ -258,7 +258,7 @@ function DetailPanel({
 
           {d?.risk_factors && d.risk_factors.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
                 Risk Factors
               </p>
               <ul className="space-y-2">
@@ -320,11 +320,11 @@ function DetailPanel({
 
           <div className="pt-2 border-t border-gray-50">
             <p className="text-xs text-gray-300 font-mono">{app.id}</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               Created {formatDate(app.createdAt)}
             </p>
             {app.processedAt && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-500">
                 Processed {formatDate(app.processedAt)}
               </p>
             )}
@@ -369,7 +369,7 @@ export default function ApplicationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Applications</h1>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           All loan applications submitted through your API.
         </p>
       </div>
@@ -388,7 +388,7 @@ export default function ApplicationsPage() {
             {label}
             {counts[key] > 0 && (
               <span
-                className={`text-xs ${activeStatus === key ? "opacity-70" : "text-gray-400"}`}
+                className={`text-xs ${activeStatus === key ? "opacity-70" : "text-gray-500"}`}
               >
                 {counts[key]}
               </span>
@@ -420,7 +420,7 @@ export default function ApplicationsPage() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <RiFileList3Line className="w-8 h-8 text-gray-200 mb-3" />
-            <p className="text-sm text-gray-400">No applications found</p>
+            <p className="text-sm text-gray-500">No applications found</p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -438,7 +438,7 @@ export default function ApplicationsPage() {
                 ].map((col) => (
                   <th
                     key={col}
-                    className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3"
+                    className="text-left text-xs font-medium text-gray-500 uppercase tracking-wide px-6 py-3"
                   >
                     {col}
                   </th>
@@ -493,7 +493,7 @@ export default function ApplicationsPage() {
                         {statusLabel}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-gray-400 text-xs">
+                    <td className="px-6 py-3.5 text-gray-500 text-xs">
                       {formatDate(app.createdAt)}
                     </td>
                     <td className="px-6 py-3.5">

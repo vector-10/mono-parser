@@ -399,7 +399,7 @@ export default function SignupPage() {
                       disabled={resendCountdown > 0}
                       className={`text-sm ${
                         resendCountdown > 0
-                          ? "text-gray-400 cursor-not-allowed"
+                          ? "text-gray-500 cursor-not-allowed"
                           : "text-[#0055ba] hover:underline"
                       }`}
                     >
