@@ -227,7 +227,7 @@ function DetailPanel({
   return (
     <div className="fixed inset-0 z-30 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <aside className="relative w-[420px] bg-white h-full shadow-xl overflow-y-auto custom-scrollbar">
+      <aside className="relative w-105 bg-white h-full shadow-xl overflow-y-auto custom-scrollbar">
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
           <p className="text-sm font-semibold text-gray-900">
             {mode === "edit"
@@ -278,7 +278,7 @@ function DetailPanel({
                     {label}
                   </p>
                   <p
-                    className={`text-sm text-gray-700 text-right max-w-[240px] truncate ${mono ? "font-mono text-xs text-gray-500" : ""}`}
+                    className={`text-sm text-gray-700 text-right max-w-60 truncate ${mono ? "font-mono text-xs text-gray-500" : ""}`}
                   >
                     {value}
                   </p>

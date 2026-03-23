@@ -15,7 +15,7 @@ import { useApplication } from "@/lib/hooks/queries/use-application";
 import { Skeleton } from "@/components/Skeleton";
 import { useManualDecision, useFlagForReview } from "@/lib/hooks/queries/use-application-action";
 import { applicationsApi, type ChatMessage } from "@/lib/api/applications";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 function formatNaira(amount: number) {
   return `₦${amount.toLocaleString("en-NG")}`;
@@ -244,7 +244,7 @@ export default function ReviewWorkspace({ applicationId, onBack, onDecision }: R
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[420px] border-r border-gray-100 overflow-y-auto custom-scrollbar bg-white shrink-0">
+        <div className="w-105 border-r border-gray-100 overflow-y-auto custom-scrollbar bg-white shrink-0">
           <div className="px-6 py-6 space-y-6">
             <div>
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Applicant</p>

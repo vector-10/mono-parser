@@ -104,7 +104,7 @@ function DetailPanel({
   return (
     <div className="fixed inset-0 z-30 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <aside className="relative w-[480px] bg-white h-full shadow-xl overflow-y-auto custom-scrollbar animate-fade-up">
+      <aside className="relative w-120 bg-white h-full shadow-xl overflow-y-auto custom-scrollbar animate-fade-up">
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
           <p className="text-sm font-semibold text-gray-900">
             Application Details

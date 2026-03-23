@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useProfile } from "@/lib/hooks/queries/use-profile";
 import { useUpdateWebhookUrl } from "@/lib/hooks/queries/use-update-webhook-url";
 import { useUpdateApiKey } from "@/lib/hooks/queries/use-update-api-key";
