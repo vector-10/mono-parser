@@ -107,17 +107,13 @@ export default function ReviewQueuePage() {
 
   const { data: applications = [], isLoading } = useApplications(debouncedSearch ? undefined : "MANUAL_REVIEW", debouncedSearch);
 
+  const effectiveId = selectedId ?? applications[0]?.id ?? null;
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [search]);
-
-  useEffect(() => {
-    if (applications.length > 0 && !selectedId) {
-      setSelectedId(applications[0].id);
-    }
-  }, [applications, selectedId]);
 
   const handleDecision = () => {
     setSelectedId(null);
@@ -170,7 +166,7 @@ export default function ReviewQueuePage() {
               <QueueRow
                 key={app.id}
                 app={app}
-                selected={selectedId === app.id}
+                selected={effectiveId === app.id}
                 onSelect={() => setSelectedId(app.id)}
               />
             ))
@@ -180,9 +176,9 @@ export default function ReviewQueuePage() {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        {selectedId ? (
+        {effectiveId ? (
           <ReviewWorkspace
-            applicationId={selectedId}
+            applicationId={effectiveId}
             onDecision={handleDecision}
           />
         ) : (

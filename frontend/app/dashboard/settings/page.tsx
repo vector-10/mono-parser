@@ -13,7 +13,6 @@ import {
   RiFileCopyLine,
   RiCheckLine,
   RiRefreshLine,
-  RiShieldKeyholeLine,
   RiEyeLine,
   RiEyeOffLine,
 } from "react-icons/ri";
@@ -433,10 +432,10 @@ function RiskPolicySection() {
   const { mutate: save, isPending } = useUpdateRiskPolicy();
   const [enabled, setEnabled] = useState(false);
   const [form, setForm] = useState<Partial<RiskPolicy>>({});
-  const syncedIdRef = useRef<string | undefined>(undefined);
+  const [syncedId, setSyncedId] = useState<string | undefined>(undefined);
 
-  if (riskPolicy?.id && riskPolicy.id !== syncedIdRef.current) {
-    syncedIdRef.current = riskPolicy.id;
+  if (riskPolicy?.id && riskPolicy.id !== syncedId) {
+    setSyncedId(riskPolicy.id);
     setEnabled(true);
     setForm(riskPolicy);
   }
@@ -486,6 +485,7 @@ function RiskPolicySection() {
           >
             {enabled ? "Custom" : "Using defaults"}
           </span>
+          <Tooltip text="Toggle this to set your own risk parameters. When enabled, your custom thresholds will be applied when scoring loan applications instead of the brain's defaults." />
           <Toggle enabled={enabled} onChange={handleToggle} />
         </div>
       </div>
