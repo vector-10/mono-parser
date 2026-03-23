@@ -13,9 +13,9 @@ import {
   RiFileCopyLine,
   RiCheckLine,
   RiRefreshLine,
+  RiShieldKeyholeLine,
   RiEyeLine,
   RiEyeOffLine,
-  RiShieldKeyholeLine,
 } from "react-icons/ri";
 import { TbShieldCheck } from "react-icons/tb";
 import { toast } from "sonner";
@@ -94,103 +94,27 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
-function RevealedCredentials({
-  apiKey,
-  webhookSecret,
-  onDismiss,
-}: {
-  apiKey: string;
-  webhookSecret: string;
-  onDismiss: () => void;
-}) {
-  const [showKey, setShowKey] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
-
-  return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-4">
-      <div className="flex items-start gap-3">
-        <RiShieldKeyholeLine className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-semibold text-amber-800">
-            Save these now — they won&apos;t be shown again
-          </p>
-          <p className="text-xs text-amber-600 mt-0.5">
-            Copy both values before leaving this page. Your previous key has
-            been invalidated.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div>
-          <p className="text-xs font-medium text-amber-700 uppercase tracking-wide mb-1.5">
-            API Key
-          </p>
-          <div className="flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-3 py-2.5">
-            <code className="flex-1 text-xs font-mono text-gray-800 truncate">
-              {showKey ? apiKey : `${"•".repeat(20)}${apiKey.slice(-6)}`}
-            </code>
-            <button
-              onClick={() => setShowKey(!showKey)}
-              className="text-gray-500 hover:text-gray-600 transition-colors shrink-0"
-            >
-              {showKey ? (
-                <RiEyeOffLine className="w-3.5 h-3.5" />
-              ) : (
-                <RiEyeLine className="w-3.5 h-3.5" />
-              )}
-            </button>
-            <CopyButton value={apiKey} />
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-medium text-amber-700 uppercase tracking-wide mb-1.5">
-            Webhook Secret
-          </p>
-          <div className="flex items-center gap-2 bg-white border border-amber-200 rounded-lg px-3 py-2.5">
-            <code className="flex-1 text-xs font-mono text-gray-800 truncate">
-              {showSecret
-                ? webhookSecret
-                : `${"•".repeat(20)}${webhookSecret.slice(-6)}`}
-            </code>
-            <button
-              onClick={() => setShowSecret(!showSecret)}
-              className="text-gray-500 hover:text-gray-600 transition-colors shrink-0"
-            >
-              {showSecret ? (
-                <RiEyeOffLine className="w-3.5 h-3.5" />
-              ) : (
-                <RiEyeLine className="w-3.5 h-3.5" />
-              )}
-            </button>
-            <CopyButton value={webhookSecret} />
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={onDismiss}
-        className="text-xs font-medium text-amber-700 hover:text-amber-900 transition-colors underline underline-offset-2"
-      >
-        I&apos;ve saved both values
-      </button>
-    </div>
-  );
-}
+const CREDS_STORAGE_KEY = "mp_credentials";
 
 function ApiKeySection() {
   const { data: profile } = useProfile();
   const { mutate: rotate, isPending } = useRotateApiKey();
-  const [revealed, setRevealed] = useState<{
-    apiKey: string;
-    webhookSecret: string;
-  } | null>(null);
+  const [showKey, setShowKey] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
+  const [creds, setCreds] = useState<{ apiKey: string; webhookSecret: string } | null>(() => {
+    try {
+      const stored = localStorage.getItem(CREDS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const handleRotate = () => {
     rotate(undefined, {
       onSuccess: (data) => {
-        setRevealed(data);
+        setCreds(data);
+        localStorage.setItem(CREDS_STORAGE_KEY, JSON.stringify(data));
         toast.success("API key rotated successfully");
       },
       onError: () => toast.error("Failed to rotate API key"),
@@ -204,68 +128,46 @@ function ApiKeySection() {
         description="Your API key authenticates requests to Mono-Parser. Your webhook secret is used to verify incoming webhook signatures."
       />
 
-      {revealed ? (
-        <RevealedCredentials
-          apiKey={revealed.apiKey}
-          webhookSecret={revealed.webhookSecret}
-          onDismiss={() => setRevealed(null)}
-        />
-      ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TbShieldCheck
-                  className={`w-4 h-4 ${profile?.hasApiKey ? "text-[#59a927]" : "text-gray-300"}`}
-                />
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  API Key
-                </p>
+      <div className="space-y-4">
+        {creds ? (
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">API Key</p>
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5">
+                <code className="flex-1 text-xs font-mono text-gray-800 truncate">
+                  {showKey ? creds.apiKey : `${"•".repeat(20)}${creds.apiKey.slice(-6)}`}
+                </code>
+                <button onClick={() => setShowKey((v) => !v)} className="text-gray-400 hover:text-gray-600 transition-colors shrink-0">
+                  {showKey ? <RiEyeOffLine className="w-3.5 h-3.5" /> : <RiEyeLine className="w-3.5 h-3.5" />}
+                </button>
+                <CopyButton value={creds.apiKey} />
               </div>
-              <p
-                className={`text-sm font-medium ${profile?.hasApiKey ? "text-gray-900" : "text-gray-500"}`}
-              >
-                {profile?.hasApiKey ? "Active" : "Not set"}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Stored as a hash — not recoverable
-              </p>
             </div>
-
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TbShieldCheck
-                  className={`w-4 h-4 ${profile?.hasWebhookSecret ? "text-[#59a927]" : "text-gray-300"}`}
-                />
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Webhook Secret
-                </p>
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">Webhook Secret</p>
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5">
+                <code className="flex-1 text-xs font-mono text-gray-800 truncate">
+                  {showSecret ? creds.webhookSecret : `${"•".repeat(20)}${creds.webhookSecret.slice(-6)}`}
+                </code>
+                <button onClick={() => setShowSecret((v) => !v)} className="text-gray-400 hover:text-gray-600 transition-colors shrink-0">
+                  {showSecret ? <RiEyeOffLine className="w-3.5 h-3.5" /> : <RiEyeLine className="w-3.5 h-3.5" />}
+                </button>
+                <CopyButton value={creds.webhookSecret} />
               </div>
-              <p
-                className={`text-sm font-medium ${profile?.hasWebhookSecret ? "text-gray-900" : "text-gray-500"}`}
-              >
-                {profile?.hasWebhookSecret ? "Active" : "Not set"}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Used to verify webhook payloads
-              </p>
             </div>
           </div>
+        ) : (
+          <p className="text-xs text-gray-400">Generate your API key to get started.</p>
+        )}
 
-          <div className="flex items-center gap-3 pt-1">
+        <div className="flex items-center gap-3 pt-1">
             <button
               onClick={handleRotate}
               disabled={isPending}
               className="inline-flex items-center gap-2 bg-[#0055ba] text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#004494] transition disabled:opacity-50 shadow-sm shadow-[#0055ba]/20"
             >
-              <RiRefreshLine
-                className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`}
-              />
-              {isPending
-                ? "Rotating…"
-                : profile?.hasApiKey
-                  ? "Rotate API Key"
-                  : "Generate API Key"}
+              <RiRefreshLine className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`} />
+              {isPending ? "Rotating…" : profile?.hasApiKey ? "Rotate API Key" : "Generate API Key"}
             </button>
             {profile?.hasApiKey && (
               <p className="text-xs text-gray-500">
@@ -274,7 +176,7 @@ function ApiKeySection() {
             )}
           </div>
         </div>
-      )}
+      
     </div>
   );
 }
