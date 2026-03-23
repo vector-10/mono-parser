@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useProfile } from "@/lib/hooks/queries/use-profile";
 import { useUpdateWebhookUrl } from "@/lib/hooks/queries/use-update-webhook-url";
 import { useUpdateApiKey } from "@/lib/hooks/queries/use-update-api-key";
@@ -326,23 +326,22 @@ function WebhookUrlSection() {
 function MonoIntegrationSection() {
   const { data: profile } = useProfile();
   const [monoApiKey, setMonoApiKey] = useState("");
-  const [monoPublicKey, setMonoPublicKey] = useState("");
   const { mutate: save, isPending } = useUpdateApiKey();
 
   const handleSave = () => {
-    if (!monoApiKey || !monoPublicKey) {
+    if (!monoApiKey) {
       toast.error("Both Mono API key and public key are required");
       return;
     }
     save(
-      { monoApiKey, monoPublicKey },
+      { monoApiKey },
       {
         onSuccess: () => {
-          toast.success("Mono integration updated");
+          toast.success("Mono API key updated");
           setMonoApiKey("");
-          setMonoPublicKey("");
+          
         },
-        onError: () => toast.error("Failed to update Mono integration"),
+        onError: () => toast.error("Failed to update Mono API key "),
       },
     );
   };
@@ -352,7 +351,7 @@ function MonoIntegrationSection() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-base font-semibold text-gray-900">
-            Mono Integration
+            Mono API Key
           </h2>
           <p className="text-sm text-gray-400 mt-0.5">
             Used to fetch bank data and run enrichments via the Mono open
@@ -378,20 +377,10 @@ function MonoIntegrationSection() {
               : "live_sk_…"
           }
         />
-        <Field
-          label="Mono Public Key"
-          value={monoPublicKey}
-          onChange={setMonoPublicKey}
-          placeholder={
-            profile?.hasMonoApiKey
-              ? "Enter new key to replace existing"
-              : "live_pk_…"
-          }
-        />
         <div className="pt-1">
           <button
             onClick={handleSave}
-            disabled={isPending || (!monoApiKey && !monoPublicKey)}
+            disabled={isPending || (!monoApiKey )}
             className="inline-flex items-center gap-2 bg-[#0055ba] text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#004494] transition disabled:opacity-40"
           >
             {isPending
@@ -538,13 +527,13 @@ function RiskPolicySection() {
   const { mutate: save, isPending } = useUpdateRiskPolicy();
   const [enabled, setEnabled] = useState(false);
   const [form, setForm] = useState<Partial<RiskPolicy>>({});
+  const syncedIdRef = useRef<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (riskPolicy?.id) {
-      setEnabled(true);
-      setForm(riskPolicy);
-    }
-  }, [riskPolicy]);
+  if (riskPolicy?.id && riskPolicy.id !== syncedIdRef.current) {
+    syncedIdRef.current = riskPolicy.id;
+    setEnabled(true);
+    setForm(riskPolicy);
+  }
 
   const handleToggle = (v: boolean) => {
     setEnabled(v);

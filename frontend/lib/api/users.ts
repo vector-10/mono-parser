@@ -12,8 +12,8 @@ export interface User {
 }
 
 export const usersApi = {
-  updateMonoApiKey: async (monoApiKey: string, monoPublicKey: string): Promise<User> => {
-    const response = await api.put('/users/api-key', { monoApiKey, monoPublicKey })
+  updateMonoApiKey: async (monoApiKey: string): Promise<User> => {
+    const response = await api.put('/users/api-key', { monoApiKey })
     return response.data
   },
 
