@@ -44,7 +44,7 @@ export default function ApiReferencePage() {
 
         <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-6">Sample Request</h3>
         <CodeBlock
-          lang="bash"
+          lang="curl"
           code={`curl -X POST https://api.mono-parser.shop/api/applications/initiate \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: mp_live_your_secret_key" \\
@@ -73,10 +73,8 @@ export default function ApiReferencePage() {
         />
 
         <Callout type="info">
-          <strong>Store both IDs.</strong> The <code>applicationId</code> is used in all subsequent
-          calls. The <code>widgetUrl</code> should be opened in a browser for the applicant — either
-          as a redirect or inside an iframe/modal. Mono Connect will close automatically after the
-          user links their account.
+          Store both IDs. Present the <code>widgetUrl</code> to the applicant — it is for their
+          browser, not your server.
         </Callout>
       </section>
 
@@ -104,7 +102,7 @@ export default function ApiReferencePage() {
 
         <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-6">Sample Request</h3>
         <CodeBlock
-          lang="bash"
+          lang="curl"
           code={`curl -X POST https://api.mono-parser.shop/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/link-account \\
   -H "x-api-key: mp_live_your_secret_key"`}
         />
@@ -152,7 +150,7 @@ export default function ApiReferencePage() {
 
         <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-6">Sample Request</h3>
         <CodeBlock
-          lang="bash"
+          lang="curl"
           code={`curl -X POST https://api.mono-parser.shop/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/finalize-linking \\
   -H "x-api-key: mp_live_your_secret_key"`}
         />
@@ -168,9 +166,7 @@ export default function ApiReferencePage() {
         />
 
         <Callout type="info">
-          Call this once — after all the accounts your applicant needs to link are connected and
-          their <code>account.enrichment_ready</code> events have fired. If the applicant only has
-          one account, call this immediately after receiving <code>account.enrichment_ready</code>.
+          Call after all accounts have fired <code>account.enrichment_ready</code>.
         </Callout>
       </section>
 
@@ -197,7 +193,7 @@ export default function ApiReferencePage() {
 
         <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-6">Sample Request</h3>
         <CodeBlock
-          lang="bash"
+          lang="curl"
           code={`curl -X POST https://api.mono-parser.shop/api/applications/357ab3ce-55ce-4f73-82c9-dab3136c7885/analyze \\
   -H "x-api-key: mp_live_your_secret_key"`}
         />

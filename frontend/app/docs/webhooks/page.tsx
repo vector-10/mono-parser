@@ -132,9 +132,143 @@ export default function WebhooksPage() {
   "timestamp": "2026-02-20T22:08:10.441Z"
 }`}
         />
-        <Callout type="success">
-          Call <code>POST /api/applications/{"{applicationId}"}/analyze</code> using the{" "}
-          <code>applicationId</code> from this payload.
+      </section>
+
+      {/* ── account.enrichment_failed ── */}
+      <section id="wh-enrichment-failed" className="scroll-mt-28 mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="inline-block px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full">
+            EVENT
+          </span>
+          <code className="font-mono font-semibold text-gray-900 text-sm">
+            account.enrichment_failed
+          </code>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">account.enrichment_failed</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          Fired when an account stays in <code>PENDING</code> enrichment status for more than
+          20 minutes. This is a cleanup safety net — it means our system could not complete income
+          analysis or statement insights for that account within the expected window.
+        </p>
+        <CodeBlock
+          lang="json"
+          code={`{
+  "event": "account.enrichment_failed",
+  "data": {
+    "accountId":     "dbcc78d5-0719-4344-ac0e-e02a1f865bf0",
+    "monoAccountId": "6998da59bdaef66d5e5f3d0d",
+    "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
+    "reason":        "enrichment_timeout",
+    "message":       "Account enrichment did not complete within the expected window. Ask the applicant to re-link their bank account to restart the process."
+  },
+  "timestamp": "2026-02-20T22:40:00.000Z"
+}`}
+        />
+        <Callout type="warning">
+          Ask the applicant to re-link their bank account using{" "}
+          <code>POST /api/applications/:id/link-account</code>. This generates a
+          fresh Mono Connect widget URL and restarts the enrichment process for
+          that account.
+        </Callout>
+      </section>
+
+      {/* ── application.failed ── */}
+      <section id="wh-application-failed" className="scroll-mt-28 mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="inline-block px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full">
+            EVENT
+          </span>
+          <code className="font-mono font-semibold text-gray-900 text-sm">
+            application.failed
+          </code>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">application.failed</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          Fired when the scoring engine encounters a terminal error it cannot recover from —
+          for example, the applicant has no enriched bank accounts at analysis time, or the
+          analysis service returned an unrecoverable error. The application status is set to{" "}
+          <code>FAILED</code>.
+        </p>
+        <CodeBlock
+          lang="json"
+          code={`{
+  "event": "application.failed",
+  "data": {
+    "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
+    "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
+    "status":        "FAILED",
+    "reason":        "No accounts with completed enrichment available for analysis"
+  },
+  "timestamp": "2026-02-20T22:15:00.000Z"
+}`}
+        />
+        <Callout type="warning">
+          A failed application cannot be re-analyzed. You will need to call{" "}
+          <code>/initiate</code> to create a new application for the same applicant.
+        </Callout>
+      </section>
+
+      {/* ── application.abandoned ── */}
+      <section id="wh-application-abandoned" className="scroll-mt-28 mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-600 text-xs font-bold rounded-full">
+            EVENT
+          </span>
+          <code className="font-mono font-semibold text-gray-900 text-sm">
+            application.abandoned
+          </code>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">application.abandoned</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          Fired by the cleanup system when an application is inactive too long. There are two
+          abandonment reasons — check the <code>reason</code> field to distinguish them.
+        </p>
+
+        <h3 className="font-semibold text-gray-800 text-sm mb-2">
+          reason: <code>no_link</code>
+        </h3>
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          The applicant did not link any bank account within <strong>24 hours</strong> of the
+          application being created. The widget URL has expired.
+        </p>
+        <CodeBlock
+          lang="json"
+          code={`{
+  "event": "application.abandoned",
+  "data": {
+    "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
+    "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
+    "reason":        "no_link",
+    "message":       "Application abandoned — applicant did not link a bank account within 24 hours."
+  },
+  "timestamp": "2026-02-21T22:05:00.000Z"
+}`}
+        />
+
+        <h3 className="font-semibold text-gray-800 text-sm mb-2 mt-6">
+          reason: <code>no_analyze</code>
+        </h3>
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          The applicant linked their account but{" "}
+          <code>/analyze</code> was never called within <strong>7 days</strong>. Bank data
+          has been scrubbed from our systems for compliance.
+        </p>
+        <CodeBlock
+          lang="json"
+          code={`{
+  "event": "application.abandoned",
+  "data": {
+    "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
+    "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
+    "reason":        "no_analyze",
+    "message":       "Application abandoned — analysis was not submitted within 7 days of account linking. Bank data has been scrubbed."
+  },
+  "timestamp": "2026-02-28T22:10:00.000Z"
+}`}
+        />
+        <Callout type="warning">
+          For both abandonment reasons, you must call <code>/initiate</code> to start a
+          fresh application. The applicant will need to re-link their bank account.
         </Callout>
       </section>
 

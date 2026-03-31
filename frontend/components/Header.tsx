@@ -23,8 +23,8 @@ const Header = () => {
         <div
           className={`bg-white transition-all duration-300 flex items-center justify-between ${
             scrolled
-              ? "max-w-5xl w-[95%] sm:w-[90%] py-2 sm:py-3 px-4 sm:px-6 md:px-8 shadow-lg rounded-lg sm:rounded-xl border border-gray-100"
-              : "max-w-7xl w-full py-3 sm:py-4 px-4 sm:px-6 md:px-10 rounded-md border-b border-gray-100"
+              ? "max-w-5xl w-[95%] sm:w-[90%] py-2 sm:py-3 px-4 sm:px-6 md:px-8 shadow-lg   border border-gray-100"
+              : "max-w-7xl w-full py-3 sm:py-4 px-4 sm:px-6 md:px-10  border-b border-gray-100"
           }`}
         >
           <Link href="/" className="flex items-center gap-2">
@@ -63,7 +63,7 @@ const Header = () => {
 
           <Link
             href="/login"
-            className="hidden md:flex items-center gap-1.5 sm:gap-2 bg-[#0055ba] text-white rounded-lg px-3 sm:px-4 lg:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold hover:bg-[#004494] transition whitespace-nowrap"
+            className="hidden md:flex items-center gap-1.5 sm:gap-2 bg-[#0055ba] text-white  px-3 sm:px-4 lg:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold hover:bg-[#004494] transition whitespace-nowrap"
           >
             Get Started
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -71,7 +71,7 @@ const Header = () => {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 sm:p-2 text-gray-600 hover:text-[#0055ba] transition-colors rounded-lg hover:bg-gray-50"
+            className="md:hidden p-1.5 sm:p-2 text-gray-600 hover:text-[#0055ba] transition-colors  hover:bg-gray-50"
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -102,7 +102,7 @@ const Header = () => {
           </span>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+            className="p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100 transition"
           >
             <X className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
@@ -144,7 +144,7 @@ const Header = () => {
             <Link
               href="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 rounded-lg bg-[#0055ba] px-4 py-2.5 sm:py-3 text-sm font-semibold text-white hover:bg-[#004494] transition active:scale-95"
+              className="flex items-center justify-center gap-2  bg-[#0055ba] px-4 py-2.5 sm:py-3 text-sm font-semibold text-white hover:bg-[#004494] transition active:scale-95"
             >
               Get Started <ArrowRight className="h-4 w-4" />
             </Link>

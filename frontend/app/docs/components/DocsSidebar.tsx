@@ -6,6 +6,7 @@ import { RiBookOpenLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 
 const navItems = [
   { href: "/docs", label: "Overview" },
+  { href: "/docs/tutorial", label: "Tutorial" },
   { href: "/docs/authentication", label: "Authentication" },
   { href: "/docs/integration-flow", label: "Integration Flow" },
   {
@@ -24,8 +25,11 @@ const navItems = [
     children: [
       { href: "/docs/webhooks#wh-account-linked", label: "account.linked" },
       { href: "/docs/webhooks#wh-enrichment-ready", label: "account.enrichment_ready" },
+      { href: "/docs/webhooks#wh-enrichment-failed", label: "account.enrichment_failed" },
       { href: "/docs/webhooks#wh-ready-for-analysis", label: "application.ready_for_analysis" },
       { href: "/docs/webhooks#wh-decision", label: "application.decision" },
+      { href: "/docs/webhooks#wh-application-failed", label: "application.failed" },
+      { href: "/docs/webhooks#wh-application-abandoned", label: "application.abandoned" },
     ],
   },
   { href: "/docs/decision-object", label: "Decision Object" },

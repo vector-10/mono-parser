@@ -13,7 +13,7 @@ import {
   RiCodeSSlashLine,
   RiGlobalLine,
   RiStockLine,
-  RiShieldCheckLine
+  RiShieldCheckLine,
 } from "react-icons/ri";
 
 function ScoreCard() {
@@ -48,7 +48,7 @@ function ScoreCard() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.4 }}
-      className="relative bg-[#0d1117] rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/50 w-full max-w-sm mx-auto"
+      className="relative bg-[#0d1117]  border border-white/10 p-6 shadow-2xl shadow-black/50 w-full max-w-sm mx-auto"
     >
       <div className="flex items-center justify- mb-6">
         <span className="text-xs text-gray-500 tracking-widest uppercase font-medium">
@@ -68,9 +68,9 @@ function ScoreCard() {
           <span>350 — Very High Risk</span>
           <span>850</span>
         </div>
-        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+        <div className="h-2 bg-white/10  overflow-hidden">
           <div
-            className="h-full bg-linear-to-r from-[#1A66C1] to-[#0055ba] rounded-full transition-all duration-75"
+            className="h-full bg-linear-to-r from-[#1A66C1] to-[#0055ba]  transition-all duration-75"
             style={{ width: `${barProgress}%` }}
           />
         </div>
@@ -80,7 +80,7 @@ function ScoreCard() {
       </div>
 
       <div
-        className={`border rounded-lg p-3 text-center mb-5 transition-all duration-500 ${
+        className={`border  p-3 text-center mb-5 transition-all duration-500 ${
           showDecision
             ? "border-[#59a927]/40"
             : "border-white/5 bg-white/5 opacity-40"
@@ -190,7 +190,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="inline-flex items-center gap-2 rounded-md border border-[#0055ba]/20 bg-[#0055ba]/5 px-4 py-1.5 text-xs font-semibold text-[#0055ba] mb-6">
+                <span className="inline-flex items-center gap-2  border border-[#0055ba]/20 bg-[#0055ba]/5 px-4 py-1.5 text-xs font-semibold text-[#0055ba] mb-6">
                   <RiShieldCheckLine className="h-3.5 w-3.5" /> Powered by Mono
                   Open Banking
                 </span>
@@ -226,13 +226,14 @@ export default function LandingPage() {
               >
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0055ba] px-7 py-3 text-sm font-semibold text-white hover:bg-[#004494] transition shadow-lg shadow-[#0055ba]/20"
+                  className="inline-flex items-center justify-center gap-2 bg-[#0055ba] px-7 py-3 text-sm font-semibold text-white hover:bg-[#004494] transition shadow-lg shadow-[#0055ba]/20"
                 >
                   Request Demo <RiArrowRightLine className="h-4 w-4" />
                 </Link>
                 <a
                   href="#api"
-                  className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-7 py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition"
+                  className="inline-flex items-center justify-center 
+                   border border-gray-200 px-7 py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition"
                 >
                   View API Docs
                 </a>
@@ -247,19 +248,19 @@ export default function LandingPage() {
                 {[
                   {
                     icon: (
-                      <RiFlashlightLine className="h-4 w-4 text-[#59a927]" />
+                      <RiFlashlightLine className="h-4 w-4 text-[#0055ba]" />
                     ),
                     text: "Sub-30s decisions",
                   },
                   {
                     icon: (
-                      <RiBarChart2Line className="h-4 w-4 text-[#59a927]" />
+                      <RiBarChart2Line className="h-4 w-4 text-[#0055ba]" />
                     ),
                     text: "30+ data signals",
                   },
                   {
                     icon: (
-                      <RiCheckboxCircleLine className="h-4 w-4 text-[#59a927]" />
+                      <RiCheckboxCircleLine className="h-4 w-4 text-[#0055ba]" />
                     ),
                     text: "99.9% uptime",
                   },
@@ -320,7 +321,7 @@ export default function LandingPage() {
                   className="shrink-0 w-55 sm:w-60 lg:w-auto"
                 >
                   <div className="group">
-                    <div className="relative rounded-2xl overflow-hidden aspect-3/4">
+                    <div className="relative  overflow-hidden aspect-3/4">
                       <Image
                         src={step.image}
                         alt={step.title}
@@ -330,7 +331,7 @@ export default function LandingPage() {
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
                       <div className="absolute top-3 left-3">
-                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full">
+                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold px-3 py-1.5 ">
                           {step.num}
                         </span>
                       </div>
@@ -409,9 +410,9 @@ export default function LandingPage() {
               },
             ].map((feature, i) => (
               <FadeIn key={i} delay={i * 0.06}>
-                <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition h-full">
+                <div className="bg-white  border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition h-full">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center mb-5 ${
+                    className={`w-10 h-10  flex items-center justify-center mb-5 ${
                       feature.color === "blue"
                         ? "bg-[#0055ba]/10 text-[#0055ba]"
                         : "bg-[#59a927]/10 text-[#59a927]"
@@ -449,12 +450,11 @@ export default function LandingPage() {
           </FadeIn>
 
           <FadeIn delay={0.1}>
-            <div className="bg-[#0d1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl shadow-black/20">
-
+            <div className="bg-[#0d1117]  border border-white/10 overflow-hidden shadow-2xl shadow-black/20">
               <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                <div className="w-2.5 h-2.5  bg-red-500/60" />
+                <div className="w-2.5 h-2.5  bg-yellow-500/60" />
+                <div className="w-2.5 h-2.5  bg-green-500/60" />
                 <span className="ml-3 text-xs text-gray-500 font-medium">
                   AI Assistant
                 </span>
@@ -462,40 +462,60 @@ export default function LandingPage() {
 
               <div className="flex items-center gap-4 px-5 py-3.5 border-b border-white/5 bg-white/2">
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-white">Emeka Adeyemi</div>
-                  <div className="text-xs text-gray-500 mt-0.5">₦2,000,000 · 18 months · 24% p.a.</div>
+                  <div className="text-sm font-semibold text-white">
+                    Emeka Adeyemi
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    ₦2,000,000 · 18 months · 24% p.a.
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
-                    <div className="text-lg font-bold text-white leading-none">748</div>
-                    <div className="text-[10px] text-[#59a927] font-semibold tracking-wide">LOW_RISK</div>
+                    <div className="text-lg font-bold text-white leading-none">
+                      748
+                    </div>
+                    <div className="text-[10px] text-[#59a927] font-semibold tracking-wide">
+                      LOW_RISK
+                    </div>
                   </div>
-                  <span className="text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 rounded-full px-2.5 py-1 whitespace-nowrap">
+                  <span className="text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20  px-2.5 py-1 whitespace-nowrap">
                     MANUAL REVIEW
                   </span>
                 </div>
               </div>
 
               <div className="p-5 space-y-5 max-h-130 overflow-y-auto custom-scrollbar">
-
                 <div className="flex justify-end">
-                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25  rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
                     <p className="text-sm text-blue-100">
-                      Emeka has a 748 score and earns ₦450k a month. Why was this flagged for manual review?
+                      Emeka has a 748 score and earns ₦450k a month. Why was
+                      this flagged for manual review?
                     </p>
                   </div>
                 </div>
 
                 <div className="flex justify-start">
-                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                  <div className="bg-white/5 border border-white/8  rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
                     <p className="text-sm text-gray-300 leading-relaxed">
-                      Emeka&apos;s credit profile is genuinely strong — 748 puts him solidly in LOW_RISK. The flag here is <span className="text-white font-medium">not a credit risk issue, it&apos;s an affordability issue</span>. His verified salary of ₦450,000 gives a gross monthly cap of ₦157,500 at your 35% policy. But he carries ₦45,000 in existing loan obligations, leaving available capacity of ₦112,500. The ₦2,000,000 over 18 months generates a monthly payment of ₦133,400 — ₦20,900 above what he can safely service. The system protected him from being over-leveraged.
+                      Emeka&apos;s credit profile is genuinely strong — 748 puts
+                      him solidly in LOW_RISK. The flag here is{" "}
+                      <span className="text-white font-medium">
+                        not a credit risk issue, it&apos;s an affordability
+                        issue
+                      </span>
+                      . His verified salary of ₦450,000 gives a gross monthly
+                      cap of ₦157,500 at your 35% policy. But he carries ₦45,000
+                      in existing loan obligations, leaving available capacity
+                      of ₦112,500. The ₦2,000,000 over 18 months generates a
+                      monthly payment of ₦133,400 — ₦20,900 above what he can
+                      safely service. The system protected him from being
+                      over-leveraged.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25  rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
                     <p className="text-sm text-blue-100">
                       Break down the affordability numbers exactly for me.
                     </p>
@@ -503,8 +523,10 @@ export default function LandingPage() {
                 </div>
 
                 <div className="flex justify-start">
-                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
-                    <p className="text-sm text-gray-300 leading-relaxed mb-3">Here&apos;s the exact maths:</p>
+                  <div className="bg-white/5 border border-white/8  rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                    <p className="text-sm text-gray-300 leading-relaxed mb-3">
+                      Here&apos;s the exact maths:
+                    </p>
                     <div className="space-y-1.5 text-sm">
                       {[
                         ["Verified salary (Mono webhook)", "₦450,000 / mo"],
@@ -514,20 +536,30 @@ export default function LandingPage() {
                         ["Payment on ₦2M / 18mo at 24% p.a.", "₦133,400"],
                         ["Shortfall", "₦20,900"],
                       ].map(([label, value], i) => (
-                        <div key={i} className={`flex justify-between gap-4 ${i === 5 ? "pt-1.5 border-t border-white/10 text-amber-400 font-semibold" : "text-gray-500"}`}>
+                        <div
+                          key={i}
+                          className={`flex justify-between gap-4 ${i === 5 ? "pt-1.5 border-t border-white/10 text-amber-400 font-semibold" : "text-gray-500"}`}
+                        >
                           <span>{label}</span>
-                          <span className={i === 5 ? "text-amber-400" : "text-white"}>{value}</span>
+                          <span
+                            className={
+                              i === 5 ? "text-amber-400" : "text-white"
+                            }
+                          >
+                            {value}
+                          </span>
                         </div>
                       ))}
                     </div>
                     <p className="text-sm text-gray-300 leading-relaxed mt-3">
-                      He can service a loan — just not this one at this size and tenor.
+                      He can service a loan — just not this one at this size and
+                      tenor.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25  rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
                     <p className="text-sm text-blue-100">
                       What counter-offer options do we have?
                     </p>
@@ -535,25 +567,39 @@ export default function LandingPage() {
                 </div>
 
                 <div className="flex justify-start">
-                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
-                    <p className="text-sm text-gray-300 leading-relaxed mb-3">Two clean options within his capacity:</p>
+                  <div className="bg-white/5 border border-white/8  rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                    <p className="text-sm text-gray-300 leading-relaxed mb-3">
+                      Two clean options within his capacity:
+                    </p>
                     <div className="space-y-2.5">
-                      <div className="bg-white/5 rounded-xl p-3 border border-white/8">
-                        <div className="text-xs font-semibold text-gray-500 mb-1">Option 1 — Reduce the amount</div>
-                        <div className="text-sm text-white font-medium">₦1,500,000 over 18 months</div>
-                        <div className="text-xs text-gray-500 mt-0.5">Monthly payment: ₦100,100 · ₦12,400 headroom</div>
+                      <div className="bg-white/5  p-3 border border-white/8">
+                        <div className="text-xs font-semibold text-gray-500 mb-1">
+                          Option 1 — Reduce the amount
+                        </div>
+                        <div className="text-sm text-white font-medium">
+                          ₦1,500,000 over 18 months
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          Monthly payment: ₦100,100 · ₦12,400 headroom
+                        </div>
                       </div>
-                      <div className="bg-white/5 rounded-xl p-3 border border-white/8">
-                        <div className="text-xs font-semibold text-gray-500 mb-1">Option 2 — Extend the tenor</div>
-                        <div className="text-sm text-white font-medium">₦2,000,000 over 24 months</div>
-                        <div className="text-xs text-gray-500 mt-0.5">Monthly payment: ₦105,800 · ₦6,700 headroom</div>
+                      <div className="bg-white/5  p-3 border border-white/8">
+                        <div className="text-xs font-semibold text-gray-500 mb-1">
+                          Option 2 — Extend the tenor
+                        </div>
+                        <div className="text-sm text-white font-medium">
+                          ₦2,000,000 over 24 months
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          Monthly payment: ₦105,800 · ₦6,700 headroom
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
+                  <div className="bg-[#0055ba]/25 border border-[#0055ba]/25  rounded-br-sm px-4 py-2.5 max-w-[80%] sm:max-w-[70%]">
                     <p className="text-sm text-blue-100">
                       Which would you recommend?
                     </p>
@@ -561,22 +607,32 @@ export default function LandingPage() {
                 </div>
 
                 <div className="flex justify-start">
-                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
+                  <div className="bg-white/5 border border-white/8  rounded-bl-sm px-4 py-3 max-w-[88%] sm:max-w-[80%]">
                     <p className="text-sm text-gray-300 leading-relaxed">
-                      <span className="text-white font-medium">Option 2 — the 24-month full amount.</span> Emeka requested ₦2,000,000 which suggests a specific purpose. Giving him ₦1.5M may not solve his actual problem and risks losing the relationship. His credit profile comfortably supports a 24-month commitment, and the tenor is within policy for his tier. The headroom is tight but workable given his income stability. Confirm his loan purpose before presenting — if it&apos;s capital expenditure or asset purchase, Option 2 is the right call.
+                      <span className="text-white font-medium">
+                        Option 2 — the 24-month full amount.
+                      </span>{" "}
+                      Emeka requested ₦2,000,000 which suggests a specific
+                      purpose. Giving him ₦1.5M may not solve his actual problem
+                      and risks losing the relationship. His credit profile
+                      comfortably supports a 24-month commitment, and the tenor
+                      is within policy for his tier. The headroom is tight but
+                      workable given his income stability. Confirm his loan
+                      purpose before presenting — if it&apos;s capital
+                      expenditure or asset purchase, Option 2 is the right call.
                     </p>
                   </div>
                 </div>
-
               </div>
 
               <div className="px-5 py-4 border-t border-white/5">
-                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-                  <span className="text-sm text-gray-500 flex-1">Ask anything about this application...</span>
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10  px-4 py-3">
+                  <span className="text-sm text-gray-500 flex-1">
+                    Ask anything about this application...
+                  </span>
                   <RiArrowRightLine className="w-4 h-4 text-gray-600 shrink-0" />
                 </div>
               </div>
-
             </div>
           </FadeIn>
         </div>
@@ -615,7 +671,7 @@ export default function LandingPage() {
               </ul>
               <Link
                 href="/docs"
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-[#0a0f1e] bg-white rounded-lg hover:bg-gray-100 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-[#0a0f1e] bg-white  hover:bg-gray-100 transition"
               >
                 View Documentation
                 <RiCodeSSlashLine className="w-4 h-4" />
@@ -623,50 +679,27 @@ export default function LandingPage() {
             </FadeIn>
 
             <FadeIn className="order-1 lg:order-2" delay={0.1}>
-              <div className="bg-[#0d1117] rounded-xl border border-white/10 overflow-hidden">
+              <div className="bg-[#0d1117]  border border-white/10 overflow-hidden">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/60" />
                   <span className="ml-2 text-xs text-gray-500 font-mono">
                     POST /applications
                   </span>
                 </div>
-                <pre className="p-5 text-xs text-gray-300 overflow-x-auto leading-relaxed">
-                  <code>{`const response = await fetch(
-  'https://api.mono-parser.com/applications',
-  {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer YOUR_API_KEY',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      applicantId: 'usr_abc123',
-      amount: 100000,
-      tenor: 6,
-      interestRate: 5.0
-    })
-  }
-);
+                <pre className="p-5 text-xs text-gray-300 overflow-x-auto max-w-full leading-relaxed whitespace-pre-wrap sm:whitespace-pre">
+                  <code>{`curl -X POST https://api.mono-parser.shop/api/applications/initiate \
+  -d '{
+    "firstName":    "Olusegun",
+    "lastName":     "Adeyemi",
+    "email":        "olusegun.adeyemi@example.com",
+    "phone":        "08012345678",
+    "bvn":          "22345678901",
+    "amount":       500000,
+    "tenor":        12,
+    "interestRate": 2.0,
+    "purpose":      "Business expansion"
+  }'
 
-// Response
-{
-  "decision": "APPROVED",
-  "score": 712,
-  "score_band": "LOW_RISK",
-  "approval_details": {
-    "approved_amount": 100000,
-    "approved_tenor": 6,
-    "monthly_payment": 17857,
-    "dti_ratio": 0.243
-  },
-  "explainability": {
-    "primary_reason": "Strong income stability...",
-    "key_strengths": ["Consistent salary income"],
-    "key_weaknesses": []
-  }
-}`}</code>
+`}</code>
                 </pre>
               </div>
             </FadeIn>
@@ -678,9 +711,9 @@ export default function LandingPage() {
       <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
           <FadeIn>
-            <div className="relative rounded-2xl bg-[#0055ba] overflow-hidden p-10 lg:p-16 text-center">
+            <div className="relative  bg-[#0055ba] overflow-hidden p-10 lg:p-16 text-center">
               <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.06)_0%,transparent_60%)]" />
-              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5 blur-xl" />
+              <div className="absolute -top-16 -right-16 w-48 h-48  bg-white/5 blur-xl" />
               <div className="relative">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
                   You have the capital.
@@ -694,13 +727,13 @@ export default function LandingPage() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link
                     href="/signup"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3 text-base font-semibold bg-white text-[#0055ba] rounded-lg hover:bg-gray-50 transition"
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3 text-base font-semibold bg-white text-[#0055ba]  hover:bg-gray-50 transition"
                   >
                     Get API Access <RiArrowRightLine className="h-4 w-4" />
                   </Link>
                   <a
                     href="mailto:support@firstsoftware-systems.com"
-                    className="inline-flex items-center justify-center px-7 py-3 text-base font-semibold border-2 border-white/30 text-white rounded-lg hover:bg-white/10 transition"
+                    className="inline-flex items-center justify-center px-7 py-3 text-base font-semibold border-2 border-white/30 text-white  hover:bg-white/10 transition"
                   >
                     Talk to Sales
                   </a>
