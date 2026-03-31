@@ -6,7 +6,7 @@ import { MethodBadge } from "../components/MethodBadge";
 function StepHeader({ number, title }: { number: number; title: string }) {
   return (
     <div className="flex items-center gap-3 mb-3">
-      <span className="w-7 h-7 rounded-full bg-[#0055ba] text-white text-xs font-bold flex items-center justify-center shrink-0">
+      <span className="w-7 h-7 bg-[#0055ba] text-white text-xs font-bold flex items-center justify-center shrink-0">
         {number}
       </span>
       <h2 className="text-xl font-bold text-gray-900">{title}</h2>
@@ -33,7 +33,7 @@ export default function TutorialPage() {
       </Callout>
 
       {/* ── Flow overview ── */}
-      <div className="my-8 rounded-xl border border-gray-200 bg-gray-50 p-5">
+      <div className="my-8 border border-gray-200 bg-gray-50 p-5">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
           Full Flow — 4 API calls, 4 webhooks
         </p>
@@ -50,10 +50,10 @@ export default function TutorialPage() {
             ["Webhook", "application.decision", "Scored decision delivered to your webhook URL"],
           ].map(([badge, path, desc], i) => (
             <li key={i} className="flex items-start gap-3 text-sm">
-              <span className="w-5 h-5 rounded-full bg-[#0055ba]/10 text-[#0055ba] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              <span className="w-5 h-5 bg-[#0055ba]/10 text-[#0055ba] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {i + 1}
               </span>
-              <span className={`shrink-0 inline-block px-1.5 py-0.5 rounded text-xs font-bold font-mono ${
+              <span className={`shrink-0 inline-block px-1.5 py-0.5 text-xs font-bold font-mono ${
                 badge === "POST"
                   ? "bg-[#0055ba]/10 text-[#0055ba]"
                   : badge === "Webhook"
@@ -409,7 +409,7 @@ export default function TutorialPage() {
         <div className="space-y-4">
           <div className="rounded-xl border border-red-100 bg-red-50/40 p-5">
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-block px-2 py-0.5 rounded text-xs font-bold font-mono bg-red-100 text-red-600">
+              <span className="inline-block px-2 py-0.5 text-xs font-bold font-mono bg-red-100 text-red-600">
                 account.enrichment_failed
               </span>
             </div>
@@ -439,7 +439,7 @@ export default function TutorialPage() {
 
           <div className="rounded-xl border border-red-100 bg-red-50/40 p-5">
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-block px-2 py-0.5 rounded text-xs font-bold font-mono bg-red-100 text-red-600">
+              <span className="inline-block px-2 py-0.5 text-xs font-bold font-mono bg-red-100 text-red-600">
                 application.failed
               </span>
             </div>
@@ -468,7 +468,7 @@ export default function TutorialPage() {
 
           <div className="rounded-xl border border-amber-100 bg-amber-50/40 p-5">
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-block px-2 py-0.5 rounded text-xs font-bold font-mono bg-amber-100 text-amber-700">
+              <span className="inline-block px-2 py-0.5 text-xs font-bold font-mono bg-amber-100 text-amber-700">
                 application.abandoned
               </span>
             </div>
@@ -478,14 +478,14 @@ export default function TutorialPage() {
             </p>
             <div className="space-y-2 mb-3 text-xs text-gray-700">
               <div className="flex gap-2">
-                <code className="shrink-0 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">no_link</code>
+                <code className="shrink-0 bg-amber-100 text-amber-700 px-1.5 py-0.5 font-bold">no_link</code>
                 <span>
                   Applicant did not open or complete the Mono widget within{" "}
                   <strong>24 hours</strong> of initiation.
                 </span>
               </div>
               <div className="flex gap-2">
-                <code className="shrink-0 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">no_analyze</code>
+                <code className="shrink-0 bg-amber-100 text-amber-700 px-1.5 py-0.5 font-bold">no_analyze</code>
                 <span>
                   Account was linked but <code>/analyze</code> was never called within{" "}
                   <strong>7 days</strong>. Bank data has been scrubbed from our systems.
@@ -520,7 +520,7 @@ export default function TutorialPage() {
         <div className="grid sm:grid-cols-3 gap-4">
           <Link
             href="/docs/decision-object"
-            className="block rounded-xl border border-gray-200 p-4 hover:border-[#0055ba]/40 hover:bg-[#0055ba]/5 transition group"
+            className="block border border-gray-200 p-4 hover:border-[#0055ba]/40 hover:bg-[#0055ba]/5 transition group"
           >
             <p className="font-semibold text-gray-900 text-sm group-hover:text-[#0055ba] transition mb-1">
               Decision Object
@@ -531,7 +531,7 @@ export default function TutorialPage() {
           </Link>
           <Link
             href="/docs/score-bands"
-            className="block rounded-xl border border-gray-200 p-4 hover:border-[#0055ba]/40 hover:bg-[#0055ba]/5 transition group"
+            className="block border border-gray-200 p-4 hover:border-[#0055ba]/40 hover:bg-[#0055ba]/5 transition group"
           >
             <p className="font-semibold text-gray-900 text-sm group-hover:text-[#0055ba] transition mb-1">
               Score Bands
@@ -542,7 +542,7 @@ export default function TutorialPage() {
           </Link>
           <Link
             href="/docs/errors"
-            className="block rounded-xl border border-gray-200 p-4 hover:border-[#0055ba]/40 hover:bg-[#0055ba]/5 transition group"
+            className="block border border-gray-200 p-4 hover:border-[#0055ba]/40 hover:bg-[#0055ba]/5 transition group"
           >
             <p className="font-semibold text-gray-900 text-sm group-hover:text-[#0055ba] transition mb-1">
               Error Handling

@@ -25,7 +25,7 @@ export default function ErrorsPage() {
 }`}
       />
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 mt-6">
+      <div className="overflow-x-auto border border-gray-200 mt-6">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">

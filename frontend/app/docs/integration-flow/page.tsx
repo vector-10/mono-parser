@@ -64,16 +64,16 @@ export default function IntegrationFlowPage() {
         {steps.map((item, i) => (
           <div
             key={i}
-            className="flex gap-4 items-start bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition"
+            className="flex gap-4 items-start bg-white border border-gray-200 p-4 hover:shadow-sm transition"
           >
-            <div className="w-8 h-8 bg-[#0055ba] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+            <div className="w-8 h-8 bg-[#0055ba] flex items-center justify-center text-white font-bold text-sm shrink-0">
               {item.step}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <code className="text-xs font-mono font-semibold text-gray-900">{item.title}</code>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  className={`text-xs px-2 py-0.5 font-medium ${
                     item.tag === "Your call"
                       ? "bg-[#0055ba]/10 text-[#0055ba]"
                       : item.tag === "User action"

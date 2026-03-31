@@ -18,7 +18,7 @@ export function Callout({
     success: <RiCheckLine className="h-4 w-4 shrink-0 mt-0.5" />,
   };
   return (
-    <div className={`flex gap-3 border rounded-lg p-4 text-sm my-4 ${styles[type]}`}>
+    <div className={`flex gap-3 border p-4 text-sm my-4 ${styles[type]}`}>
       {icons[type]}
       <div>{children}</div>
     </div>

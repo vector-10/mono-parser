@@ -4,7 +4,7 @@ export function FieldTable({
   fields: { name: string; type: string; required?: boolean; desc: string }[];
 }) {
   return (
-    <div className="overflow-x-auto my-4 rounded-lg border border-gray-200">
+    <div className="overflow-x-auto my-4 border border-gray-200">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">

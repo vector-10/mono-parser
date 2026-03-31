@@ -6,7 +6,7 @@ export default function DocsOverviewPage() {
   return (
     <div>
       <div className="mb-8">
-        <span className="inline-flex items-center gap-2 rounded-full border border-[#0055ba]/20 bg-[#0055ba]/5 px-3 py-1.5 text-xs font-medium text-[#0055ba] mb-4">
+        <span className="inline-flex items-center gap-2 border border-[#0055ba]/20 bg-[#0055ba]/5 px-3 py-1.5 text-xs font-medium text-[#0055ba] mb-4">
           <RiBookOpenLine className="h-3.5 w-3.5" /> Mono Parser API Documentation
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
@@ -40,9 +40,9 @@ export default function DocsOverviewPage() {
         ].map((card) => (
           <div
             key={card.title}
-            className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition"
+            className="bg-white border border-gray-200 p-5 hover:shadow-md transition"
           >
-            <div className="w-9 h-9 bg-[#0055ba]/10 rounded-lg flex items-center justify-center mb-3">
+            <div className="w-9 h-9 bg-[#0055ba]/10 flex items-center justify-center mb-3">
               {card.icon}
             </div>
             <h3 className="font-semibold text-gray-900 text-sm mb-1">{card.title}</h3>
@@ -51,17 +51,17 @@ export default function DocsOverviewPage() {
         ))}
       </div>
 
-      <div className="mt-8 bg-gray-50 rounded-xl border border-gray-200 p-5">
+      <div className="mt-8 bg-gray-50 border border-gray-200 p-5">
         <h3 className="font-semibold text-gray-800 mb-2 text-sm">Base URL</h3>
         <CodeBlock code="https://api.mono-parser.shop/api" lang="http" />
         <p className="text-xs text-gray-500 mt-2">
           All endpoints are prefixed with{" "}
-          <code className="bg-gray-200 px-1 py-0.5 rounded text-xs">/api</code>. Use HTTPS at all
+          <code className="bg-gray-200 px-1 py-0.5 text-xs">/api</code>. Use HTTPS at all
           times.
         </p>
       </div>
 
-      <div className="mt-10 border border-gray-200 rounded-xl p-6">
+      <div className="mt-10 border border-gray-200 p-6">
         <h3 className="font-semibold text-gray-900 mb-4">Quick navigation</h3>
         <div className="grid sm:grid-cols-2 gap-2">
           {[
@@ -77,7 +77,7 @@ export default function DocsOverviewPage() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 hover:border-[#0055ba]/30 hover:bg-[#0055ba]/5 transition group"
+              className="flex items-start gap-3 p-3 border border-gray-100 hover:border-[#0055ba]/30 hover:bg-[#0055ba]/5 transition group"
             >
               <div>
                 <div className="text-sm font-medium text-gray-900 group-hover:text-[#0055ba] transition">

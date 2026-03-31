@@ -230,13 +230,13 @@ export default function LandingPage() {
                 >
                   Request Demo <RiArrowRightLine className="h-4 w-4" />
                 </Link>
-                <a
-                  href="#api"
+                <Link
+                  href="/docs"
                   className="inline-flex items-center justify-center 
                    border border-gray-200 px-7 py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition"
                 >
                   View API Docs
-                </a>
+                </Link>
               </motion.div>
 
               <motion.div

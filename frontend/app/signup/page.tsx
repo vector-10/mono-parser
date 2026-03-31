@@ -105,7 +105,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="w-full max-w-5xl bg-white  shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-150">
           {/* Left Side - Blue Background */}
           <div className="md:w-[60%] bg-linear-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
@@ -133,7 +133,7 @@ export default function SignupPage() {
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20  flex items-center justify-center">
                   <Shield className="h-6 w-6" />
                 </div>
                 <div>
@@ -145,7 +145,7 @@ export default function SignupPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20  flex items-center justify-center">
                   <ArrowRight className="h-6 w-6" />
                 </div>
                 <div>
@@ -194,7 +194,7 @@ export default function SignupPage() {
                       type="text"
                       id="name"
                       {...registerSignup("name")}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
+                      className={`w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
                         signupErrors.name ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="John Doe"
@@ -218,7 +218,7 @@ export default function SignupPage() {
                       type="email"
                       id="email"
                       {...registerSignup("email")}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
+                      className={`w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
                         signupErrors.email
                           ? "border-red-500"
                           : "border-gray-300"
@@ -244,7 +244,7 @@ export default function SignupPage() {
                       type="text"
                       id="companyName"
                       {...registerSignup("companyName")}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
+                      className={`w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
                         signupErrors.companyName
                           ? "border-red-500"
                           : "border-gray-300"
@@ -271,7 +271,7 @@ export default function SignupPage() {
                         type={showPassword ? "text" : "password"}
                         id="password"
                         {...registerSignup("password")}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12 ${
+                        className={`w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12 ${
                           signupErrors.password
                             ? "border-red-500"
                             : "border-gray-300"
@@ -305,7 +305,7 @@ export default function SignupPage() {
                     <input
                       type="checkbox"
                       id="terms"
-                      className="w-4 h-4 mt-1 text-[#0055ba] border-gray-300 rounded focus:ring-[#0055ba]"
+                      className="w-4 h-4 mt-1 text-[#0055ba] border-gray-300  focus:ring-[#0055ba]"
                       required
                     />
                     <label
@@ -333,11 +333,11 @@ export default function SignupPage() {
                   <button
                     type="submit"
                     disabled={isSignupSubmitting}
-                    className="w-full bg-[#0055ba] text-white py-3 rounded-lg font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#0055ba] text-white py-3  font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSignupSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent  animate-spin" />
                         Creating account...
                       </>
                     ) : (
@@ -379,7 +379,7 @@ export default function SignupPage() {
                       id="otp"
                       {...registerOtp("otp")}
                       maxLength={6}
-                      className={`w-full px-4 py-3 border rounded-lg text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
+                      className={`w-full px-4 py-3 border  text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
                         otpErrors.otp ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="000000"
@@ -413,11 +413,11 @@ export default function SignupPage() {
                   <button
                     type="submit"
                     disabled={isOtpSubmitting}
-                    className="w-full bg-[#0055ba] text-white py-3 rounded-lg font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#0055ba] text-white py-3  font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isOtpSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent  animate-spin" />
                         Verifying...
                       </>
                     ) : (

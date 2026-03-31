@@ -58,7 +58,7 @@ export default function NotesForFintechsPage() {
 
       <div className="space-y-6">
         {notes.map((note) => (
-          <div key={note.title} className="border border-gray-200 rounded-xl overflow-hidden">
+          <div key={note.title} className="border border-gray-200 overflow-hidden">
             <div
               className={`flex items-center gap-3 px-5 py-4 border-b ${
                 note.type === "warning"

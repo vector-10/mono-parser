@@ -12,7 +12,7 @@ export function CodeBlock({ code, lang = "json" }: { code: string; lang?: string
   };
 
   return (
-    <div className="relative group rounded-lg overflow-hidden border border-gray-800 my-4">
+    <div className="relative group overflow-hidden border border-gray-800 my-4">
       <div className="flex items-center justify-between bg-[#0d1117] px-4 py-2 border-b border-gray-800">
         <span className="text-xs text-gray-500 font-mono uppercase tracking-widest">
           {lang}

@@ -26,7 +26,7 @@ export default function AuthenticationPage() {
           <code>mp_live_</code>.
         </p>
 
-        <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 mb-4">
+        <div className="bg-gray-50 border border-gray-200 p-5 mb-4">
           <h3 className="font-semibold text-gray-800 mb-1 text-sm">Request Header</h3>
           <CodeBlock code={`x-api-key: mp_live_your_secret_key_here`} lang="http" />
         </div>

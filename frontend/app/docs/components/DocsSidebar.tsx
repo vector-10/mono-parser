@@ -53,7 +53,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
           <Link
             href={item.href.split("#")[0]}
             onClick={onNavigate}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition font-medium block ${
+            className={`w-full text-left px-3 py-2 text-sm transition font-medium block ${
               isActive(item.href)
                 ? "bg-[#0055ba]/10 text-[#0055ba]"
                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
@@ -68,7 +68,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                   key={child.href}
                   href={child.href}
                   onClick={onNavigate}
-                  className={`w-full text-left px-2 py-1.5 rounded text-xs transition block ${
+                  className={`w-full text-left px-2 py-1.5 text-xs transition block ${
                     isActive(child.href) && pathname === child.href.split("#")[0]
                       ? "text-[#0055ba] font-semibold"
                       : "text-gray-500 hover:text-gray-800"
@@ -126,7 +126,7 @@ export function DocsMobileNav() {
           <span className="text-sm font-semibold text-gray-700">Table of Contents</span>
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="p-1.5 hover:bg-gray-100 rounded-lg transition"
+            className="p-1.5 hover:bg-gray-100 transition"
           >
             <RiCloseLine className="h-4 w-4 text-gray-500" />
           </button>

@@ -48,7 +48,7 @@ export default function ScoreBandsPage() {
         thresholds that separate these bands.
       </p>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto border border-gray-200">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
@@ -85,7 +85,7 @@ export default function ScoreBandsPage() {
         below the minimum threshold. Always check <code>risk_factors</code> for the specific reason.
       </Callout>
 
-      <div className="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-5">
+      <div className="mt-6 bg-gray-50 border border-gray-200 p-5">
         <h3 className="font-semibold text-gray-800 text-sm mb-3">Default policy thresholds</h3>
         <div className="space-y-1.5 text-xs">
           {[

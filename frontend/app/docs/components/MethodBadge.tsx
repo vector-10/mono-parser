@@ -6,7 +6,7 @@ export function MethodBadge({ method }: { method: "POST" | "GET" | "DELETE" }) {
   };
   return (
     <span
-      className={`inline-block px-2 py-0.5 rounded text-xs font-bold font-mono ${colours[method]}`}
+      className={`inline-block px-2 py-0.5 text-xs font-bold font-mono ${colours[method]}`}
     >
       {method}
     </span>

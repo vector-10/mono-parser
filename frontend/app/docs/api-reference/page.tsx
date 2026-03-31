@@ -9,7 +9,7 @@ export default function ApiReferencePage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-1">API Reference</h1>
       <p className="text-gray-600 text-sm mb-8">
         All endpoints require the{" "}
-        <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">x-api-key</code> header.
+        <code className="bg-gray-100 px-1 py-0.5 text-xs">x-api-key</code> header.
       </p>
 
       {/* ── INITIATE ── */}
@@ -23,7 +23,7 @@ export default function ApiReferencePage() {
         <h2 className="text-xl font-bold text-gray-900 mb-2">Initiate Application</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-6">
           Creates an applicant record and a loan application in one call. Returns a Mono Connect{" "}
-          <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">widgetUrl</code> you should
+          <code className="bg-gray-100 px-1 py-0.5 text-xs">widgetUrl</code> you should
           present to your user so they can link their bank account.
         </p>
 
@@ -137,7 +137,7 @@ export default function ApiReferencePage() {
         <p className="text-gray-600 text-sm leading-relaxed mb-6">
           Signals that the applicant has finished linking all their bank accounts. This locks the
           application from further account linking and makes it eligible for analysis. Once called,
-          we fire the <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">application.ready_for_analysis</code> webhook
+          we fire the <code className="bg-gray-100 px-1 py-0.5 text-xs">application.ready_for_analysis</code> webhook
           when all enrichment is confirmed complete.
         </p>
 

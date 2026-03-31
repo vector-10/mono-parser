@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="w-full max-w-5xl bg-white  shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-150">
      
           <div className="md:w-[60%]  bg-linear-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
@@ -83,7 +83,7 @@ export default function LoginPage() {
                   type="email"
                   id="email"
                   {...register('email')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
+                  className={`w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="you@company.com"
@@ -103,7 +103,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     id="password"
                     {...register('password')}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12 ${
+                    className={`w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-[#0055ba] focus:border-transparent pr-12 ${
                       errors.password ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="••••••••"
@@ -128,7 +128,7 @@ export default function LoginPage() {
 
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
-                  <input type="checkbox" className="w-4 h-4 text-[#0055ba] border-gray-300 rounded focus:ring-[#0055ba]" />
+                  <input type="checkbox" className="w-4 h-4 text-[#0055ba] border-gray-300  focus:ring-[#0055ba]" />
                   <span className="ml-2 text-sm text-gray-600">Remember me</span>
                 </label>
                 <Link href="/forgot-password" className="text-sm text-[#0055ba] hover:underline">
@@ -140,11 +140,11 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#0055ba] text-white py-3 rounded-lg font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0055ba] text-white py-3  font-semibold hover:bg-[#004494] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent  animate-spin" />
                     Signing in...
                   </>
                 ) : (
