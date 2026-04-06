@@ -39,6 +39,7 @@ export default function ApiReferencePage() {
             { name: "tenor", type: "number", desc: "Loan tenor in months (e.g. 6, 12, 24)." },
             { name: "interestRate", type: "number", desc: "Monthly interest rate as a percentage (e.g. 5.0 for 5%)." },
             { name: "purpose", type: "string", required: false, desc: "Loan purpose description. Optional." },
+            { name: "idempotencyKey", type: "string", desc: "A unique key you generate per application (e.g. UUID). Prevents duplicate applications on retries. Re-sending the same key for a PENDING_LINKING or ABANDONED application resumes it and returns a fresh widget URL." },
           ]}
         />
 
@@ -49,15 +50,16 @@ export default function ApiReferencePage() {
   -H "Content-Type: application/json" \\
   -H "x-api-key: mp_live_your_secret_key" \\
   -d '{
-    "firstName": "Olusegun",
-    "lastName": "Adeyemi",
-    "email": "olusegun.adeyemi@example.com",
-    "phone": "08012345678",
-    "bvn": "22345678901",
-    "amount": 500000,
-    "tenor": 12,
-    "interestRate": 5.0,
-    "purpose": "Business expansion"
+    "firstName":      "Olusegun",
+    "lastName":       "Adeyemi",
+    "email":          "olusegun.adeyemi@example.com",
+    "phone":          "08012345678",
+    "bvn":            "22345678901",
+    "amount":         500000,
+    "tenor":          12,
+    "interestRate":   5.0,
+    "purpose":        "Business expansion",
+    "idempotencyKey": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   }'`}
         />
 
@@ -66,15 +68,18 @@ export default function ApiReferencePage() {
           lang="json"
           code={`{
   "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
-  "applicantId": "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
-  "widgetUrl": "https://connect.withmono.com/?key=...&reference=...",
-  "status": "PENDING_LINKING"
+  "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
+  "widgetUrl":     "https://connect.withmono.com/?key=...&reference=...",
+  "status":        "PENDING_LINKING",
+  "resumed":       false
 }`}
         />
 
         <Callout type="info">
           Store both IDs. Present the <code>widgetUrl</code> to the applicant — it is for their
-          browser, not your server.
+          browser, not your server. If <code>resumed: true</code> is returned, the idempotency key
+          matched an existing application that was previously abandoned — the applicant can
+          continue from where they left off.
         </Callout>
       </section>
 

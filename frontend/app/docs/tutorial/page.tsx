@@ -78,6 +78,14 @@ export default function TutorialPage() {
           give to your user. Store the <code>applicationId</code> — every
           subsequent call uses it.
         </p>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          The <code>idempotencyKey</code> is required. Generate a unique value
+          per application (a UUID works well) and store it on your side. If your
+          server retries the request due to a timeout or network error, sending
+          the same key returns the existing application instead of creating a
+          duplicate. If the application was previously abandoned, the same key
+          resumes it and returns a fresh <code>widgetUrl</code>.
+        </p>
 
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <MethodBadge method="POST" />
@@ -92,15 +100,16 @@ export default function TutorialPage() {
   -H "Content-Type: application/json" \\
   -H "x-api-key: mp_live_your_secret_key" \\
   -d '{
-    "firstName":    "Olusegun",
-    "lastName":     "Adeyemi",
-    "email":        "olusegun.adeyemi@example.com",
-    "phone":        "08012345678",
-    "bvn":          "22345678901",
-    "amount":       500000,
-    "tenor":        12,
-    "interestRate": 2.0,
-    "purpose":      "Business expansion"
+    "firstName":      "Olusegun",
+    "lastName":       "Adeyemi",
+    "email":          "olusegun.adeyemi@example.com",
+    "phone":          "08012345678",
+    "bvn":            "22345678901",
+    "amount":         500000,
+    "tenor":          12,
+    "interestRate":   2.0,
+    "purpose":        "Business expansion",
+    "idempotencyKey": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   }'`}
         />
 
@@ -110,15 +119,17 @@ export default function TutorialPage() {
   "applicationId": "357ab3ce-55ce-4f73-82c9-dab3136c7885",
   "applicantId":   "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
   "widgetUrl":     "https://connect.withmono.com/?key=...&reference=...",
-  "status":        "PENDING_LINKING"
+  "status":        "PENDING_LINKING",
+  "resumed":       false
 }`}
         />
 
         <Callout type="info">
-          Store <code>applicationId</code> and <code>applicantId</code> against
-          your user record. The widget URL is single-use and expires — redirect
-          or present it immediately. Do not call it yourself; it is for the
-          applicant&apos;s browser.
+          Store <code>applicationId</code>, <code>applicantId</code> and your{" "}
+          <code>idempotencyKey</code> against your user record. The widget URL is
+          single-use and expires — redirect or present it immediately. If{" "}
+          <code>resumed: true</code> is returned, the applicant is continuing a
+          previous session.
         </Callout>
       </section>
 
