@@ -51,9 +51,9 @@ const notes = [
 export default function NotesForFintechsPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Notes for Fintechs</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Going Live</h1>
       <p className="text-gray-600 text-sm mb-8">
-        Important considerations when integrating Mono-Parser into your lending product.
+        What to verify before switching to production. These are non-obvious behaviours and constraints that affect real integrations.
       </p>
 
       <div className="space-y-6">

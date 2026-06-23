@@ -24,8 +24,8 @@ export default function DocsOverviewPage() {
         {[
           {
             icon: <RiTimerFlashLine className="h-5 w-5 text-[#0055ba]" />,
-            title: "Four API calls",
-            desc: "Initiate → Link Account → Finalize → Analyze. Everything else is automated.",
+            title: "Three required calls",
+            desc: "Initiate → Finalize → Analyze. Link Account is optional for multi-account flows.",
           },
           {
             icon: <RiNotification3Line className="h-5 w-5 text-[#0055ba]" />,
@@ -72,7 +72,7 @@ export default function DocsOverviewPage() {
             { href: "/docs/decision-object", label: "Decision Object", desc: "Full response schema" },
             { href: "/docs/score-bands", label: "Score Bands", desc: "How scores map to decisions" },
             { href: "/docs/errors", label: "Error Handling", desc: "Status codes and shapes" },
-            { href: "/docs/notes-for-fintechs", label: "Notes for Fintechs", desc: "Critical integration tips" },
+            { href: "/docs/notes-for-fintechs", label: "Going Live", desc: "Pre-production checklist and best practices" },
           ].map((item) => (
             <Link
               key={item.href}

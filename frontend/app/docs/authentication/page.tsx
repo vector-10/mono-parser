@@ -46,11 +46,58 @@ export default function AuthenticationPage() {
           raw request body, signed with your webhook secret. Verify this signature
           on every inbound event before processing it.
         </p>
-        <p className="text-gray-600 text-sm leading-relaxed">
+        <p className="text-gray-600 text-sm leading-relaxed mb-6">
           Your webhook secret is available in your dashboard under Settings. It is
           shown once on generation — store it as an environment variable. If you
           lose it, rotate from the dashboard to get a new one.
         </p>
+
+        <h3 className="font-semibold text-gray-800 text-sm mb-2">Verifying the signature</h3>
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">
+          Compute an HMAC-SHA256 of the <strong>raw request body</strong> (the unparsed JSON string)
+          using your webhook secret, hex-encode the result, and compare it against the{" "}
+          <code>x-signature</code> header. Use a timing-safe comparison to prevent timing attacks.
+        </p>
+
+        <CodeBlock
+          lang="javascript"
+          code={`import crypto from 'crypto';
+
+// Express example — requires express.raw() or bodyParser.raw() for this route
+app.post('/webhooks/mono-parser', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-signature'];
+  const secret    = process.env.MONO_PARSER_WEBHOOK_SECRET;
+
+  if (!signature || !secret) {
+    return res.status(401).json({ error: 'Missing signature' });
+  }
+
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(req.body) // req.body must be the raw Buffer, not parsed JSON
+    .digest('hex');
+
+  const sigBuffer      = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+
+  if (
+    sigBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(sigBuffer, expectedBuffer)
+  ) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  const event = JSON.parse(req.body.toString());
+  // process event.event, event.data ...
+  res.status(200).end();
+});`}
+        />
+
+        <Callout type="warning">
+          Always use the <strong>raw request body</strong> — not the parsed JSON object — when
+          computing the signature. Parsing and re-stringifying the body can change whitespace or
+          key ordering and will cause the comparison to fail even with a valid secret.
+        </Callout>
       </section>
     </div>
   );

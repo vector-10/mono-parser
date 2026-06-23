@@ -23,8 +23,36 @@ export default function WebhooksPage() {
       <Callout type="info">
         Register your webhook URL in the dashboard under Settings → Webhook URL.
         Your endpoint must respond with HTTP <code>2xx</code> within 10 seconds.
-        Failed deliveries are retried with exponential backoff.
+        Failed deliveries are retried up to <strong>5 times</strong> with exponential backoff
+        starting at 10 seconds. Delivery status is tracked — if all retries are exhausted, the
+        event is marked failed and will not be resent automatically. Webhooks are delivered
+        at-least-once, so your handler should be idempotent.
       </Callout>
+
+      {/* ── Signature verification ── */}
+      <section className="mt-10 mb-10">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Verifying Signatures</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          Every event includes an <code>x-signature</code> header — an HMAC-SHA256 hex digest of
+          the raw request body, signed with your webhook secret. Reject any request where the
+          signature does not match. See the{" "}
+          <Link href="/docs/authentication" className="text-[#0055ba] hover:underline">
+            Authentication
+          </Link>{" "}
+          page for a full verification code example.
+        </p>
+        <CodeBlock
+          lang="javascript"
+          code={`const expected = crypto
+  .createHmac('sha256', process.env.MONO_PARSER_WEBHOOK_SECRET)
+  .update(rawBody) // raw Buffer — not parsed JSON
+  .digest('hex');
+
+if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+  return res.status(401).end();
+}`}
+        />
+      </section>
 
       {/* ── account.linked ── */}
       <section id="wh-account-linked" className="scroll-mt-28 mt-10 mb-10">

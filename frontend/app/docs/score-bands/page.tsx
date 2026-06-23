@@ -86,6 +86,43 @@ export default function ScoreBandsPage() {
         scoring early. Always check <code>risk_factors</code> for the specific reason.
       </Callout>
 
+      {/* ── MANUAL_REVIEW overlay ── */}
+      <div className="mt-8 border border-amber-200 bg-amber-50/50 p-5">
+        <h3 className="font-semibold text-gray-900 text-sm mb-2">
+          MANUAL_REVIEW can fire at any score band
+        </h3>
+        <p className="text-xs text-gray-600 leading-relaxed mb-3">
+          The table above shows <em>default</em> outcomes per band. Three additional conditions
+          can override an APPROVED decision and send it to manual review regardless of score:
+        </p>
+        <div className="space-y-2 text-xs">
+          {[
+            [
+              "Borderline score",
+              "Score is within 20 points of any decision threshold (e.g. 680–720 straddles the 700 approve floor). The buffer prevents over-confident approvals near boundary zones.",
+            ],
+            [
+              "High-value loan",
+              "Requested amount exceeds ₦500,000. High-value loans require a human underwriter sign-off regardless of score.",
+            ],
+            [
+              "Limited transaction history",
+              "Fewer than 20 transactions across all linked accounts. Insufficient data for the engine to score confidently.",
+            ],
+          ].map(([label, desc]) => (
+            <div key={label} className="flex gap-3">
+              <span className="shrink-0 font-semibold text-amber-700 w-40">{label}</span>
+              <span className="text-gray-600">{desc}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 mt-3">
+          When any of these fire, the <code>decision</code> field will be{" "}
+          <code>MANUAL_REVIEW</code> and <code>manual_review_reasons</code> will list exactly
+          which condition(s) triggered it.
+        </p>
+      </div>
+
       <div className="mt-6 bg-gray-50 border border-gray-200 p-5">
         <h3 className="font-semibold text-gray-800 text-sm mb-3">Default policy thresholds</h3>
         <div className="space-y-1.5 text-xs">

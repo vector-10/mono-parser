@@ -95,6 +95,39 @@ export default function IntegrationFlowPage() {
         fires only after finalize-linking and confirms all accounts are enriched. Calling{" "}
         <code>/analyze</code> before this will return a 400 error.
       </Callout>
+
+      <div className="mt-8 border border-red-100 bg-red-50/40 p-5">
+        <h3 className="font-semibold text-gray-900 text-sm mb-3">Handling failure paths</h3>
+        <p className="text-xs text-gray-600 leading-relaxed mb-4">
+          Three events can interrupt the happy path above. Your integration must handle all of
+          them — unhandled failures leave applicants stuck with no feedback.
+        </p>
+        <div className="space-y-3 text-xs">
+          {[
+            {
+              event: "account.enrichment_failed",
+              when: "Enrichment stayed PENDING for more than 20 minutes.",
+              action: "Call POST /applications/:id/link-account to generate a fresh widget URL. The applicant must re-link.",
+            },
+            {
+              event: "application.failed",
+              when: "A terminal error occurred during analysis (no enriched accounts, or scoring service failure).",
+              action: "Cannot be retried. Call /initiate to start a new application.",
+            },
+            {
+              event: "application.abandoned",
+              when: "No account linked within 24 hours (no_link), or /analyze not called within 7 days of linking (no_analyze).",
+              action: "Cannot be resumed. Call /initiate with a new idempotency key.",
+            },
+          ].map(({ event, when, action }) => (
+            <div key={event} className="border border-red-100 bg-white p-3">
+              <code className="text-xs font-mono font-bold text-red-600">{event}</code>
+              <p className="text-gray-600 mt-1"><strong>When:</strong> {when}</p>
+              <p className="text-gray-600 mt-0.5"><strong>Action:</strong> {action}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

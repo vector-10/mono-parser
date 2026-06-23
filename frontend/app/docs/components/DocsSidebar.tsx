@@ -35,7 +35,7 @@ const navItems = [
   { href: "/docs/decision-object", label: "Decision Object" },
   { href: "/docs/score-bands", label: "Score Bands" },
   { href: "/docs/errors", label: "Error Handling" },
-  { href: "/docs/notes-for-fintechs", label: "Notes for Fintechs" },
+  { href: "/docs/notes-for-fintechs", label: "Going Live" },
 ];
 
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
