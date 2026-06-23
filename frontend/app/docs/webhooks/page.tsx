@@ -308,7 +308,7 @@ export default function WebhooksPage() {
       "score":       720,
       "decision":    "APPROVED",
       "score_band":  "LOW_RISK",
-      "timestamp":   "2026-02-20T22:14:35.576410Z",
+      "timestamp":   "2026-02-20T22:14:35.576Z",
       "applicant_id": "54cbd45f-bf8e-4add-8d0c-adb5efe705c1",
       "approval_details": {
         "approved_amount":   500000,
