@@ -96,34 +96,52 @@ export default function IntegrationFlowPage() {
         <code>/analyze</code> before this will return a 400 error.
       </Callout>
 
-      <div className="mt-8 border border-red-100 bg-red-50/40 p-5">
-        <h3 className="font-semibold text-gray-900 text-sm mb-3">Handling failure paths</h3>
-        <p className="text-xs text-gray-600 leading-relaxed mb-4">
-          Three events can interrupt the happy path above. Your integration must handle all of
-          them — unhandled failures leave applicants stuck with no feedback.
+      <div className="mt-8">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Handling failures</h2>
+        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+          Three webhook events can interrupt the happy path. They are not rare — handle all of
+          them or applicants will reach a silent dead end with no way forward.
         </p>
-        <div className="space-y-3 text-xs">
+        <div className="space-y-3">
           {[
             {
               event: "account.enrichment_failed",
-              when: "Enrichment stayed PENDING for more than 20 minutes.",
-              action: "Call POST /applications/:id/link-account to generate a fresh widget URL. The applicant must re-link.",
+              tag: "We send",
+              desc: "Enrichment stayed PENDING for more than 20 minutes. The account could not be processed within the expected window.",
+              action: "Call POST /applications/:id/link-account to generate a fresh widget URL. The applicant must re-link that account.",
             },
             {
               event: "application.failed",
-              when: "A terminal error occurred during analysis (no enriched accounts, or scoring service failure).",
-              action: "Cannot be retried. Call /initiate to start a new application.",
+              tag: "We send",
+              desc: "A terminal error occurred during analysis — no enriched accounts were available, or the scoring engine returned an unrecoverable error.",
+              action: "Cannot be retried. Call /initiate to create a new application for the same applicant.",
             },
             {
               event: "application.abandoned",
-              when: "No account linked within 24 hours (no_link), or /analyze not called within 7 days of linking (no_analyze).",
-              action: "Cannot be resumed. Call /initiate with a new idempotency key.",
+              tag: "We send",
+              desc: "The cleanup system marked the application inactive. Either no account was linked within 24 hours (no_link), or /analyze was never called within 7 days of linking (no_analyze).",
+              action: "Cannot be resumed. Call /initiate with a new idempotency key. The applicant will need to re-link.",
             },
-          ].map(({ event, when, action }) => (
-            <div key={event} className="border border-red-100 bg-white p-3">
-              <code className="text-xs font-mono font-bold text-red-600">{event}</code>
-              <p className="text-gray-600 mt-1"><strong>When:</strong> {when}</p>
-              <p className="text-gray-600 mt-0.5"><strong>Action:</strong> {action}</p>
+          ].map((item) => (
+            <div
+              key={item.event}
+              className="flex gap-4 items-start bg-white border border-gray-200 p-4 hover:shadow-sm transition"
+            >
+              <div className="w-8 h-8 bg-red-50 border border-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-red-500 text-xs font-bold">!</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <code className="text-xs font-mono font-semibold text-gray-900">{item.event}</code>
+                  <span className="text-xs px-2 py-0.5 font-medium bg-gray-100 text-gray-600">
+                    {item.tag}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed mb-1.5">{item.desc}</p>
+                <p className="text-xs text-gray-700 font-medium">
+                  <span className="text-gray-400 mr-1">→</span>{item.action}
+                </p>
+              </div>
             </div>
           ))}
         </div>

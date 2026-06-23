@@ -411,10 +411,12 @@ export default function TutorialPage() {
 
       {/* ── Edge cases ── */}
       <section id="edge-cases" className="scroll-mt-28 mt-12 mb-10">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Edge cases</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Handling failures</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-6">
-          Three additional webhook events can interrupt the happy path. Handle
-          all of them or your users will end up in silent dead ends.
+          Three webhook events can interrupt the happy path at different stages.
+          These are not rare — enrichment timeouts and abandoned applications happen
+          in production. Your integration must handle all three or applicants will
+          reach a silent dead end with no way forward.
         </p>
 
         <div className="space-y-4">

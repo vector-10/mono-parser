@@ -62,8 +62,11 @@ export default function AuthenticationPage() {
         <CodeBlock
           lang="javascript"
           code={`import crypto from 'crypto';
+import express from 'express';
 
-// Express example — requires express.raw() or bodyParser.raw() for this route
+const app = express();
+
+// Use express.raw() on this route to receive the unparsed body as a Buffer
 app.post('/webhooks/mono-parser', express.raw({ type: 'application/json' }), (req, res) => {
   const signature = req.headers['x-signature'];
   const secret    = process.env.MONO_PARSER_WEBHOOK_SECRET;
