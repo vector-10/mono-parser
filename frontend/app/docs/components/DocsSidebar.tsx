@@ -6,7 +6,21 @@ import { RiBookOpenLine, RiMenuLine, RiCloseLine } from "react-icons/ri";
 
 const navItems = [
   { href: "/docs", label: "Overview" },
-  { href: "/docs/tutorial", label: "Tutorial" },
+  {
+    href: "/docs/tutorial",
+    label: "Tutorial",
+    children: [
+      { href: "/docs/tutorial#step-initiate", label: "Step 1 — Initiate" },
+      { href: "/docs/tutorial#step-widget", label: "Step 2 — Open widget" },
+      { href: "/docs/tutorial#step-account-linked", label: "Step 3 — account.linked" },
+      { href: "/docs/tutorial#step-enrichment-ready", label: "Step 4 — enrichment_ready" },
+      { href: "/docs/tutorial#step-finalize", label: "Step 5 — Finalize linking" },
+      { href: "/docs/tutorial#step-ready-for-analysis", label: "Step 6 — ready_for_analysis" },
+      { href: "/docs/tutorial#step-analyze", label: "Step 7 — Analyze" },
+      { href: "/docs/tutorial#step-decision", label: "Step 8 — Decision" },
+      { href: "/docs/tutorial#edge-cases", label: "Handling failures" },
+    ],
+  },
   { href: "/docs/authentication", label: "Authentication" },
   { href: "/docs/integration-flow", label: "Integration Flow" },
   {

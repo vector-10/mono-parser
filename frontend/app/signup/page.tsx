@@ -337,7 +337,7 @@ export default function SignupPage() {
                   >
                     {isSignupSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent  animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Creating account...
                       </>
                     ) : (
@@ -417,7 +417,7 @@ export default function SignupPage() {
                   >
                     {isOtpSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent  animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         Verifying...
                       </>
                     ) : (

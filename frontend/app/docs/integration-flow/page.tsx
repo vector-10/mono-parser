@@ -56,8 +56,9 @@ export default function IntegrationFlowPage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Integration Flow</h1>
       <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-        The complete lifecycle of a loan application involves four API calls on your end and four
-        webhook events from ours. The flow is async and webhook-driven — you never need to poll.
+        The complete lifecycle of a loan application involves three required API calls on your end
+        (plus an optional fourth for multi-account flows) and four webhook events from ours.
+        The flow is async and webhook-driven — you never need to poll.
       </p>
 
       <div className="space-y-3 mb-8">
