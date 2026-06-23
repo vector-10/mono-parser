@@ -42,7 +42,7 @@ export default function AuthenticationPage() {
         <h2 className="text-lg font-bold text-gray-900 mb-1">Webhook Secret</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
           Every event we send to your webhook URL includes an{" "}
-          <code>x-mono-signature</code> header — an HMAC-SHA256 signature of the
+          <code>x-signature</code> header — an HMAC-SHA256 signature of the
           raw request body, signed with your webhook secret. Verify this signature
           on every inbound event before processing it.
         </p>

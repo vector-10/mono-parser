@@ -4,7 +4,7 @@ const errors = [
   { code: "400", meaning: "Bad Request", cause: "Missing required field, invalid value, or the application is in a terminal state." },
   { code: "401", meaning: "Unauthorized", cause: "Missing or invalid x-api-key header." },
   { code: "404", meaning: "Not Found", cause: "The applicationId or applicantId does not belong to your account." },
-  { code: "429", meaning: "Too Many Requests", cause: "Rate limit exceeded. /initiate and /analyze are limited to 20 requests per minute." },
+  { code: "429", meaning: "Too Many Requests", cause: "Rate limit exceeded. /initiate is limited to 20 req/min and /analyze to 30 req/min. All other endpoints share a global limit of 60 req/min per IP." },
   { code: "500", meaning: "Internal Server Error", cause: "Unexpected server error. Mono API key not configured, or a downstream service failure." },
 ];
 

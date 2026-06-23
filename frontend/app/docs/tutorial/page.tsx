@@ -29,13 +29,13 @@ export default function TutorialPage() {
 
       <Callout type="info">
         <strong>Prerequisites:</strong> You need an active API key and webhook secret. Find both in your dashboard under{" "}
-        <strong>Settings</strong>. All requests require the api key for authentication. Remember to save your webhook URL too in the dashboard.
+        <strong>Settings</strong>. All requests use the <code>x-api-key</code> header for authentication. Make sure your webhook URL is also saved in Settings before going live.
       </Callout>
 
       {/* ── Flow overview ── */}
       <div className="my-8 border border-gray-200 bg-gray-50 p-5">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
-          Full Flow — 4 API calls, 4 webhooks
+          Full Flow — 4 API calls (1 optional), 4 webhooks, 1 user action
         </p>
         <ol className="space-y-2">
           {[
@@ -46,7 +46,7 @@ export default function TutorialPage() {
             ["Webhook", "account.enrichment_ready", "Bank data is processed fires a webhook for each account linked"],
             ["POST", "/finalize-linking", "Signal you are done linking accounts"],
             ["Webhook", "application.ready_for_analysis", "All accounts enriched; ready to analyze"],
-            ["POST", "/analyze", "Process the creit loan applications"],
+            ["POST", "/analyze", "Trigger credit scoring — the engine reads all enriched account data"],
             ["Webhook", "application.decision", "Scored decision delivered to your webhook URL"],
           ].map(([badge, path, desc], i) => (
             <li key={i} className="flex items-start gap-3 text-sm">
@@ -107,7 +107,7 @@ export default function TutorialPage() {
     "bvn":            "22345678901",
     "amount":         500000,
     "tenor":          12,
-    "interestRate":   2.0,
+    "interestRate":   5.0,
     "purpose":        "Business expansion",
     "idempotencyKey": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   }'`}
@@ -345,7 +345,7 @@ export default function TutorialPage() {
       "approval_details": {
         "approved_amount":   500000,
         "approved_tenor":    12,
-        "approved_interest": 24.0,
+        "approved_interest": 5.0,
         "monthly_payment":   46667
       },
       "counter_offer": null,
@@ -434,10 +434,11 @@ export default function TutorialPage() {
               code={`{
   "event": "account.enrichment_failed",
   "data": {
-    "accountId":   "dbcc78d5-...",
-    "applicantId": "54cbd45f-...",
-    "reason":      "enrichment_timeout",
-    "message":     "Ask the applicant to re-link their bank account."
+    "accountId":     "dbcc78d5-...",
+    "monoAccountId": "6998da59bdaef66d5e5f3d0d",
+    "applicantId":   "54cbd45f-...",
+    "reason":        "enrichment_timeout",
+    "message":       "Account enrichment did not complete within the expected window. Ask the applicant to re-link their bank account to restart the process."
   }
 }`}
             />
@@ -511,7 +512,7 @@ export default function TutorialPage() {
     "applicationId": "357ab3ce-...",
     "applicantId":   "54cbd45f-...",
     "reason":        "no_link",
-    "message":       "Applicant did not link a bank account within 24 hours."
+    "message":       "Application abandoned — applicant did not link a bank account within 24 hours."
   }
 }`}
             />

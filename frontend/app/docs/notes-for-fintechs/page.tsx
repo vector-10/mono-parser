@@ -44,7 +44,7 @@ const notes = [
   {
     title: "Rate limits",
     type: "warning" as const,
-    body: "The /initiate and /analyze endpoints are rate-limited to 20 requests per minute per API key. If you exceed this, you will receive a 429 Too Many Requests response. Build backoff and retry logic into your integration. Contact support if you have high-volume batch processing needs.",
+    body: "/initiate is rate-limited to 20 requests per minute and /analyze to 30 requests per minute, per API key. All other endpoints share a global limit of 60 requests per minute per IP. If you exceed a limit, you will receive a 429 Too Many Requests response. Build backoff and retry logic into your integration. Contact support if you have high-volume batch processing needs.",
   },
 ];
 

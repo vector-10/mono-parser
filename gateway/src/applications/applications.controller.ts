@@ -30,6 +30,7 @@ export class ApplicationsController {
 
 
   @Post('initiate')
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
   @UseGuards(ApiKeyGuard)
   async initiateApplication(@Request() req, @Body() body: InitiateApplicationDto) {
     return this.applicationsService.initiateApplication(req.user.id, body);
@@ -48,6 +49,7 @@ export class ApplicationsController {
   }
 
   @Post(':id/analyze')
+  @Throttle({ default: { ttl: 60000, limit: 30 } })
   @UseGuards(ApiKeyGuard)
   async analyze(@Request() req, @Param('id') id: string) {
     const application = await this.applicationsService.findOne(id, req.user.id);

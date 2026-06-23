@@ -80,9 +80,10 @@ export default function ScoreBandsPage() {
       </div>
 
       <Callout type="info">
-        A score of <strong>350</strong> is the floor — it indicates a hard knockout rule fired
-        before scoring completed, such as an identity name mismatch, active loan default, or income
-        below the minimum threshold. Always check <code>risk_factors</code> for the specific reason.
+        A score of <strong>350</strong> is the baseline — every application starts here and earns
+        points upward. A final score at or near 350 means very few points were earned, or that a
+        hard knockout rule (identity mismatch, active default, income below minimum) terminated
+        scoring early. Always check <code>risk_factors</code> for the specific reason.
       </Callout>
 
       <div className="mt-6 bg-gray-50 border border-gray-200 p-5">
