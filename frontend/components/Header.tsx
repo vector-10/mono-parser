@@ -82,7 +82,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Backdrop overlay */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40 md:hidden"
@@ -90,7 +89,6 @@ const Header = () => {
         />
       )}
 
-      {/* Slide-in menu */}
       <div
         className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"

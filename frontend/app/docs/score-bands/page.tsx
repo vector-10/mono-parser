@@ -86,7 +86,6 @@ export default function ScoreBandsPage() {
         scoring early. Always check <code>risk_factors</code> for the specific reason.
       </Callout>
 
-      {/* ── MANUAL_REVIEW overlay ── */}
       <div className="mt-8 border border-amber-200 bg-amber-50/50 p-5">
         <h3 className="font-semibold text-gray-900 text-sm mb-2">
           MANUAL_REVIEW can fire at any score band

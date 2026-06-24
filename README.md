@@ -50,6 +50,14 @@ The goal is to give loan officers more data-backed reasons to say yes or no — 
 └───────────────────────────────┘
 ```
 
+---
+
+## Database Schema
+
+![Entity Relationship Diagram](./mono-parser.png)
+
+---
+
 ### Services
 
 | Service | Tech | Purpose |

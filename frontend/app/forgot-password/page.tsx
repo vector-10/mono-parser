@@ -102,7 +102,6 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-150">
-          {/* Left Side - Blue Background */}
           <div className="md:w-[60%] bg-linear-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
             <div className="mb-8">
               <Link
@@ -127,7 +126,6 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          {/* Right Side - Forms */}
           <div className="md:w-[40%] p-8 md:p-12 flex flex-col justify-center">
             {step === "request" ? (
               <>
@@ -220,7 +218,6 @@ export default function ForgotPasswordPage() {
                   onSubmit={handleResetSubmit(onResetPassword)}
                   className="space-y-5"
                 >
-                  {/* OTP Input */}
                   <div>
                     <label
                       htmlFor="otp"
@@ -245,7 +242,6 @@ export default function ForgotPasswordPage() {
                     )}
                   </div>
 
-                  {/* New Password */}
                   <div>
                     <label
                       htmlFor="newPassword"
@@ -287,7 +283,6 @@ export default function ForgotPasswordPage() {
                     </p>
                   </div>
 
-                  {/* Resend Code */}
                   <div className="text-center">
                     <button
                       type="button"

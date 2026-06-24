@@ -32,7 +32,6 @@ export default function TutorialPage() {
         <strong>Settings</strong>. All requests use the <code>x-api-key</code> header for authentication. Make sure your webhook URL is also saved in Settings before going live.
       </Callout>
 
-      {/* ── Flow overview ── */}
       <div className="my-8 border border-gray-200 bg-gray-50 p-5">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
           Full Flow — 4 API calls (1 optional), 4 webhooks, 1 user action
@@ -69,7 +68,6 @@ export default function TutorialPage() {
         </ol>
       </div>
 
-      {/* ── STEP 1 ── */}
       <section id="step-initiate" className="scroll-mt-28 mt-10 mb-10">
         <StepHeader number={1} title="Initiate the Application" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -133,7 +131,6 @@ export default function TutorialPage() {
         </Callout>
       </section>
 
-      {/* ── STEP 2 ── */}
       <section id="step-widget" className="scroll-mt-28 mb-10">
         <StepHeader number={2} title="Open the Mono Connect Widget" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -150,7 +147,6 @@ export default function TutorialPage() {
         </Callout>
       </section>
 
-      {/* ── STEP 3 ── */}
       <section id="step-account-linked" className="scroll-mt-28 mb-10">
         <StepHeader number={3} title="Receive account.linked" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -186,7 +182,6 @@ export default function TutorialPage() {
         </p>
       </section>
 
-      {/* ── STEP 4 ── */}
       <section id="step-enrichment-ready" className="scroll-mt-28 mb-10">
         <StepHeader number={4} title="Wait for account.enrichment_ready" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -220,7 +215,6 @@ export default function TutorialPage() {
         </Callout>
       </section>
 
-      {/* ── STEP 5 ── */}
       <section id="step-finalize" className="scroll-mt-28 mb-10">
         <StepHeader number={5} title="Call finalize-linking" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -254,7 +248,6 @@ export default function TutorialPage() {
         />
       </section>
 
-      {/* ── STEP 6 ── */}
       <section id="step-ready-for-analysis" className="scroll-mt-28 mb-10">
         <StepHeader number={6} title="Receive application.ready_for_analysis" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -280,7 +273,6 @@ export default function TutorialPage() {
 
       </section>
 
-      {/* ── STEP 7 ── */}
       <section id="step-analyze" className="scroll-mt-28 mb-10">
         <StepHeader number={7} title="Call analyze" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -318,7 +310,6 @@ export default function TutorialPage() {
         </Callout>
       </section>
 
-      {/* ── STEP 8 ── */}
       <section id="step-decision" className="scroll-mt-28 mb-10">
         <StepHeader number={8} title="Receive application.decision" />
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -409,7 +400,6 @@ export default function TutorialPage() {
         </div>
       </section>
 
-      {/* ── Edge cases ── */}
       <section id="edge-cases" className="scroll-mt-28 mt-12 mb-10">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Handling failures</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-6">
@@ -526,7 +516,6 @@ export default function TutorialPage() {
         </div>
       </section>
 
-      {/* ── What's next ── */}
       <section id="whats-next" className="scroll-mt-28 mt-12 mb-4">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           What&apos;s next

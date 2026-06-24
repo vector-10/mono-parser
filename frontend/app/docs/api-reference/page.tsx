@@ -12,7 +12,6 @@ export default function ApiReferencePage() {
         <code className="bg-gray-100 px-1 py-0.5 text-xs">x-api-key</code> header.
       </p>
 
-      {/* ── INITIATE ── */}
       <section id="initiate" className="scroll-mt-28 mb-12">
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <MethodBadge method="POST" />
@@ -83,7 +82,6 @@ export default function ApiReferencePage() {
         </Callout>
       </section>
 
-      {/* ── LINK ACCOUNT ── */}
       <section id="link-account" className="scroll-mt-28 mb-12">
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <MethodBadge method="POST" />
@@ -130,7 +128,6 @@ export default function ApiReferencePage() {
         </Callout>
       </section>
 
-      {/* ── FINALIZE LINKING ── */}
       <section id="finalize-linking" className="scroll-mt-28 mb-12">
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <MethodBadge method="POST" />
@@ -175,7 +172,6 @@ export default function ApiReferencePage() {
         </Callout>
       </section>
 
-      {/* ── ANALYZE ── */}
       <section id="analyze" className="scroll-mt-28 mb-12">
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <MethodBadge method="POST" />

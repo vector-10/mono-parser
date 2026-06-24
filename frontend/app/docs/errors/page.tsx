@@ -101,7 +101,6 @@ export default function ErrorsPage() {
 }`}
       />
 
-      {/* ── Status codes ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-8 mb-3">Status Codes</h2>
       <div className="overflow-x-auto border border-gray-200">
         <table className="w-full text-sm">
@@ -136,7 +135,6 @@ export default function ErrorsPage() {
         </table>
       </div>
 
-      {/* ── Per-endpoint errors ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-10 mb-3">Per-Endpoint Error Scenarios</h2>
       <p className="text-gray-600 text-sm mb-5">
         400 errors mean different things depending on the endpoint. The <code className="bg-gray-100 px-1 py-0.5 text-xs">message</code> string
@@ -163,7 +161,6 @@ export default function ErrorsPage() {
         ))}
       </div>
 
-      {/* ── Retry guidance ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-10 mb-3">Retry Guidance</h2>
 
       <div className="space-y-3">

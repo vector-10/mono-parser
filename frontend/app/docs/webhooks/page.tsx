@@ -29,7 +29,6 @@ export default function WebhooksPage() {
         at-least-once, so your handler should be idempotent.
       </Callout>
 
-      {/* ── Signature verification ── */}
       <section className="mt-10 mb-10">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Verifying Signatures</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -54,7 +53,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         />
       </section>
 
-      {/* ── account.linked ── */}
       <section id="wh-account-linked" className="scroll-mt-28 mt-10 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold">
@@ -87,7 +85,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         />
       </section>
 
-      {/* ── account.enrichment_ready ── */}
       <section id="wh-enrichment-ready" className="scroll-mt-28 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold">
@@ -128,7 +125,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         </Callout>
       </section>
 
-      {/* ── application.ready_for_analysis ── */}
       <section id="wh-ready-for-analysis" className="scroll-mt-28 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold">
@@ -162,7 +158,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         />
       </section>
 
-      {/* ── account.enrichment_failed ── */}
       <section id="wh-enrichment-failed" className="scroll-mt-28 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold">
@@ -200,7 +195,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         </Callout>
       </section>
 
-      {/* ── application.failed ── */}
       <section id="wh-application-failed" className="scroll-mt-28 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold">
@@ -236,7 +230,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         </Callout>
       </section>
 
-      {/* ── application.abandoned ── */}
       <section id="wh-application-abandoned" className="scroll-mt-28 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-600 text-xs font-bold">
@@ -300,7 +293,6 @@ if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
         </Callout>
       </section>
 
-      {/* ── application.decision ── */}
       <section id="wh-decision" className="scroll-mt-28 mb-10">
         <div className="flex items-center gap-3 mb-3">
           <span className="inline-block px-2.5 py-1 bg-[#59a927]/10 text-[#59a927] text-xs font-bold">

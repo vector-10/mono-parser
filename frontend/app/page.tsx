@@ -180,7 +180,6 @@ export default function LandingPage() {
     <div className="relative min-h-screen bg-white">
       <Header />
 
-      {/* Hero */}
       <section className="relative bg-white overflow-hidden pt-32 sm:pt-36 lg:pt-44 pb-0 px-4 sm:px-6 lg:px-8">
         <div className="relative max-w-7xl mx-auto pb-24 lg:pb-32">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -282,7 +281,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Wave into dark pipeline section */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -298,7 +296,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it Works */}
       <section className="py-20 lg:py-28 bg-[#0a0f1e]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn className="text-center mb-12">
@@ -352,7 +349,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
       <section
         id="features"
         className="bg-gray-50 py-20 lg:py-28 px-4 sm:px-6 lg:px-8"
@@ -433,7 +429,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* AI Chat Interface */}
       <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-3xl mx-auto">
           <FadeIn className="text-center mb-12">
@@ -638,7 +633,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* API Section */}
       <section
         id="api"
         className="bg-[#0a0f1e] py-20 lg:py-28 px-4 sm:px-6 lg:px-8"
@@ -707,7 +701,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
           <FadeIn>
@@ -744,7 +737,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-[#0a0f1e] border-t border-white/5 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
@@ -817,7 +809,7 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <Link
-                    href="/terms"
+                    href="/"
                     className="text-gray-500 hover:text-white transition"
                   >
                     Terms

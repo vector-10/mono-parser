@@ -29,7 +29,6 @@ export default function DecisionObjectPage() {
         ]}
       />
 
-      {/* ── score_breakdown ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-10 mb-2">score_breakdown</h2>
       <p className="text-gray-600 text-sm mb-4">
         Individual points earned per scoring component. Components sum to <code>total</code>.
@@ -47,7 +46,6 @@ export default function DecisionObjectPage() {
         ]}
       />
 
-      {/* ── approval_details ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-10 mb-2">approval_details</h2>
       <p className="text-gray-600 text-sm mb-4">
         Present when <code>decision</code> is <code>APPROVED</code>. Contains the exact terms to
@@ -64,7 +62,6 @@ export default function DecisionObjectPage() {
         ]}
       />
 
-      {/* ── counter_offer ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-10 mb-2">counter_offer</h2>
       <p className="text-gray-600 text-sm mb-4">
         Present when <code>decision</code> is <code>COUNTER_OFFER</code>. The scoring engine
@@ -81,7 +78,6 @@ export default function DecisionObjectPage() {
         ]}
       />
 
-      {/* ── risk_factors ── */}
       <h2 className="font-semibold text-gray-900 text-base mt-10 mb-3">risk_factors</h2>
       <p className="text-gray-600 text-sm mb-4">
         Each item in <code>risk_factors</code> describes a specific signal that negatively

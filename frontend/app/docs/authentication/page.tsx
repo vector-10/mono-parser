@@ -17,7 +17,6 @@ export default function AuthenticationPage() {
         under Settings.
       </p>
 
-      {/* ── API Key ── */}
       <section className="mb-10">
         <h2 className="text-lg font-bold text-gray-900 mb-1">API Key</h2>
         <p className="text-gray-600 text-sm leading-relaxed mb-4">

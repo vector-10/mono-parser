@@ -107,7 +107,6 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl bg-white  shadow-xl overflow-hidden">
         <div className="flex flex-col md:flex-row min-h-150">
-          {/* Left Side - Blue Background */}
           <div className="md:w-[60%] bg-linear-to-br from-[#0055ba] to-[#003d85] p-8 md:p-12 flex flex-col justify-center text-white">
             <div className="mb-8">
               <Link
@@ -158,11 +157,9 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Right Side - Forms */}
           <div className="md:w-[40%] p-8 md:p-12 flex flex-col justify-center">
             {step === "signup" ? (
               <>
-                {/* Signup Form */}
                 <div className="mb-8">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                     Create account
@@ -182,7 +179,6 @@ export default function SignupPage() {
                   onSubmit={handleSignupSubmit(onSignup)}
                   className="space-y-5"
                 >
-                  {/* Name */}
                   <div>
                     <label
                       htmlFor="name"
@@ -206,7 +202,6 @@ export default function SignupPage() {
                     )}
                   </div>
 
-                  {/* Email */}
                   <div>
                     <label
                       htmlFor="email"
@@ -232,7 +227,6 @@ export default function SignupPage() {
                     )}
                   </div>
 
-                  {/* Company Name */}
                   <div>
                     <label
                       htmlFor="companyName"
@@ -258,7 +252,6 @@ export default function SignupPage() {
                     )}
                   </div>
 
-                  {/* Password */}
                   <div>
                     <label
                       htmlFor="password"
@@ -300,7 +293,6 @@ export default function SignupPage() {
                     </p>
                   </div>
 
-                  {/* Terms */}
                   <div className="flex items-start">
                     <input
                       type="checkbox"
@@ -314,7 +306,7 @@ export default function SignupPage() {
                     >
                       I agree to the{" "}
                       <Link
-                        href="/terms"
+                        href="/"
                         className="text-[#0055ba] hover:underline"
                       >
                         Terms of Service
@@ -329,7 +321,6 @@ export default function SignupPage() {
                     </label>
                   </div>
 
-                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={isSignupSubmitting}
@@ -351,7 +342,6 @@ export default function SignupPage() {
               </>
             ) : (
               <>
-                {/* OTP Verification Form */}
                 <div className="mb-8">
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                     Verify your email
@@ -366,7 +356,6 @@ export default function SignupPage() {
                   onSubmit={handleOtpSubmit(onVerifyOtp)}
                   className="space-y-6"
                 >
-                  {/* OTP Input */}
                   <div>
                     <label
                       htmlFor="otp"
@@ -391,7 +380,6 @@ export default function SignupPage() {
                     )}
                   </div>
 
-                  {/* Resend OTP with countdown */}
                   <div className="text-center">
                     <button
                       type="button"
@@ -409,7 +397,6 @@ export default function SignupPage() {
                     </button>
                   </div>
 
-                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={isOtpSubmitting}
@@ -428,7 +415,6 @@ export default function SignupPage() {
                     )}
                   </button>
 
-                  {/* Back to signup */}
                   <div className="text-center">
                     <button
                       type="button"

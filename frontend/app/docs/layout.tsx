@@ -6,10 +6,8 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Header />
-      {/* Mobile nav outside flex — sticky bar + fixed drawer */}
       <DocsMobileNav />
       <div className="max-w-7xl mx-auto flex pt-16">
-        {/* Desktop sidebar inside flex — sticky, no extra vertical space */}
         <DocsDesktopSidebar />
         <main className="flex-1 min-w-0 px-6 py-10 max-w-3xl">
           {children}
