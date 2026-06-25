@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { RiDashboardLine, RiFileList3Line, RiShieldCheckLine, RiTeamLine, RiSettings3Line, RiLogoutBoxLine } from "react-icons/ri";
+import { RiDashboardLine, RiFileList3Line, RiShieldCheckLine,  RiTeamLine, RiSettings3Line, RiLogoutBoxLine } from "react-icons/ri";
+import { SiReadthedocs } from "react-icons/si";
 import { useAuthStore } from "@/lib/store/auth";
 import { authApi } from "@/lib/api/auth";
 
@@ -11,6 +12,7 @@ const navItems = [
   { href: "/dashboard/review", icon: RiShieldCheckLine, label: "Manual Review", exact: false },
   { href: "/dashboard/applicants", icon: RiTeamLine, label: "Applicants", exact: false },
   { href: "/dashboard/settings", icon: RiSettings3Line, label: "Settings", exact: false },
+    { href: "/docs", icon: SiReadthedocs, label: "Go to Docs", exact: false },
 ];
 
 export default function Sidebar() {
